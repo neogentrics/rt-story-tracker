@@ -1,11 +1,16 @@
 'use strict';
 // Records on the way out: a Markdown file for each record, and a spreadsheet for each kind. The Markdown is written the
 // way it's read back in, so what leaves can come back in with its fields in place.
+//
+// What leaves is the printable part and nothing else. A kind that keeps versions has an author-only part, in fields marked
+// for the author and in the author's own notes, and none of it is written here. It stays in the project and in its backups
+// and .rtstory copies, which are the author's own. Everything goes through printable(), the one place that decides.
 const fs = require('node:fs');
 const path = require('node:path');
-const { formatNumber, parseRecord, parseType, showValue } = require('../../shared/records');
-const { toDocument } = require('../../shared/text');
+const { audienceOf, formatNumber, parseRecord, parseType, showValue } = require('../../shared/records');
+const { printable, printableMarkdown } = require('./printable');
 const { documentMarkdown } = require('./text-formats');
+const { toDocument } = require('../../shared/text');
 
 const safeName = (text) => String(text).replace(/[<>:"/\\|?*\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || 'Untitled';
 const csvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
@@ -17,35 +22,26 @@ function freeName(dir, name) {
   return candidate;
 }
 
-// A link leaves as the other record's name, because an ID means nothing outside this app.
-function plain(project, field, value) {
-  const names = (id) => project.getItem(id)?.title ?? '';
-  return showValue(field, value, names).replace(/\n/g, ' ');
-}
-
-function recordMarkdown(project, type, item) {
-  const { number, values } = parseRecord(item.details);
-  const lines = [`# ${item.title}`, ''];
-  if (number !== null) lines.push(`**Number:** ${formatNumber(type.numbering, number)}`);
-  const long = [];
-  for (const field of type.fields) {
-    const value = values[field.id];
-    if (value === undefined) continue;
-    if (field.kind === 'longtext') long.push([field.name, value]);
-    else lines.push(`**${field.name}:** ${plain(project, field, value)}`);
+function parseVersion(item) {
+  try {
+    return { ...JSON.parse(item.details), body: item.body };
+  } catch {
+    return null;
   }
-  for (const [name, text] of long) lines.push('', `## ${name}`, '', text);
-  const notes = documentMarkdown(toDocument(item.body));
-  if (notes.trim()) lines.push('', notes);
-  return `${lines.join('\n').replace(/\n{3,}/g, '\n\n')}\n`;
 }
 
-function recordsCsv(project, type, rows) {
-  const head = ['Name', ...(type.numbering ? ['Number'] : []), ...type.fields.map((field) => field.name), 'Notes'];
+function recordsCsv(project, type, rows, names) {
+  const shown = type.fields.filter((field) => audienceOf(type, field) === 'print');
+  const head = ['Name', ...(type.numbering ? ['Number'] : []), ...shown.map((field) => field.name), 'Notes'];
   const body = rows.map((item) => {
-    const { number, values } = parseRecord(item.details);
-    const notes = documentMarkdown(toDocument(item.body));
-    return [item.title, ...(type.numbering ? [formatNumber(type.numbering, number)] : []), ...type.fields.map((field) => (field.kind === 'longtext' ? (values[field.id] ?? '') : plain(project, field, values[field.id]))), notes];
+    const { number, values, printNotes } = parseRecord(item.details);
+    const notes = documentMarkdown(toDocument(type.versioning ? printNotes : item.body));
+    return [
+      item.title,
+      ...(type.numbering ? [formatNumber(type.numbering, number)] : []),
+      ...shown.map((field) => (field.kind === 'longtext' ? (values[field.id] ?? '') : showValue(field, values[field.id], names).replace(/\n/g, ' '))),
+      notes,
+    ];
   });
   return `${[head, ...body].map((row) => row.map(csvCell).join(',')).join('\n')}\n`;
 }
@@ -57,18 +53,37 @@ function exportRecords(project, root) {
   if (!types.length) return 0;
   const base = path.join(root, 'Records');
   fs.mkdirSync(base, { recursive: true });
+  const names = (id) => project.getItem(id)?.title ?? '';
   for (const typeItem of types) {
     const type = parseType(typeItem.details);
     const rows = project.recordRows(typeItem.id);
     const dir = path.join(base, safeName(typeItem.title));
     fs.mkdirSync(dir, { recursive: true });
     for (const item of rows) {
-      const { number } = parseRecord(item.details);
-      const prefix = number !== null ? `${formatNumber(type.numbering, number)} ` : '';
-      fs.writeFileSync(freeName(dir, `${safeName(`${prefix}${item.title}`)}.md`), recordMarkdown(project, type, item));
+      const { number, values, printNotes } = parseRecord(item.details);
+      const label = formatNumber(type.numbering, number);
+      const prefix = label ? `${label} ` : '';
+      const versions = project.versionRows(item.id).map(parseVersion).filter(Boolean);
+      const page = printable(type, { title: item.title, number, values, printNotes, authorNotes: item.body, revision: (versions.at(-1)?.number ?? 0) + 1, draft: type.versioning }, { names });
+      fs.writeFileSync(freeName(dir, `${safeName(`${prefix}${item.title}`)}.md`), printableMarkdown(page, label));
       files += 1;
+      for (const version of versions) {
+        const shown = printable(type, {
+          title: version.title,
+          number: version.recordNumber,
+          values: version.values,
+          printNotes: version.printNotes,
+          authorNotes: version.body,
+          fields: version.fields,
+          versioning: true,
+          revision: version.number,
+          changes: version.changes,
+        }, { names });
+        fs.writeFileSync(freeName(dir, `${safeName(`${prefix}${version.title} v${version.number}`)}.md`), printableMarkdown(shown, formatNumber(type.numbering, version.recordNumber)));
+        files += 1;
+      }
     }
-    fs.writeFileSync(freeName(base, `${safeName(typeItem.title)}.csv`), recordsCsv(project, type, rows));
+    fs.writeFileSync(freeName(base, `${safeName(typeItem.title)}.csv`), recordsCsv(project, type, rows, names));
     files += 1;
   }
   return files;

@@ -70,11 +70,11 @@ class Project {
       const existing = this.getItem(id);
       if (!existing) {
         if (!input.kind) throw new Error('A new item needs a kind.');
-        const item = { parentId: null, position: 0, title: '', body: '', ...input };
+        const item = { parentId: null, position: 0, title: '', body: '', details: '', ...input };
         this.db
-          .prepare(`INSERT INTO items (id, kind, parent_id, position, title, body, words, created_at, updated_at, device_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-          .run(id, item.kind, item.parentId, item.position, item.title, item.body, wordsIn(item.body), at, at, this.deviceId);
+          .prepare(`INSERT INTO items (id, kind, parent_id, position, title, body, words, details, created_at, updated_at, device_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          .run(id, item.kind, item.parentId, item.position, item.title, item.body, wordsIn(item.body), item.details, at, at, this.deviceId);
         this.log(id, 'put', FIELDS, at);
         const added = this.getItem(id);
         this.indexLinksIf(added, FIELDS);
@@ -82,6 +82,8 @@ class Project {
       }
       const changed = FIELDS.filter((field) => field in input && input[field] !== existing[field]);
       if (changed.length === 0) return existing;
+      // A frozen version is written once, with everything in it. This is the last line of the rule, below every screen.
+      if (existing.kind === 'recordversion') throw new Error('A frozen version can’t be changed. Fixes go in the next version.');
       const sets = changed.map((field) => `${COLUMNS[field]} = ?`).join(', ');
       const words = 'body' in input ? wordsIn(input.body) : existing.words;
       this.db
@@ -140,7 +142,7 @@ class Project {
   outline() {
     const rows = this.db
       .prepare(`SELECT id, kind, parent_id, title, words FROM items
-                WHERE kind NOT IN ('comment', 'attachment', 'recordtype', 'record') AND trashed_at IS NULL
+                WHERE kind NOT IN ('comment', 'attachment', 'recordtype', 'record', 'recordversion') AND trashed_at IS NULL
                 ORDER BY position, created_at`)
       .all();
     const nodes = new Map(
@@ -227,6 +229,21 @@ class Project {
       .prepare(`SELECT * FROM items WHERE kind = 'record' AND parent_id = ? ${all ? '' : 'AND trashed_at IS NULL'} ORDER BY title COLLATE NOCASE, created_at`)
       .all(typeId)
       .map(toItem);
+  }
+
+  // The frozen versions of a record, oldest first.
+  versionRows(recordId) {
+    return this.db
+      .prepare("SELECT * FROM items WHERE kind = 'recordversion' AND parent_id = ? ORDER BY position, created_at")
+      .all(recordId)
+      .map(toItem);
+  }
+
+  // How many frozen versions the records of a kind have between them.
+  versionCount(typeId) {
+    return this.db
+      .prepare("SELECT COUNT(*) AS n FROM items v JOIN items r ON v.parent_id = r.id WHERE v.kind = 'recordversion' AND r.parent_id = ?")
+      .get(typeId).n;
   }
 
   recordCount(typeId) {

@@ -1,6 +1,6 @@
 // Making and changing a kind of record: its name, its fields, and how its records are numbered.
 import { FIELD_KINDS, KIND_LABELS } from '../shared/records.js';
-import { el } from './dom.js';
+import { el, fill } from './dom.js';
 import { icon } from './icons.js';
 
 const SELF = '@self';
@@ -19,8 +19,11 @@ export function openTypeDialog({ api, type = null, types, onSaved, onError }) {
     title: type?.title ?? '',
     fields: type ? type.fields.map((field) => ({ ...field, options: [...(field.options ?? [])] })) : [blankField()],
     numbering: numberingDraft(type?.numbering ?? null),
+    versioning: type?.versioning === true,
+    labelWord: type?.labelWord ?? 'Record',
   };
 
+  const was = new Map((type?.fields ?? []).map((field) => [field.id, field.audience]));
   const fieldList = el('ol', { class: 'field-editor', 'aria-label': 'Fields' });
   const numberBox = el('div', { class: 'numbering-editor' });
   const name = el('input', { id: 'type-name', type: 'text', maxlength: '500', value: draft.title, 'aria-label': 'Name of this kind of record', placeholder: 'Character, Place, Weapon…' });
@@ -48,6 +51,17 @@ export function openTypeDialog({ api, type = null, types, onSaved, onError }) {
       field.name = fieldName.value;
     });
     const extra = [];
+    // A kind that keeps versions says who each field is for. A field that doesn't say is for the author alone.
+    const audience = draft.versioning
+      ? el('select', { class: 'audience-pick', 'aria-label': 'Who this field is for' }, el('option', { value: 'print' }, 'In print'), el('option', { value: 'author' }, 'Author only'))
+      : null;
+    if (audience) {
+      audience.value = field.audience ?? 'author';
+      field.audience = audience.value;
+      audience.addEventListener('change', () => {
+        field.audience = audience.value;
+      });
+    }
     if (field.kind === 'choice') {
       const choices = el('textarea', { rows: '3', 'aria-label': 'Choices, one per line', placeholder: 'One choice per line' });
       choices.value = (field.options ?? []).join('\n');
@@ -86,9 +100,10 @@ export function openTypeDialog({ api, type = null, types, onSaved, onError }) {
       { class: 'field-item' },
       el(
         'div',
-        { class: 'field-line' },
+        { class: `field-line${audience ? ' with-audience' : ''}` },
         fieldName,
         kind,
+        audience,
         el('button', { type: 'button', class: 'row-action shown', title: 'Move up', 'aria-label': 'Move up', disabled: at === 0, onclick: () => move(at, -1) }, '↑'),
         el('button', { type: 'button', class: 'row-action shown', title: 'Move down', 'aria-label': 'Move down', disabled: at === draft.fields.length - 1, onclick: () => move(at, 1) }, '↓'),
         el('button', {
@@ -177,13 +192,38 @@ export function openTypeDialog({ api, type = null, types, onSaved, onError }) {
     numberBox.replaceChildren(...parts);
   };
 
+  const versionBox = el('div', { class: 'versions-editor' });
+  const drawVersions = () => {
+    const on = el('input', { type: 'checkbox', id: 'versioning-on', disabled: Boolean(type?.frozen) });
+    on.checked = draft.versioning;
+    on.addEventListener('change', () => {
+      draft.versioning = on.checked;
+      drawFields();
+      drawVersions();
+    });
+    const parts = [el('label', { class: 'check', for: 'versioning-on' }, on, 'Keep versions of each record')];
+    if (type?.frozen) parts.push(el('p', { class: 'quiet-note' }, `${type.frozen} frozen ${type.frozen === 1 ? 'version exists' : 'versions exist'}, so this kind keeps versions for good.`));
+    else parts.push(el('p', { class: 'quiet-note' }, 'A record can be frozen for each book. A frozen version is never changed, and fixes go in the next one. Each field is then for print or for the author alone, and the author’s own notes never print.'));
+    if (draft.versioning) {
+      const word = el('input', { id: 'label-word', type: 'text', maxlength: '30', value: draft.labelWord, 'aria-label': 'Word on a printed label' });
+      word.addEventListener('input', () => {
+        draft.labelWord = word.value;
+      });
+      parts.push(el('label', { class: 'field' }, el('span', {}, 'Printed label'), word), el('p', { class: 'quiet-note' }, 'It reads like “Record 0100 · Revision 2”.'));
+    }
+    fill(versionBox, ...parts);
+  };
+
   const save = async () => {
     try {
       const fields = draft.fields.filter((field) => field.name.trim() || field.kind !== 'text');
       const numbering = draft.numbering;
       const payload = {
+        versioning: draft.versioning,
+        labelWord: draft.labelWord,
         title: draft.title,
-        fields: fields.map((field) => ({ ...field, ...(field.to === SELF ? { to: undefined } : {}), options: field.kind === 'choice' ? field.options : undefined })),
+        // Turning versions on and off again in this window shouldn't leave every field marked, so what a field said before is kept.
+        fields: fields.map((field) => ({ ...field, audience: draft.versioning ? field.audience : was.get(field.id), ...(field.to === SELF ? { to: undefined } : {}), options: field.kind === 'choice' ? field.options : undefined })),
         numbering,
       };
       let saved;
@@ -226,6 +266,8 @@ export function openTypeDialog({ api, type = null, types, onSaved, onError }) {
         fieldList.lastElementChild.querySelector('input')?.focus();
       },
     }, icon('plus'), 'Add a field'),
+    el('h3', {}, 'Versions'),
+    versionBox,
     el('h3', {}, 'Numbering'),
     numberBox,
     message,
@@ -239,6 +281,7 @@ export function openTypeDialog({ api, type = null, types, onSaved, onError }) {
   dialog.addEventListener('close', () => dialog.remove());
   drawFields();
   drawNumbering();
+  drawVersions();
   document.body.append(dialog);
   dialog.showModal();
   name.focus();

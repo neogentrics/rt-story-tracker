@@ -230,6 +230,29 @@ Four choices, each with a recommendation, in [the suite design](design/the-suite
 | Which projects can another app ask about? | Only the one that's open now, and only when it isn't locked |
 | Automations (webhooks, n8n) | Leave out of 3.9 and give them their own design |
 
+### 28. Versions of a record (3.10)
+
+✅ **Chosen 18 November 2026,** the four answers below, from the owner through the orchestrating session.
+
+| Question | Chosen |
+|---|---|
+| How are versions kept? | As items under the record, so the Trash, change log and sync cover them, like records themselves. |
+| What does canon lock do? | It warns, and lets the author confirm. It doesn't forbid. |
+| Can a frozen version be unfrozen? | **Never.** His rule is that fixes go in the next version. No Unfreeze button and no undo window: only a confirmation that names the book. A mistake is written down as a *correction* against the version, which is logged and goes with the next one. |
+| Which book does a freeze belong to? | The one picked when it's frozen. |
+
+Calls made while building it, which are the owner's to overrule:
+
+- **The author-only part never leaves, in any export.** That includes Export everything, so the way out for a kind that keeps
+  versions carries the printable part only. The author's own copy of everything is the project's `.rtstory` file and its
+  backups. This follows his rule that it stays out of every print, export, status and fact path.
+- **A field is for the author alone unless it says it's for print,** in a kind that keeps versions, so a new field can't reach
+  paper by accident. A kind that doesn't keep versions prints what it always did.
+- **One frozen version per book, for each record,** and a freeze needs something to have changed since the last one.
+- **Canon lock is on a record,** not on a kind.
+- **The first version has no "changes since".** Later ones list what changed, in print fields for print and in author-only
+  fields for the author only.
+
 ## The order, and where to start
 
 ### 22. Build order

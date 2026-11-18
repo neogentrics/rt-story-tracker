@@ -186,6 +186,29 @@ async function everything(workspace, window) {
 async function preview(workspace, input) {
   const file = path.join(os.tmpdir(), `rtst-preview-${process.pid}-${Date.now()}.pdf`);
   await exportFile(workspace().open(), { ...input, format: 'pdf', file });
+  await showPdf(file);
+}
+
+// A set of records. Only the printable part of each is ever in the pages, and a record that has none to print is counted, not
+// guessed at. It goes to a file the author picks, or to the viewer.
+async function printRecords(workspace, window, input) {
+  const { pages, skipped, title } = workspace().records.printPages(input);
+  if (!pages.length) throw new Error(skipped ? `None of these have a frozen version yet, so there is nothing to print. ${skipped} skipped.` : 'There is nothing to print.');
+  const { recordsPdf } = require('./export/records-pdf');
+  const bytes = await recordsPdf(pages, title);
+  if (input.save === true) {
+    const { canceled, filePath } = await dialog.showSaveDialog(window(), { title: 'Save as PDF', defaultPath: `${safeName(title)}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+    if (canceled || !filePath) return null;
+    fs.writeFileSync(filePath, bytes);
+    return { file: filePath, pages: pages.length, skipped };
+  }
+  const file = path.join(os.tmpdir(), `rtst-preview-${process.pid}-${Date.now()}.pdf`);
+  fs.writeFileSync(file, bytes);
+  await showPdf(file);
+  return { pages: pages.length, skipped };
+}
+
+async function showPdf(file) {
   const viewer = new BrowserWindow({
     width: 900,
     height: 900,
@@ -383,6 +406,11 @@ function registerIpc({ status, workspace, updater, settings, backups, security, 
   handle('records:saveType', (input) => workspace().records.saveType(input));
   handle('records:templates', () => workspace().records.templates());
   handle('records:applyTemplate', (id) => workspace().records.applyTemplate(id));
+  handle('records:books', () => workspace().records.books());
+  handle('records:freeze', (input) => workspace().records.freeze(input));
+  handle('records:getVersion', (id) => workspace().records.getVersion(id));
+  handle('records:correct', (input) => workspace().records.correct(input));
+  handle('records:print', busy(unlocked((input) => printRecords(workspace, window, input))));
   handle('records:importFiles', () => chooseRecordFiles(window));
   handle('records:importFolder', () => chooseRecordFolder(window));
   handle('records:importPreview', (typeId) => recordImporter.preview(typeId ? workspace().records.typeItem(typeId) : null));

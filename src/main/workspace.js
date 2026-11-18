@@ -277,6 +277,7 @@ class Workspace {
   trashItem(id) {
     const item = this.need(id);
     if (item.kind === 'project' || item.kind === 'comment') throw new Error("That can't go to the Trash here.");
+    if (item.kind === 'recordversion') throw new Error('A frozen version stays with its record. It can’t be thrown away on its own.');
     this.project.trashItem(id);
     return this.outline();
   }

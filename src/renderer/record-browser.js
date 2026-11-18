@@ -13,12 +13,13 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
 export class RecordBrowser {
-  constructor(root, { api, onOpenRecord, onNewRecord, onEditType, onImport, onError }) {
+  constructor(root, { api, onOpenRecord, onNewRecord, onEditType, onImport, onPrint, onError }) {
     this.api = api;
     this.onOpenRecord = onOpenRecord;
     this.onNewRecord = onNewRecord;
     this.onEditType = onEditType;
     this.onImport = onImport;
+    this.onPrint = onPrint;
     this.onError = onError;
     this.data = null;
     this.viewId = null;
@@ -98,6 +99,7 @@ export class RecordBrowser {
         el(
           'div',
           { class: 'browser-actions' },
+          this.onPrint ? el('button', { id: 'print-records-button', onclick: () => this.onPrint(type, this.shown().map((record) => record.id)) }, icon('print'), 'Print') : null,
           this.onImport ? el('button', { id: 'import-records', onclick: () => this.onImport(type) }, icon('import'), 'Bring in') : null,
           el('button', { id: 'edit-type', onclick: () => this.onEditType(type) }, icon('pencil'), 'Edit type'),
           el('button', { id: 'new-record', class: 'primary', onclick: () => this.onNewRecord(type) }, icon('plus'), `New ${type.title.toLowerCase()}`),

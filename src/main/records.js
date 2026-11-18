@@ -8,15 +8,51 @@ const {
   formatNumber,
   matches,
   nextFreeNumber,
+  audienceOf,
   parseRecord,
   parseType,
+  showValue,
+  writeRecord,
 } = require('../shared/records');
+const { printable } = require('./export/printable');
 const { TEMPLATES } = require('../shared/templates');
 const { parseDocument } = require('../shared/text');
 
 const MAX_NAME = 500;
 const MAX_NOTES = 8 * 1024 * 1024;
 const MAX_FOUND = 30;
+const LOCKED_WORDS = 'Canon lock';
+const LIMIT_CORRECTIONS = 200;
+
+const parseVersion = (item) => {
+  try {
+    return { ...JSON.parse(item.details), id: item.id, body: item.body };
+  } catch {
+    return { id: item.id, body: item.body, values: {}, fields: [], changes: { print: [], author: [] }, corrections: [] };
+  }
+};
+
+const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+const quote = (text) => (text ? `“${text}”` : 'empty');
+
+// What changed between the last frozen version and the record now. Two lists, because what changed in an author-only field is
+// itself author-only: the printed list names print fields and nothing else.
+function changesBetween(type, last, now, names) {
+  const out = { print: [], author: [] };
+  if (!last) return out;
+  if (last.title !== now.title) out.print.push(`Name changed from ${quote(last.title)} to ${quote(now.title)}`);
+  if (last.recordNumber !== now.number) out.print.push('Number changed');
+  for (const field of type.fields) {
+    const before = last.values?.[field.id];
+    const after = now.values?.[field.id];
+    if (same(before, after)) continue;
+    const text = `${field.name}: ${quote(showValue(field, before, names))} → ${quote(showValue(field, after, names))}`;
+    out[audienceOf(type, field) === 'print' ? 'print' : 'author'].push(field.kind === 'longtext' ? `${field.name} changed` : text);
+  }
+  if (!same(last.printNotes ?? '', now.printNotes ?? '')) out.print.push('Notes changed');
+  if (!same(last.body ?? '', now.authorNotes ?? '')) out.author.push('Author notes changed');
+  return out;
+}
 
 function needId(id) {
   if (typeof id !== 'string' || !id) throw new Error('That record is missing.');
@@ -52,12 +88,12 @@ class Records {
 
   typeView(item) {
     const type = parseType(item.details);
-    return { id: item.id, title: item.title, ...type, count: this.project.recordCount(item.id) };
+    return { id: item.id, title: item.title, ...type, count: this.project.recordCount(item.id), frozen: this.project.versionCount(item.id) };
   }
 
   // Link values only keep records that still exist. A record in the Trash is kept, because it may come back.
   recordView(item, type) {
-    const { number, values } = parseRecord(item.details);
+    const { number, values, locked } = parseRecord(item.details);
     const shown = {};
     for (const field of type.fields) {
       let value = values[field.id];
@@ -71,6 +107,7 @@ class Records {
       number,
       label: formatNumber(type.numbering, number),
       values: shown,
+      locked,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };
@@ -110,10 +147,16 @@ class Records {
     const typeItem = this.project.getItem(item.parentId);
     const type = parseType(typeItem.details);
     const record = this.recordView(item, type);
+    const kept = parseRecord(item.details);
+    const versions = this.versionList(item.id);
     return {
       type: this.typeView(typeItem),
       record,
       notes: item.body,
+      printNotes: kept.printNotes,
+      corrections: kept.corrections,
+      versions,
+      revision: (versions.at(-1)?.number ?? 0) + 1,
       targets: this.targetsOf(type, [record]),
       backlinks: this.backlinks(id),
     };
@@ -201,18 +244,21 @@ class Records {
       const added = project.addItem({ kind: 'record', parentId: typeItem.id, title: cleanName(title, 'Untitled') });
       const saved = project.putItem({
         id: added.id,
-        details: JSON.stringify({ number: wanted, values: clean }),
+        details: writeRecord({ number: wanted, values: clean }),
         ...(notes ? { body: this.checkNotes(notes) } : {}),
       });
       return this.recordView(saved, type);
     })();
   }
 
-  save({ id, title, number, values, notes }) {
+  // A record under canon lock changes only when the author has said yes to that. The window asks first. This is the second
+  // gate, so nothing that skips the window gets round it.
+  save({ id, title, number, values, notes, printNotes, locked, confirmLocked }) {
     const item = this.recordItem(id);
     const typeItem = this.project.getItem(item.parentId);
     const type = parseType(typeItem.details);
     const before = parseRecord(item.details);
+    if (before.locked && confirmLocked !== true) throw new Error(`${LOCKED_WORDS}: “${item.title}” is locked. Confirm to change it.`);
     return this.project.db.transaction(() => {
       const changes = { id: item.id };
       if (title !== undefined) changes.title = cleanName(title, item.title);
@@ -226,15 +272,21 @@ class Records {
         kept = cleanValues(type, values);
         this.checkLinks(type, kept, item.id);
       }
-      changes.details = JSON.stringify({ number: wanted, values: kept });
+      let notesForPrint = before.printNotes;
+      if (printNotes !== undefined) {
+        if (!type.versioning) throw new Error('This kind of record keeps one set of notes.');
+        notesForPrint = this.checkNotes(printNotes);
+      }
+      if (locked !== undefined && typeof locked !== 'boolean') throw new Error('Canon lock is on or off.');
+      changes.details = writeRecord({ ...before, number: wanted, values: kept, printNotes: notesForPrint, locked: locked ?? before.locked });
       if (notes !== undefined) changes.body = this.checkNotes(notes);
       const saved = this.project.putItem(changes);
       return this.recordView(saved, type);
     })();
   }
 
-  createType({ title, fields, numbering }) {
-    const clean = cleanType({ fields: fields ?? [], numbering });
+  createType({ title, fields, numbering, versioning, labelWord }) {
+    const clean = cleanType({ fields: fields ?? [], numbering, versioning, labelWord });
     return this.project.db.transaction(() => {
       this.checkTypeLinks(clean, null);
       const item = this.project.addItem({ kind: 'recordtype', parentId: this.project.id, title: this.uniqueTypeName(cleanName(title, 'New type')) });
@@ -258,14 +310,19 @@ class Records {
 
   // Fields keep their IDs when they're renamed or reordered, so values survive. A removed field's values stay stored but
   // aren't shown, so adding it back is a new field.
-  saveType({ id, title, fields, numbering, views }) {
+  saveType({ id, title, fields, numbering, views, versioning, labelWord }) {
     const item = this.typeItem(id);
     const old = parseType(item.details);
     const clean = cleanType({
       fields: fields ?? old.fields,
       numbering: numbering === undefined ? old.numbering : numbering,
       views: views ?? old.views,
+      versioning: versioning === undefined ? old.versioning : versioning,
+      labelWord: labelWord === undefined ? old.labelWord : labelWord,
     });
+    if (old.versioning && !clean.versioning && this.project.versionCount(item.id) > 0) {
+      throw new Error('This kind has frozen versions, so it keeps versions for good. Frozen versions are never taken away.');
+    }
     this.checkTypeLinks(clean, item.id);
     return this.project.db.transaction(() => {
       const changes = { id: item.id, details: JSON.stringify(clean) };
@@ -320,6 +377,179 @@ class Records {
       }
       return { made: made.map(({ spec }) => spec.name), skipped, ...this.overview() };
     })();
+  }
+
+  // Versions
+
+  versionList(recordId) {
+    return this.project.versionRows(recordId).map((row) => {
+      const version = parseVersion(row);
+      return { id: row.id, number: version.number, bookId: version.bookId, bookTitle: version.bookTitle, frozenAt: version.frozenAt };
+    });
+  }
+
+  // The books a version can cover.
+  books() {
+    const found = [];
+    const walk = (node) => {
+      if (node.kind === 'book') found.push({ id: node.id, title: node.title });
+      else node.children.forEach(walk);
+    };
+    walk(this.workspace.outline());
+    return found;
+  }
+
+  // Freezing writes the record as it is now, once, as the next version, tied to the book it covers. There is no way back from
+  // this: a frozen version is never edited, and fixes go in the next one. What's being edited carries on as that next version.
+  freeze({ id, bookId }) {
+    const item = this.recordItem(id);
+    const typeItem = this.project.getItem(item.parentId);
+    const type = parseType(typeItem.details);
+    if (!type.versioning) throw new Error('This kind of record doesn’t keep versions.');
+    const book = typeof bookId === 'string' ? this.project.getItem(bookId) : null;
+    if (book?.kind !== 'book' || this.project.isHidden(book.id)) throw new Error('Choose the book this version covers.');
+    return this.project.db.transaction(() => {
+      const versions = this.project.versionRows(item.id).map(parseVersion);
+      const taken = versions.find((version) => version.bookId === book.id);
+      if (taken) throw new Error(`Version ${taken.number} already covers “${book.title}”. Fixes go in the version for the next book.`);
+      const now = parseRecord(item.details);
+      const last = versions.at(-1);
+      const authorNotes = item.body;
+      if (last && same(last.values, now.values) && last.title === item.title && last.recordNumber === now.number
+        && (last.printNotes ?? '') === now.printNotes && last.body === authorNotes) {
+        throw new Error(`Nothing has changed since version ${last.number}.`);
+      }
+      const names = (other) => this.project.getItem(other)?.title ?? '';
+      const changes = changesBetween(type, last, { title: item.title, number: now.number, values: now.values, printNotes: now.printNotes, authorNotes }, names);
+      for (const fix of now.corrections) changes.author.push(`Corrects version ${fix.version}: ${fix.note}`);
+      const number = (last?.number ?? 0) + 1;
+      this.project.putItem({
+        kind: 'recordversion',
+        parentId: item.id,
+        position: number,
+        title: `v${number}`,
+        body: authorNotes,
+        details: JSON.stringify({
+          number,
+          state: 'frozen',
+          bookId: book.id,
+          bookTitle: book.title,
+          frozenAt: this.project.now().toISOString(),
+          title: item.title,
+          recordNumber: now.number,
+          values: now.values,
+          fields: type.fields.map((field) => ({ ...field, audience: audienceOf(type, field) })),
+          printNotes: now.printNotes,
+          changes,
+          corrections: now.corrections,
+        }),
+      });
+      if (now.corrections.length) this.project.putItem({ id: item.id, details: writeRecord({ ...now, corrections: [] }) });
+      return this.get(item.id);
+    })();
+  }
+
+  versionItem(id) {
+    const row = this.project.getItem(needId(id));
+    if (row?.kind !== 'recordversion') throw new Error('That version isn’t there.');
+    return row;
+  }
+
+  // A frozen version as the author sees it: everything in it, with each field marked for print or for the author alone.
+  getVersion(id) {
+    const row = this.versionItem(id);
+    const version = parseVersion(row);
+    const record = this.project.getItem(row.parentId);
+    const typeItem = this.project.getItem(record.parentId);
+    const type = parseType(typeItem.details);
+    const targets = {};
+    for (const field of version.fields.filter((item) => item.kind === 'link')) {
+      for (const other of version.values[field.id] ?? []) targets[other] = this.project.getItem(other)?.title ?? '';
+    }
+    return {
+      id: row.id,
+      recordId: record.id,
+      number: version.number,
+      bookId: version.bookId,
+      bookTitle: version.bookTitle,
+      frozenAt: version.frozenAt,
+      title: version.title,
+      label: printable(type, this.versionSource(type, version, row.body), { names: (other) => targets[other] ?? '' }).label,
+      recordLabel: formatNumber(type.numbering, version.recordNumber),
+      fields: version.fields,
+      values: version.values,
+      printNotes: version.printNotes ?? '',
+      authorNotes: row.body,
+      changes: version.changes,
+      corrections: version.corrections ?? [],
+      targets,
+    };
+  }
+
+  versionSource(type, version, authorNotes) {
+    return {
+      title: version.title,
+      number: version.recordNumber,
+      values: version.values,
+      printNotes: version.printNotes,
+      authorNotes,
+      fields: version.fields,
+      versioning: true,
+      revision: version.number,
+      changes: version.changes,
+    };
+  }
+
+  // A mistake in a frozen version is never edited out of it. It's written down against that version, and the fix is made in
+  // the next one, which is what the record is already open as. The note goes with that version when it's frozen.
+  correct({ id, versionId, note }) {
+    const item = this.recordItem(id);
+    const row = this.versionItem(versionId);
+    if (row.parentId !== item.id) throw new Error('That version belongs to another record.');
+    if (typeof note !== 'string' || !note.trim()) throw new Error('Say what needs correcting.');
+    const before = parseRecord(item.details);
+    if (before.corrections.length >= LIMIT_CORRECTIONS) throw new Error('That’s a lot of corrections waiting. Freeze the next version first.');
+    const number = parseVersion(row).number;
+    const corrections = [...before.corrections, { version: number, note: note.trim().slice(0, 500), at: this.project.now().toISOString() }];
+    this.project.putItem({ id: item.id, details: writeRecord({ ...before, corrections }) });
+    return { revision: (this.project.versionRows(item.id).at(-1) ? parseVersion(this.project.versionRows(item.id).at(-1)).number : 0) + 1, corrections };
+  }
+
+  // The printable pages for a set of records. `version` is 'frozen' (the latest frozen version of each), 'working' (what's being
+  // edited now), or the ID of one frozen version. Only the printable part of anything is ever in a page.
+  printPages({ typeId, ids, version = 'working' }) {
+    const typeItem = this.typeItem(typeId);
+    const type = parseType(typeItem.details);
+    const names = (other) => this.project.getItem(other)?.title ?? '';
+    const wanted = Array.isArray(ids) ? new Set(ids.filter((value) => typeof value === 'string')) : null;
+    const rows = this.project.recordRows(typeItem.id).filter((row) => !wanted || wanted.has(row.id));
+    rows.sort((a, b) => (parseRecord(a.details).number ?? Infinity) - (parseRecord(b.details).number ?? Infinity) || a.title.localeCompare(b.title));
+    const pages = [];
+    let skipped = 0;
+    for (const row of rows) {
+      const versions = this.project.versionRows(row.id);
+      if (version !== 'working' && version !== 'frozen') {
+        const one = versions.find((candidate) => candidate.id === version);
+        if (!one) continue;
+        pages.push(printable(type, this.versionSource(type, parseVersion(one), one.body), { names }));
+      } else if (version === 'frozen' && type.versioning) {
+        const last = versions.at(-1);
+        if (!last) skipped += 1;
+        else pages.push(printable(type, this.versionSource(type, parseVersion(last), last.body), { names }));
+      } else {
+        const now = parseRecord(row.details);
+        pages.push(printable(type, {
+          title: row.title,
+          number: now.number,
+          values: now.values,
+          printNotes: now.printNotes,
+          authorNotes: row.body,
+          revision: (versions.length ? parseVersion(versions.at(-1)).number : 0) + 1,
+          draft: type.versioning,
+        }, { names }));
+      }
+    }
+    return { pages, skipped, title: typeItem.title };
   }
 
   // For @ and for looking something up while writing: records of any type whose name or number matches.

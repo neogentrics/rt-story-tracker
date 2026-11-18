@@ -6,6 +6,7 @@
 const CHILD_KINDS = {
   project: ['series', 'book', 'attachment', 'recordtype'],
   recordtype: ['record'],
+  record: ['recordversion'],
   series: ['book', 'attachment'],
   book: ['part', 'chapter', 'attachment'],
   part: ['chapter', 'attachment'],
