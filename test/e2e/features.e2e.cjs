@@ -156,13 +156,13 @@ async function typeOnPage(window, text) {
   // Split view: two chapters, each saving its own text.
   await row(window, 'Chapter 2').hover();
   await window.click('[aria-label="Open Chapter 2 beside"]');
-  await window.waitForFunction(() => document.querySelectorAll('.ProseMirror').length === 2);
+  await window.waitForFunction(() => document.querySelectorAll('.page-text').length === 2);
   await window.locator('.pane').nth(1).locator('.ProseMirror').click();
   await window.keyboard.press('ControlOrMeta+End');
   await window.keyboard.type(' From the right side.');
   await window.waitForFunction(() => document.querySelectorAll('.save-state[data-state="saved"]').length === 2, null, { timeout: 15000 });
   await window.click('[aria-label="Close this side"]');
-  await window.waitForFunction(() => document.querySelectorAll('.ProseMirror').length === 1);
+  await window.waitForFunction(() => document.querySelectorAll('.page-text').length === 1);
   await app.close();
 
   // All of it came through a restart.

@@ -7,11 +7,13 @@ const { EXPORT_FORMATS } = require('../shared/details');
 const { checkExport, exportEverything, exportFile, safeName } = require('./export');
 const { FolderImport } = require('./folder');
 const { IMPORT_EXTENSIONS, Importer } = require('./import');
+const { RecordImporter } = require('./records-import');
 
 const MAX_COVER = 50 * 1024 * 1024;
 const importer = new Importer();
 const previews = new Set();
 const folderImport = new FolderImport();
+const recordImporter = new RecordImporter();
 let chosenFolder = null;
 
 // The window can only ask to scan the folder the author just picked, never a path of its own.
@@ -29,6 +31,21 @@ async function saveFolderReport(window) {
     filters: [{ name: 'Text', extensions: ['txt'] }],
   });
   return canceled ? null : filePath;
+}
+
+// Which files come in is chosen here, in the system's own dialog, and never named by the window.
+async function chooseRecordFiles(window) {
+  const { canceled, filePaths } = await dialog.showOpenDialog(window(), {
+    title: 'Bring in records',
+    properties: ['openFile', 'multiSelections'],
+    filters: [{ name: 'Spreadsheets and Markdown files', extensions: ['csv', 'tsv', 'md', 'markdown', 'txt'] }],
+  });
+  return canceled ? null : recordImporter.load(filePaths);
+}
+
+async function chooseRecordFolder(window) {
+  const { canceled, filePaths } = await dialog.showOpenDialog(window(), { title: 'Choose a folder of records', properties: ['openDirectory'] });
+  return canceled ? null : recordImporter.loadFolder(filePaths[0]);
 }
 
 async function addAttachments(workspace, window, parentId) {
@@ -364,6 +381,10 @@ function registerIpc({ status, workspace, updater, settings, backups, security, 
   handle('records:saveType', (input) => workspace().records.saveType(input));
   handle('records:templates', () => workspace().records.templates());
   handle('records:applyTemplate', (id) => workspace().records.applyTemplate(id));
+  handle('records:importFiles', () => chooseRecordFiles(window));
+  handle('records:importFolder', () => chooseRecordFolder(window));
+  handle('records:importPreview', (typeId) => recordImporter.preview(typeId ? workspace().records.typeItem(typeId) : null));
+  handle('records:importRun', busy((input) => recordImporter.run(workspace().records, input)));
   handle('attachments:list', (id) => workspace().listAttachments(id));
   handle('attachments:add', busy((parentId) => addAttachments(workspace, window, parentId)));
   handle('attachments:preview', (id) => workspace().previewAttachment(id));

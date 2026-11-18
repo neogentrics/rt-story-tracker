@@ -209,6 +209,25 @@ This app keeps its print PDF and EPUB, and Press shares the layout code rather t
 
 Every app in the suite is meant to stand alone, and nobody should need a second app to get a book out.
 
+### 26. 3.8 and 3.9 ship as one release
+
+✅ **Chosen 18 November 2026: One release, 3.9.**
+
+The owner asked for the suite (3.8) and Records (3.9) together, so there is no 3.8. Records is built, tested and not yet
+released. The suite half is [planned](design/the-suite.md) and waits for the four decisions below, because Reader and the
+apps still to be built will copy it.
+
+### 27. The suite's details (before the suite half is built)
+
+Four choices, each with a recommendation, in [the suite design](design/the-suite.md#what-i-need-you-to-decide):
+
+| Question | Recommended |
+|---|---|
+| Which apps may be started from the Apps panel? | Only the five known suite apps, from their own program, with no arguments |
+| Does the status line include a project's name? | Yes when it isn't locked, and nothing when it is |
+| Which projects can another app ask about? | Only the one that's open now, and only when it isn't locked |
+| Automations (webhooks, n8n) | Leave out of 3.9 and give them their own design |
+
 ## The order, and where to start
 
 ### 22. Build order

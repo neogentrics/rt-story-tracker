@@ -68,7 +68,7 @@ class Workspace {
   createSample() {
     const id = this.library.createProject(SAMPLE_TITLE, { sample: true });
     const opened = this.openProject(id);
-    fillSample(this.project);
+    fillSample(this.project, this.records);
     return { ...opened, outline: this.project.outline() };
   }
 

@@ -9,7 +9,9 @@ import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
 import { icon } from './icons.js';
 import { openInbox } from './inbox-dialog.js';
+import { LookupPanel } from './lookup-panel.js';
 import { Page } from './page.js';
+import { RecordsView } from './records-view.js';
 import { ensurePass } from './security-dialog.js';
 import { openTrash } from './trash.js';
 
@@ -46,6 +48,8 @@ export class WritingRoom {
     this.dragId = null;
     this.progress = opened.progress;
     this.secondPage = null;
+    this.mode = 'write';
+    this.records = null;
 
     this.message = el('div', { id: 'room-message', class: 'room-message', role: 'alert', hidden: true });
     this.subtitle = el('p', { id: 'room-subtitle', class: 'room-subtitle' });
@@ -67,6 +71,15 @@ export class WritingRoom {
     this.pageRoot = el('div', { class: 'pane' });
     this.secondRoot = el('div', { class: 'pane', hidden: true });
     this.pages = el('section', { class: 'column page-column', 'aria-label': 'Page' }, this.pageRoot, this.secondRoot);
+    this.lookup = new LookupPanel(this.pages, {
+      api,
+      onError: (text) => this.showMessage(text),
+      onOpenChapter: (id) => this.openChapterFromRecords(id),
+    });
+    this.writeButton = el('button', { id: 'mode-write', class: 'mode-tab active', 'aria-pressed': 'true', onclick: () => this.showMode('write') }, 'Write');
+    this.recordsButton = el('button', { id: 'mode-records', class: 'mode-tab', 'aria-pressed': 'false', onclick: () => this.showMode('records') }, 'Records');
+    this.recordsRoot = el('div', { class: 'records-room', hidden: true });
+    this.columns = el('div', { class: 'columns' });
 
     this.addDropZone(this.bookList, () => this.outline.id);
     this.addDropZone(this.chapterList, () => this.bookId);
@@ -83,57 +96,60 @@ export class WritingRoom {
             { class: 'bar-side' },
             iconButton('toggle-lists', 'menu', 'Show or hide the lists', () => this.room.classList.toggle('lists-hidden')),
             el('button', { id: 'open-library', class: 'bar-primary', onclick: () => onLibrary() }, icon('library'), 'Library'),
+            el('div', { class: 'mode-tabs', role: 'group', 'aria-label': 'Show' }, this.writeButton, this.recordsButton),
           ),
           el('div', { class: 'bar-title' }, this.projectTitle, this.subtitle),
           el(
             'div',
             { class: 'bar-side bar-right' },
             el('span', { class: 'bar-words' }, this.todayWords, this.projectWords),
-            iconButton('find-button', 'search', 'Find and replace', () => this.find()),
+            iconButton('lookup-button write-only', 'records', 'Look up a record', () => this.toggleLookup()),
+            iconButton('find-button write-only', 'search', 'Find and replace', () => this.find()),
             iconButton('import-button', 'import', 'Import', () => this.showImport()),
             iconButton('export-button', 'export', 'Export', () => this.showExport()),
             iconButton('attachments-button', 'attach', 'Attachments', () => this.showAttachments()),
-            iconButton('history-button', 'history', 'Earlier versions of this chapter', () => this.showHistory()),
-            iconButton('goals-button', 'goal', 'Goals', () => this.openGoals(this.activePage.chapterId)),
-            iconButton('focus-button', 'focus', 'Focus mode', () => this.toggleFocus()),
+            iconButton('history-button write-only', 'history', 'Earlier versions of this chapter', () => this.showHistory()),
+            iconButton('goals-button write-only', 'goal', 'Goals', () => this.openGoals(this.activePage.chapterId)),
+            iconButton('focus-button write-only', 'focus', 'Focus mode', () => this.toggleFocus()),
             iconButton('trash-button', 'trash', 'Trash', () => this.showTrash()),
             iconButton('security-button', 'lock', 'Password and lock', () => onSecurity()),
             iconButton('prefs-button', 'settings', 'Preferences', () => onPreferences()),
           ),
         ),
         this.message,
-        el(
-          'div',
-          { class: 'columns' },
-          el(
-            'section',
-            { class: 'column', 'aria-label': 'Books' },
-            el('h2', {}, 'Books'),
-            this.bookList,
-            el(
-              'div',
-              { class: 'column-actions' },
-              el('button', { id: 'add-book', onclick: () => this.addBook() }, icon('plus'), 'Book'),
-              el('button', { id: 'add-series', onclick: () => this.addSeries() }, icon('plus'), 'Series'),
-            ),
-          ),
-          el(
-            'section',
-            { class: 'column', 'aria-label': 'Chapters' },
-            this.bookHeading,
-            this.filter,
-            this.chapterList,
-            el(
-              'div',
-              { class: 'column-actions' },
-              el('button', { id: 'add-chapter', class: 'primary', onclick: () => this.addChapter() }, icon('plus'), 'Chapter'),
-              el('button', { id: 'add-part', onclick: () => this.addPart() }, icon('plus'), 'Part'),
-            ),
-          ),
-          this.pages,
-        ),
+        this.columns,
+        this.recordsRoot,
         el('button', { class: 'focus-exit', onclick: () => this.toggleFocus() }, icon('close'), 'Leave focus mode'),
       ),
+    );
+
+    this.columns.append(
+      el(
+        'section',
+        { class: 'column', 'aria-label': 'Books' },
+        el('h2', {}, 'Books'),
+        this.bookList,
+        el(
+          'div',
+          { class: 'column-actions' },
+          el('button', { id: 'add-book', onclick: () => this.addBook() }, icon('plus'), 'Book'),
+          el('button', { id: 'add-series', onclick: () => this.addSeries() }, icon('plus'), 'Series'),
+        ),
+      ),
+      el(
+        'section',
+        { class: 'column', 'aria-label': 'Chapters' },
+        this.bookHeading,
+        this.filter,
+        this.chapterList,
+        el(
+          'div',
+          { class: 'column-actions' },
+          el('button', { id: 'add-chapter', class: 'primary', onclick: () => this.addChapter() }, icon('plus'), 'Chapter'),
+          el('button', { id: 'add-part', onclick: () => this.addPart() }, icon('plus'), 'Part'),
+        ),
+      ),
+      this.pages,
     );
 
     this.room = root.querySelector('.room');
@@ -162,6 +178,7 @@ export class WritingRoom {
       onError: (text) => this.showMessage(text),
       onSaved: ({ progress }) => this.setProgress(progress),
       onNewChapter: () => this.addChapter(),
+      onLookUp: (id) => this.lookUp(id),
       find: {
         scopeBook: () => this.bookId,
         onFlush: () => this.flush(),
@@ -174,6 +191,52 @@ export class WritingRoom {
 
   leave() {
     document.removeEventListener('keydown', this.keys);
+    this.records?.destroy();
+    document.querySelectorAll('.mention-pop, .record-picker').forEach((node) => node.remove());
+  }
+
+  // Writing and Records are two ways of looking at one project. Whatever is being typed is saved before switching.
+  async showMode(mode) {
+    if (mode === this.mode) return;
+    await this.attempt(async () => {
+      await this.flush();
+      this.mode = mode;
+      this.room.dataset.mode = mode;
+      this.columns.hidden = mode === 'records';
+      this.recordsRoot.hidden = mode !== 'records';
+      for (const [button, name] of [[this.writeButton, 'write'], [this.recordsButton, 'records']]) {
+        button.classList.toggle('active', mode === name);
+        button.setAttribute('aria-pressed', String(mode === name));
+      }
+      if (mode === 'records') {
+        this.records ??= new RecordsView(this.recordsRoot, {
+          api: this.api,
+          remember: this.remember,
+          projectId: this.projectId,
+          onError: (text) => this.showMessage(text),
+          onInfo: (text, action) => this.showInfo(text, action),
+          onOpenChapter: (id) => this.openChapterFromRecords(id),
+        });
+        await this.records.show();
+      }
+    });
+  }
+
+  async openChapterFromRecords(id) {
+    await this.showMode('write');
+    await this.openChapter(id, { focus: true });
+  }
+
+  toggleLookup() {
+    return this.attempt(async () => {
+      if (this.mode !== 'write') await this.showMode('write');
+      await this.lookup.toggle();
+    });
+  }
+
+  // A mention was opened in the text: show that record beside the page.
+  lookUp(id) {
+    return this.attempt(() => this.lookup.open(id));
   }
 
   setProgress(progress) {
@@ -455,6 +518,7 @@ export class WritingRoom {
     this.outline = await this.api.restoreItem(id);
     this.renderLists();
     this.clearMessage();
+    await this.records?.refresh();
   }
 
   clearMessage() {
@@ -475,6 +539,8 @@ export class WritingRoom {
   async flush() {
     await this.page.flush();
     await this.secondPage?.flush();
+    await this.lookup.flush();
+    await this.records?.flush();
   }
 
   bookOf(id) {

@@ -20,8 +20,9 @@ const text = (value, ...marks) => ({ type: 'text', text: value, ...(marks.length
 const plain = (value) => paragraph(text(value));
 const doc = (...content) => JSON.stringify({ type: 'doc', content });
 
-const LEDGER = doc(
-  plain('Marit found the ledger under the third stair, which was the stair that had always complained.'),
+const named = (id, value) => ({ type: 'text', text: value, marks: [{ type: 'mention', attrs: { id } }] });
+const ledger = (marit) => doc(
+  paragraph(named(marit, 'Marit'), text(' found the ledger under the third stair, which was the stair that had always complained.')),
   paragraph(text('The first page held a single line in her grandmother’s hand: '), text('Everything owed is written here.', 'italic')),
   plain('The rest held names, and most of them she knew. The baker. The ferryman. Her own father, twice.'),
   plain('She read until the lamp ran low, then packed the book in her coat and went to wake the mule.'),
@@ -62,6 +63,26 @@ function makeLibrary() {
   const series = add('series', id, 'The Salt Road Trilogy');
   space.move({ id: firstBook.id, parentId: series });
   space.rename({ id: firstBook.id, title: 'The Ledger' });
+
+  // A few records, made up for the pictures, with Marit linked from the first chapter.
+  const { types } = space.records.applyTemplate('series');
+  const kind = (name) => types.find((type) => type.title === name);
+  const field = (type, name) => type.fields.find((item) => item.name === name).id;
+  const people = kind('Character');
+  const guild = space.records.create({ typeId: kind('Group').id, title: 'The Salt Guild' });
+  const ids = {};
+  for (const [name, role, first, looks] of [
+    ['Marit Vale', 'Main', 'The Ledger', 'Narrow, weathered hands, and a coat too big for her.'],
+    ['The mule', 'Supporting', 'The Ledger', 'Grey, with one ear that points the wrong way.'],
+    ['Ferryman Orrin', 'Minor', 'The Ledger', 'Tall, silent, always wet to the knee.'],
+    ['Baker Tamsin', 'Minor', 'The Seventh Door', 'Short and loud, flour to the elbows.'],
+  ]) {
+    ids[name] = space.records.create({
+      typeId: people.id,
+      title: name,
+      values: { [field(people, 'Role')]: role, [field(people, 'First appears')]: first, [field(people, 'Appearance')]: looks, ...(name === 'Ferryman Orrin' ? { [field(people, 'Group')]: [guild.id] } : {}) },
+    }).id;
+  }
   const opening = firstBook.children[0].id;
 
   const partOne = add('part', firstBook.id, 'Part One: Leaving');
@@ -70,7 +91,7 @@ function makeLibrary() {
     plain('Marit found the ledger under the stairs, which had always complained.'),
     plain('The rest held names, and most of them she knew.'),
   ));
-  save(opening, 'The Third Stair', LEDGER);
+  save(opening, 'The Third Stair', ledger(ids['Marit Vale']));
   save(add('chapter', partOne, 'The Mule'), 'The Mule', MULE);
   save(add('chapter', partOne, 'Low Pan'), 'Low Pan', doc(plain('The baker saw her coming and put the kettle on, which was the worst thing he could have done.')));
   const partTwo = add('part', firstBook.id, 'Part Two: The Doors');
@@ -134,6 +155,23 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   await shot(window, 'dark');
   await window.emulateMedia({ colorScheme: 'light' });
 
+  // Records: the table, one record with what links to it, and a record looked up beside the page.
+  await window.click('#mode-records');
+  await window.waitForSelector('.record-table');
+  await pause(400);
+  await shot(window, 'records');
+  await window.locator('.record-row', { hasText: 'Marit Vale' }).click();
+  await window.waitForSelector('.record-backlinks .backlink');
+  await pause(400);
+  await shot(window, 'record');
+  await window.click('#mode-write');
+  await window.waitForSelector('.ProseMirror .mention-mark');
+  await window.click('.ProseMirror .mention-mark', { modifiers: ['ControlOrMeta'] });
+  await window.waitForSelector('#lookup-panel .record-page');
+  await pause(400);
+  await shot(window, 'lookup');
+  await window.click('#lookup-panel .lookup-head button[aria-label="Close the look-up panel"]');
+
   await window.locator('#chapter-list .row', { hasText: 'The Seven Doors' }).locator('.row-main').click();
   await window.waitForFunction(() => document.querySelector('#chapter-title').value === 'The Seven Doors');
   await window.click('.ProseMirror h2');
@@ -165,7 +203,7 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   await row('The Mule').hover();
   await window.click('[aria-label="Open The Mule beside"]');
-  await window.waitForFunction(() => document.querySelectorAll('.ProseMirror').length === 2);
+  await window.waitForFunction(() => document.querySelectorAll('.page-text').length === 2);
   await pause(400);
   await shot(window, 'split');
   await window.click('[aria-label="Close this side"]');

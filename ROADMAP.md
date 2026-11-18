@@ -35,8 +35,8 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
 | [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | 🚧 Released as 3.7.0, being tested by the owner |
-| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Planned |
-| [v3.9](#v39--records) | Records | Planned |
+| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [planned](docs/design/the-suite.md) and waiting for the owner's decisions |
+| [v3.9](#v39--records) | Records, with the suite | 🚧 Records built and tested; the suite half comes after the owner's decisions |
 | [v3.10](#v310--versions-of-a-record) | Versions of a record | Planned |
 | [v3.11](#v311--timeline-and-places) | Timeline and places | Planned |
 | [v3.12](#v312--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
@@ -196,6 +196,11 @@ app's own tests and against RT Markdown Reader 3.10 from source.
 
 ## v3.8 — The Recon Towers suite
 
+> [!NOTE]
+> **Folded into 3.9 on 18 November 2026,** at the owner's request: the suite and Records ship as one release, 3.9, and
+> there is no 3.8. The plan is in [the suite design](docs/design/the-suite.md), with four decisions for the owner before
+> anything is built. Nothing below is built yet.
+
 🙋 The apps know each other when they're installed, not only when they're running. Built to
 [the suite's rules](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md), not a second set.
 
@@ -213,20 +218,26 @@ the list. Status from a locked project says nothing.
 
 ## v3.9 — Records
 
-🙋 Where the story bible begins: characters, and anything else an author wants to track.
+🙋 Where the story bible begins: characters, and anything else an author wants to track. [How it's built](docs/design/records.md).
+
+🚧 **Built and tested on the VM, not released.** The suite half of this release (v3.8 above) is planned and waits for the
+owner's decisions.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋 Record types | L | Characters, weapons, materials, or your own. Add any field: text, number, choice, date, a link to another record. |
-| Templates | M | *A single novel*, *A series*, *A shared universe*. The owner's own setup is one of them. |
-| 🙋 Records and links | M | Open a record, follow its links, and see everything that links back to it. |
-| Saved views | M | Filter, sort and save, as tables or cards. Without this it feels worse than Notion. |
-| Mentions | M | Type `@` in a chapter to link a record, and see every chapter a character is in. |
-| Look up while writing | S | A side panel with the record, without leaving the page. |
-| Numbering | S | Number ranges per series and prefixes like `W-001`, with the next free number offered. |
-| Bring in records | M | From Markdown files or CSV. The Universe Dossiers folder is the test. |
+| ✅ 🙋 Record types | L | Characters, weapons, materials, or your own. Add any field: text, long text, number, choice, date, yes or no, a link to another record. |
+| ✅ Templates | M | *A single novel*, *A series*, *A shared universe*. The owner's own setup is one of them. |
+| ✅ 🙋 Records and links | M | Open a record, follow its links, and see everything that links back to it. |
+| ✅ Saved views | M | Filter, sort and save, as tables or cards. Without this it feels worse than Notion. |
+| ✅ Mentions | M | Type `@` in a chapter to link a record, and see every chapter a character is in. |
+| ✅ Look up while writing | S | A side panel with the record, without leaving the page. |
+| ✅ Numbering | S | Number ranges per series and prefixes like `W-001`, with the next free number offered. |
+| ✅ Bring in records | M | From Markdown files, a folder of them, or CSV. The Universe Dossiers folder is the test. |
+| ✅ Records on the way out | S | Export everything writes every record as Markdown and a spreadsheet for each kind, in the form it reads back in. |
 
 **Test:** load every dossier, then find any character faster than in Notion. A new author can set up a plain novel.
+*Passed so far:* the automated tests and the real app, on the VM, with made-up files. *Still the owner's:* his real dossiers
+on his own computer, and finding a character faster than in Notion.
 
 ## v3.10 — Versions of a record
 

@@ -429,3 +429,20 @@ test('an older project gets the link table when it opens', () => {
   assert.equal(space.project.db.prepare('SELECT COUNT(*) AS n FROM record_links').get().n, 0);
   assert.ok(file);
 });
+
+test('the sample shows records: two characters, linked from the first chapters', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-records-'));
+  tempDirs.push(dir);
+  const space = new Workspace(new Library(path.join(dir, 'library')));
+  workspaces.push(space);
+  space.createSample();
+  const { types } = space.records.overview();
+  assert.deepEqual(types.map((type) => [type.title, type.count]), [['Character', 2]]);
+  const [character] = types;
+  const { records } = space.records.list(character.id);
+  const marit = records.find((record) => record.title === 'Marit');
+  const back = space.records.get(marit.id).backlinks;
+  assert.deepEqual(back.map((link) => link.title).sort(), ['The Ledger', 'The Mule']);
+  assert.equal(back[0].context, 'The Salt Road');
+  assert.equal(space.outline().children[0].words > 0, true, 'the chapters read as before');
+});
