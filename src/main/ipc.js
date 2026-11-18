@@ -352,6 +352,18 @@ function registerIpc({ status, workspace, updater, settings, backups, security, 
     if (file) fs.writeFileSync(file, folderImport.reportText(report));
     return file;
   });
+  handle('records:overview', () => workspace().records.overview());
+  handle('records:list', (typeId) => workspace().records.list(typeId));
+  handle('records:get', (id) => workspace().records.get(id));
+  handle('records:create', (input) => workspace().records.create(input));
+  handle('records:save', (input) => workspace().records.save(input));
+  handle('records:nextNumber', (input) => workspace().records.nextNumber(input));
+  handle('records:find', (input) => workspace().records.find(input));
+  handle('records:backlinks', (id) => workspace().records.backlinks(id));
+  handle('records:createType', (input) => workspace().records.createType(input));
+  handle('records:saveType', (input) => workspace().records.saveType(input));
+  handle('records:templates', () => workspace().records.templates());
+  handle('records:applyTemplate', (id) => workspace().records.applyTemplate(id));
   handle('attachments:list', (id) => workspace().listAttachments(id));
   handle('attachments:add', busy((parentId) => addAttachments(workspace, window, parentId)));
   handle('attachments:preview', (id) => workspace().previewAttachment(id));

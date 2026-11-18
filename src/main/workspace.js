@@ -5,6 +5,7 @@ const { cleanDetails, parseDetails } = require('../shared/details');
 const { findInDocument, replaceInDocument } = require('../shared/find');
 const { findNode } = require('../shared/outline');
 const { parseDocument, plainText, toDocument } = require('../shared/text');
+const { Records } = require('./records');
 const { SAMPLE_TITLE, fillSample } = require('./sample');
 
 const MAX_PREVIEW = 30 * 1024 * 1024;
@@ -46,6 +47,7 @@ class Workspace {
     this.passUntil = 0;
     this.mustReset = false;
     this.busy = 0;
+    this.records = new Records(this);
   }
 
   listProjects() {
