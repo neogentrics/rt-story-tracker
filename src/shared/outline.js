@@ -2,8 +2,10 @@
 // What can hold what. A project holds series and books, and a book holds parts and chapters. Kinds only ever nest
 // downward, so a move can't put something inside itself.
 
+// Record types and records sit beside the books and aren't part of this tree. A record never moves to another type.
 const CHILD_KINDS = {
-  project: ['series', 'book', 'attachment'],
+  project: ['series', 'book', 'attachment', 'recordtype'],
+  recordtype: ['record'],
   series: ['book', 'attachment'],
   book: ['part', 'chapter', 'attachment'],
   part: ['chapter', 'attachment'],

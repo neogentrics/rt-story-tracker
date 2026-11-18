@@ -1,15 +1,19 @@
 {
   "now": {
-    "title": "3.7.0: RT Markdown Reader, on this computer",
-    "note": "Released. Tested both ways against the real RT Markdown Reader.",
+    "title": "3.9: Records, with the suite",
+    "note": "Built and tested on the VM, not released yet.",
     "items": [
       {
-        "title": "Link the two apps",
-        "text": "Turn on Linked apps in Preferences in both, then link them once. Send a document across each way."
+        "title": "Records",
+        "text": "Characters, places, weapons or your own kinds, with links both ways, @ in a chapter, saved views, numbering and bringing records in from files."
       },
       {
-        "title": "Still to come on its side",
-        "text": "RT Markdown Reader sends only to a linked app so far, and doesn’t read pictures yet."
+        "title": "The suite",
+        "text": "The apps finding each other when installed, an Apps panel, a status line and a book’s word count on request. Webhooks and n8n are left for their own design."
+      },
+      {
+        "title": "Released before this",
+        "text": "3.7.1 is the latest release: the new name, and RT Markdown Reader on this computer."
       },
       {
         "title": "Still open from earlier",
@@ -24,7 +28,7 @@
   "questions": [
     {
       "q": "Can the apps detect each other when they’re installed?",
-      "a": "Not yet: today they find each other only while running. v3.8, the next release, adds an installed list and an Apps panel in every app, to the suite’s shared rules."
+      "a": "In 3.9, yes, for this app: it says it’s installed, and an Apps panel lists installed, running and linked apps. RT Markdown Reader needs the same change on its side before the two see each other when closed."
     },
     {
       "q": "What happens to pictures in an imported file?",

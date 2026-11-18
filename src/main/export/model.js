@@ -5,10 +5,13 @@ const { parseDetails } = require('../../shared/details');
 const { findNode } = require('../../shared/outline');
 const { toDocument } = require('../../shared/text');
 
+// Marks that only mean something inside the app: a comment, and the link from a name to its record.
+const APP_ONLY_MARKS = new Set(['comment', 'mention']);
+
 function stripComments(node) {
   const copy = { ...node };
   if (copy.marks) {
-    copy.marks = copy.marks.filter((mark) => mark.type !== 'comment');
+    copy.marks = copy.marks.filter((mark) => !APP_ONLY_MARKS.has(mark.type));
     if (copy.marks.length === 0) delete copy.marks;
   }
   if (copy.content) copy.content = copy.content.map(stripComments);

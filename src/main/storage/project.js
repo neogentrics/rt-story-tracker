@@ -1,7 +1,8 @@
 'use strict';
 const crypto = require('node:crypto');
 const { canHold } = require('../../shared/outline');
-const { countWords, plainText } = require('../../shared/text');
+const { parseRecord, parseType } = require('../../shared/records');
+const { countWords, mentionsIn, plainText } = require('../../shared/text');
 const { copyDatabase, databaseInfo } = require('./database');
 
 const REMOVAL_MARKER_DAYS = 90;
@@ -75,7 +76,9 @@ class Project {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
           .run(id, item.kind, item.parentId, item.position, item.title, item.body, wordsIn(item.body), at, at, this.deviceId);
         this.log(id, 'put', FIELDS, at);
-        return this.getItem(id);
+        const added = this.getItem(id);
+        this.indexLinksIf(added, FIELDS);
+        return added;
       }
       const changed = FIELDS.filter((field) => field in input && input[field] !== existing[field]);
       if (changed.length === 0) return existing;
@@ -85,7 +88,9 @@ class Project {
         .prepare(`UPDATE items SET ${sets}, words = ?, updated_at = ?, device_id = ? WHERE id = ?`)
         .run(...changed.map((field) => input[field]), words, at, this.deviceId, id);
       this.log(id, 'put', changed, at);
-      return this.getItem(id);
+      const saved = this.getItem(id);
+      this.indexLinksIf(saved, changed);
+      return saved;
     })();
   }
 
@@ -135,7 +140,8 @@ class Project {
   outline() {
     const rows = this.db
       .prepare(`SELECT id, kind, parent_id, title, words FROM items
-                WHERE kind NOT IN ('comment', 'attachment') AND trashed_at IS NULL ORDER BY position, created_at`)
+                WHERE kind NOT IN ('comment', 'attachment', 'recordtype', 'record') AND trashed_at IS NULL
+                ORDER BY position, created_at`)
       .all();
     const nodes = new Map(
       rows.map((row) => [row.id, { id: row.id, kind: row.kind, title: row.title, words: row.words, children: [] }]),
@@ -179,6 +185,82 @@ class Project {
   summary() {
     const { updatedAt } = this.db.prepare('SELECT MAX(updated_at) AS updatedAt FROM items').get();
     return { title: this.title(), words: this.outline()?.words ?? 0, updatedAt };
+  }
+
+  // Records. The checking of what comes from the window is in records.js, as with the rest of what the window asks for.
+
+  // Where a record or a chapter points: the link fields of a record, and every @ in a record's notes or a chapter.
+  indexLinksIf(item, changed) {
+    const record = item.kind === 'record' && (changed.includes('details') || changed.includes('body'));
+    if (record || (item.kind === 'chapter' && changed.includes('body'))) this.indexLinks(item);
+  }
+
+  indexLinks(item) {
+    const links = [];
+    if (item.kind === 'record') {
+      const { values } = parseRecord(item.details);
+      for (const field of parseType(this.getItem(item.parentId)?.details ?? '').fields) {
+        if (field.kind === 'link' && Array.isArray(values[field.id])) for (const to of values[field.id]) links.push([to, field.id]);
+      }
+    }
+    for (const to of mentionsIn(item.body)) links.push([to, '@']);
+    this.db.prepare('DELETE FROM record_links WHERE from_id = ?').run(item.id);
+    const insert = this.db.prepare('INSERT OR IGNORE INTO record_links (from_id, to_id, via) VALUES (?, ?, ?)');
+    for (const [to, via] of links) if (to !== item.id) insert.run(item.id, to, via);
+  }
+
+  // A type's fields can change what counts as a link, so everything under it is worked out again.
+  reindexType(typeId) {
+    for (const record of this.recordRows(typeId, { all: true })) this.indexLinks(record);
+  }
+
+  recordTypes() {
+    return this.db
+      .prepare("SELECT * FROM items WHERE kind = 'recordtype' AND parent_id = ? AND trashed_at IS NULL ORDER BY position, created_at")
+      .all(this.id)
+      .map(toItem);
+  }
+
+  // `all` includes the Trash, for the numbers that stay taken while a record waits there.
+  recordRows(typeId, { all = false } = {}) {
+    return this.db
+      .prepare(`SELECT * FROM items WHERE kind = 'record' AND parent_id = ? ${all ? '' : 'AND trashed_at IS NULL'} ORDER BY title COLLATE NOCASE, created_at`)
+      .all(typeId)
+      .map(toItem);
+  }
+
+  recordCount(typeId) {
+    return this.db.prepare("SELECT COUNT(*) AS n FROM items WHERE kind = 'record' AND parent_id = ? AND trashed_at IS NULL").get(typeId).n;
+  }
+
+  // Is this item, or anything it sits in, in the Trash?
+  isHidden(id) {
+    for (let item = this.getItem(id); item; item = item.parentId ? this.getItem(item.parentId) : null) {
+      if (item.trashedAt) return true;
+    }
+    return false;
+  }
+
+  // Everything that points at this record, newest links first. Whatever is in the Trash, or inside something that is,
+  // is left out until it comes back.
+  linksTo(id, limit = 500) {
+    const rows = this.db.prepare('SELECT from_id AS fromId, via FROM record_links WHERE to_id = ?').all(id);
+    const found = [];
+    for (const { fromId, via } of rows) {
+      const item = this.getItem(fromId);
+      if (!item || this.isHidden(fromId)) continue;
+      found.push({ item, via });
+      if (found.length >= limit) break;
+    }
+    return found;
+  }
+
+  // The first ancestor of a kind, such as the book a chapter is in.
+  ancestor(id, kind) {
+    for (let item = this.getItem(id); item; item = item.parentId ? this.getItem(item.parentId) : null) {
+      if (item.kind === kind) return item;
+    }
+    return null;
   }
 
   // Covers
@@ -403,6 +485,7 @@ class Project {
         this.db.prepare('DELETE FROM items WHERE id = ?').run(row.id);
         this.db.prepare('DELETE FROM versions WHERE item_id = ?').run(row.id);
         this.db.prepare('DELETE FROM covers WHERE item_id = ?').run(row.id);
+        this.db.prepare('DELETE FROM record_links WHERE from_id = ? OR to_id = ?').run(row.id, row.id);
         this.db
           .prepare('INSERT INTO removals (item_id, kind, removed_at, device_id) VALUES (?, ?, ?, ?)')
           .run(row.id, row.kind, at, this.deviceId);

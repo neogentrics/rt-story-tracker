@@ -133,6 +133,23 @@ const STEPS = [
       `);
     },
   },
+  {
+    // Records are items (kind 'recordtype' under the project, 'record' under a type), so the Trash, change log and sync
+    // already cover them. This table says what links to what: a link field, or an @ in a chapter or a record's notes. It
+    // is worked out from the items on every save, so like the word count it is never logged or synced as a change.
+    version: 7,
+    up(db) {
+      db.exec(`
+        CREATE TABLE record_links (
+          from_id TEXT NOT NULL,
+          to_id TEXT NOT NULL,
+          via TEXT NOT NULL,
+          PRIMARY KEY (from_id, to_id, via)
+        );
+        CREATE INDEX record_links_to ON record_links (to_id);
+      `);
+    },
+  },
 ];
 
 module.exports = { STEPS };

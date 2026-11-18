@@ -40,6 +40,20 @@ function countWords(text) {
   return characters + words;
 }
 
+// The records @-mentioned in a document. A mention is a mark on the words, so the name stays in the text, counts as
+// words and exports like any other words; the mark only says which record it points at.
+function mentionsIn(body) {
+  if (typeof body !== 'string' || !body.includes('"mention"')) return [];
+  const document = parseDocument(body);
+  const ids = new Set();
+  const walk = (node) => {
+    for (const mark of node.marks ?? []) if (mark.type === 'mention' && typeof mark.attrs?.id === 'string') ids.add(mark.attrs.id);
+    (node.content ?? []).forEach(walk);
+  };
+  if (document) walk(document);
+  return [...ids];
+}
+
 function documentFromText(text) {
   const paragraphs = text.split(/\r?\n/).map((line) => ({
     type: 'paragraph',
@@ -52,4 +66,4 @@ function toDocument(body) {
   return parseDocument(body) ?? documentFromText(body ?? '');
 }
 
-module.exports = { countWords, documentFromText, parseDocument, plainText, toDocument };
+module.exports = { countWords, documentFromText, mentionsIn, parseDocument, plainText, toDocument };

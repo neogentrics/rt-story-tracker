@@ -15,7 +15,7 @@
 
 <br>
 
-A place to write a book and keep everything around it: chapters today, then characters, timelines, lore, ideas, research
+A place to write a book and keep everything around it: chapters and characters today, then timelines, lore, ideas, research
 and where every book stands. For any author, on Windows, Mac and Linux, with nothing to set up and no account.
 
 RT Story Tracker is part of the **Recon Towers** suite, built by its Dev Department. Version 3.0 is a new app, rebuilt from
@@ -27,42 +27,51 @@ scratch. Versions 1.0 to 2.3 were a Windows-only app called StoryTracker that ne
 <td width="50%"><img src="docs/screenshots/formatting.png" alt="A chapter with headings, a numbered list and a centred scene break"><br><b>Format.</b> Headings, lists and alignment, with Markdown shortcuts if you like them.</td>
 </tr>
 <tr>
+<td><img src="docs/screenshots/records.png" alt="A table of characters, with tabs for saved views"><br><b>Records.</b> Characters, places, weapons or your own kinds, as a table or cards, with saved views.</td>
+<td><img src="docs/screenshots/record.png" alt="One character, with its fields, its notes and everything that links to it"><br><b>A record.</b> Its fields, its notes, and every record and chapter that links to it.</td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/lookup.png" alt="A chapter open with a character looked up beside it"><br><b>Look it up while you write.</b> Type @ to link a name, then check it without leaving the page.</td>
 <td><img src="docs/screenshots/theme-glass.png" alt="A chapter in the Dusk theme with Glass on"><br><b>Make it yours.</b> Fifteen themes, Glass with any of them, and seventeen fonts.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/find.png" alt="Find and replace, with every match marked on the page"><br><b>Find and replace.</b> In a chapter, a book or the whole project, with an Undo.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/comments.png" alt="A comment beside the words it's about"><br><b>Comments.</b> Notes on a selection that stay out of the book.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/split.png" alt="Two chapters side by side"><br><b>Split view.</b> Two chapters side by side.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/history.png" alt="Two versions of a chapter compared word by word"><br><b>Earlier versions.</b> Compare any two, and go back with one click.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/trash.png" alt="The Trash, with a chapter waiting to be restored"><br><b>Trash.</b> Deleted things wait 30 days.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/export.png" alt="The Export window, with print layout choices"><br><b>Export.</b> Word, print PDF, store-ready EPUB and more.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/details.png" alt="The book details form"><br><b>Book details.</b> Everything a store asks for, kept with the book.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/find-my-files.png" alt="The plan for a folder of stories: a tree of books and chapters beside the questions it wants answered"><br><b>Find my files.</b> Point it at a folder, and it works out the rest or asks.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/attachments.png" alt="The attachments of a book, with a preview of each picture"><br><b>Attachments.</b> Pictures, audio and PDFs kept with the book, encrypted.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/lock.png" alt="The lock screen of a project, asking for its password"><br><b>The lock.</b> Without your password or recovery key, it's a garbled mess.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/ways-in.png" alt="The ways into a locked project: password, recovery key, this computer and an authenticator"><br><b>Ways back in.</b> A recovery key, a trusted computer and an authenticator.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/inbox.png" alt="A document sent from RT Markdown Reader, asking which book it goes in"><br><b>Sent from RT Markdown Reader.</b> Nothing is filed until you say where.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/linked-apps.png" alt="Linked apps in Preferences, with RT Markdown Reader linked"><br><b>Linked apps.</b> Off until you turn it on, and you approve once.</td>
-</tr>
-<tr>
 <td><img src="docs/screenshots/import.png" alt="The Import window, listing chat text to clean up and the chapters a file will become"><br><b>Import.</b> Word, Markdown and more, split into chapters and checked word for word.</td>
-<td><img src="docs/screenshots/preferences.png" alt="Preferences, with themes, fonts and page settings"><br><b>Preferences.</b> Themes, fonts and the page, all in one place.</td>
 </tr>
 <tr>
+<td><img src="docs/screenshots/preferences.png" alt="Preferences, with themes, fonts and the page settings"><br><b>Preferences.</b> Themes, fonts and the page, all in one place.</td>
 <td><img src="docs/screenshots/focus.png" alt="Focus mode, with just the page"><br><b>Focus mode.</b> Just the page.</td>
+</tr>
+<tr>
 <td><img src="docs/screenshots/library.png" alt="The library, listing three projects with their word counts"><br><b>Your library.</b> Every project in one place, with nothing to set up.</td>
+<td></td>
 </tr>
 </table>
+
 
 ## Download
 
@@ -79,6 +88,13 @@ open the app from *System Settings → Privacy & Security*.
 |---|---|
 | **A page to write on** | Bold, italic, three heading sizes, lists and alignment |
 | **Markdown shortcuts** | Type `#` and a space for a heading, `-` and a space for a list, or `**bold**` |
+| **Records** | Characters, places, weapons, or any kind of your own, with fields of every sort: text, numbers, choices, dates and links to other records. Start from a template, or make your own |
+| **Links both ways** | Open a record, follow its links, and see every record and chapter that links back to it |
+| **@ in a chapter** | Type `@` and a name to link a record, then Ctrl or Cmd and click it to look it up beside the page. The name stays in the text as ordinary words |
+| **Tables, cards and saved views** | Filter, sort, choose columns and save the way you've set it up. A view never changes a record |
+| **Numbering** | `W-001`, with the next free number offered, ranges for each series, and no number used twice |
+| **Bring in records** | From spreadsheets (CSV) or Markdown files, or a whole folder. You see where each column goes before anything is written |
+| **The other Recon Towers apps** | An Apps panel lists the ones on this computer, installed or running, and links you once. A linked app can send you documents, see a short line about what's open, and ask for a book's word count, never your writing |
 | **Series, books, parts, chapters** | Three columns, as in the old app. A project holds series and books, and a book holds parts and chapters |
 | **Move things around** | Drag a chapter to reorder it, into a part, or to another book. Alt and the arrow keys work too |
 | **Live word counts** | For the chapter, the book and the whole project, as you type |
@@ -108,7 +124,7 @@ open the app from *System Settings → Privacy & Security*.
 | **Works offline** | No account, no server, and your writing never leaves your computer |
 | **Updates itself** | On Windows and the Linux AppImage. Mac and the `.deb` tell you when a new version is out |
 
-Coming next: characters, timelines and lore. See
+Coming next: versions of a record, a timeline and places, lore, ideas and research. See
 the [roadmap](ROADMAP.md).
 
 ## How your writing is kept
@@ -153,8 +169,9 @@ npm run test:e2e
 
 The plan behind it all is in the [product plan](docs/product-plan.md), the [decisions](docs/decisions.md) and the designs for
 the [database](docs/design/database.md), [file types](docs/design/file-types.md),
-[passwords and recovery](docs/design/passwords-and-recovery.md) and
-[working with RT Markdown Reader](docs/design/working-with-rt-markdown-reader.md).
+[passwords and recovery](docs/design/passwords-and-recovery.md), [records](docs/design/records.md),
+[working with RT Markdown Reader](docs/design/working-with-rt-markdown-reader.md) and
+[the apps finding each other](docs/design/the-suite.md).
 
 ## Licence
 
