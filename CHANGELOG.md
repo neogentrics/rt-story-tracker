@@ -5,8 +5,8 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
 
 ## [Unreleased]
 
-Records: where the story bible lives. This will be 3.9, together with the suite half that used to be 3.8, which is planned
-in [docs/design/the-suite.md](docs/design/the-suite.md) and not built.
+Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used
+to be 3.8, described in [docs/design/the-suite.md](docs/design/the-suite.md).
 
 ### Added
 - **Records.** A new **Records** side beside **Write**, at the top of every project. Make your own kinds of record, such as
@@ -27,6 +27,15 @@ in [docs/design/the-suite.md](docs/design/the-suite.md) and not built.
 - **Export everything** now includes every record, as a Markdown file each and a spreadsheet for each kind, in a form that
   reads back in.
 - The sample project has two characters, linked from its first chapters.
+- **Apps**, in Preferences, replaces Linked apps. It lists the other Recon Towers apps on this computer, whether each is
+  installed, running or linked, and offers Open, Link and Remove. Finding an app never links it. An installed app can be
+  started from here, but only the Recon Towers apps, and only the program itself.
+- **Installed list.** The app now says it's installed, so others can find it while it's closed. The Windows installer does
+  the same and removes it when you uninstall. The file holds no secrets.
+- **What it's doing.** A linked app can ask for a short line, such as *Editing “Chapter 3” in “Salt Road”*, and for a book's
+  word and chapter counts. Never any writing. A project with a password says nothing at all, the same as no project.
+- **Publish Chapter with RT Markdown Reader**, in the File menu. It sends the chapter with a note that it's for publishing.
+  Until RT Markdown Reader reads that note, it opens as usual and you choose Publish there.
 
 ### Changed
 - Exports remove the link behind an `@` name, as they do comments, so a name is just words in the file.

@@ -2645,3 +2645,22 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
   padding-left: 1.2rem;
   font-size: 0.9rem;
 }
+
+/* The Apps panel in Preferences */
+
+.app-row {
+  align-items: flex-start;
+}
+
+.app-info small {
+  color: var(--sheet-ink-soft);
+}
+
+.app-info .app-line {
+  display: block;
+}
+
+.app-buttons {
+  display: flex;
+  gap: 0.4rem;
+}

@@ -94,6 +94,7 @@ open the app from *System Settings → Privacy & Security*.
 | **Tables, cards and saved views** | Filter, sort, choose columns and save the way you've set it up. A view never changes a record |
 | **Numbering** | `W-001`, with the next free number offered, ranges for each series, and no number used twice |
 | **Bring in records** | From spreadsheets (CSV) or Markdown files, or a whole folder. You see where each column goes before anything is written |
+| **The other Recon Towers apps** | An Apps panel lists the ones on this computer, installed or running, and links you once. A linked app can send you documents, see a short line about what's open, and ask for a book's word count, never your writing |
 | **Series, books, parts, chapters** | Three columns, as in the old app. A project holds series and books, and a book holds parts and chapters |
 | **Move things around** | Drag a chapter to reorder it, into a part, or to another book. Alt and the arrow keys work too |
 | **Live word counts** | For the chapter, the book and the whole project, as you type |
@@ -170,7 +171,7 @@ The plan behind it all is in the [product plan](docs/product-plan.md), the [deci
 the [database](docs/design/database.md), [file types](docs/design/file-types.md),
 [passwords and recovery](docs/design/passwords-and-recovery.md), [records](docs/design/records.md),
 [working with RT Markdown Reader](docs/design/working-with-rt-markdown-reader.md) and
-[the apps finding each other](docs/design/the-suite.md), which is planned and not built.
+[the apps finding each other](docs/design/the-suite.md).
 
 ## Licence
 

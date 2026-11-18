@@ -8,6 +8,7 @@ const { exportFile } = require('./export');
 const { Importer } = require('./import');
 const { Inbox, isWritingFile } = require('./inbox');
 const { registerIpc } = require('./ipc');
+const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
 const { buildMenu } = require('./menu');
 const { Security } = require('./security');
@@ -108,7 +109,10 @@ function openLibrary() {
       dataDir: app.getPath('userData'),
       version: app.getVersion(),
       ask: askToLink,
+      // Only an installed copy says it's installed. Running from the source isn't.
+      launchPath: process.env.RTST_INSTALLED_LAUNCH || (app.isPackaged ? launchPathFor({ execPath: process.execPath, appImage: process.env.APPIMAGE }) : null),
     });
+    linking.registerInstalled();
     session.defaultSession.setSpellCheckerEnabled(settings.values.spellcheck);
   } catch (error) {
     libraryError = error.message;

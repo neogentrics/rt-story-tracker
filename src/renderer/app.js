@@ -284,6 +284,7 @@ function onMenu(command) {
   if (command === 'security') showSecurity();
   if (command === 'reader-chapter') room?.openInReader('chapter');
   if (command === 'reader-book') room?.openInReader('book');
+  if (command === 'reader-publish') room?.openInReader('chapter', { publish: true });
   if (command === 'inbox') room?.showInbox();
   if (command === 'lock') {
     if (lockedOpen) lockProject();

@@ -202,6 +202,7 @@ export class WritingRoom {
       await this.flush();
       this.mode = mode;
       this.room.dataset.mode = mode;
+      this.reportActivity();
       this.columns.hidden = mode === 'records';
       this.recordsRoot.hidden = mode !== 'records';
       for (const [button, name] of [[this.writeButton, 'write'], [this.recordsButton, 'records']]) {
@@ -220,6 +221,11 @@ export class WritingRoom {
         await this.records.show();
       }
     });
+  }
+
+  // Tells the app where the author is, for the short line a linked app can ask for. A failure here is no one's business.
+  reportActivity() {
+    this.api.setActivity({ mode: this.mode, chapterId: this.chapterId }).catch(() => {});
   }
 
   async openChapterFromRecords(id) {
@@ -473,7 +479,7 @@ export class WritingRoom {
   }
 
   // A copy goes over, so nothing there comes back. A password-locked project refuses, and says why.
-  openInReader(scope) {
+  openInReader(scope, { publish = false } = {}) {
     return this.attempt(async () => {
       await this.flush();
       const id = scope === 'book' ? this.bookId : this.activePage.chapterId;
@@ -481,8 +487,10 @@ export class WritingRoom {
         this.showMessage(`Open a ${scope} first.`);
         return;
       }
-      await this.api.openInReader({ scope, id });
-      this.showInfo('Opened a copy in RT Markdown Reader. Changes there don’t come back here.');
+      await this.api.openInReader({ scope, id, publish });
+      this.showInfo(publish
+        ? 'Sent a copy to RT Markdown Reader. Choose Publish there to put it on your site or wiki. Changes there don’t come back here.'
+        : 'Opened a copy in RT Markdown Reader. Changes there don’t come back here.');
     });
   }
 
@@ -683,6 +691,7 @@ export class WritingRoom {
       const sameBook = bookId === this.bookId;
       this.chapterId = id;
       this.bookId = bookId;
+      this.reportActivity();
       this.remember.set(lastChapterKey(this.projectId), id);
       // A row that was just clicked has to stay put, or the second click of a double-click lands on nothing.
       if (sameBook && this.chapterList.querySelector(`[data-id="${id}"]`)) {

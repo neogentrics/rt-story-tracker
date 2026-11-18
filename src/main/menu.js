@@ -43,6 +43,7 @@ function buildMenu({ send, checkForUpdates, about }) {
         { type: 'separator' },
         { label: 'Open Chapter in RT Markdown Reader', click: () => send('reader-chapter') },
         { label: 'Open Book in RT Markdown Reader', click: () => send('reader-book') },
+        { label: 'Publish Chapter with RT Markdown Reader…', click: () => send('reader-publish') },
         { label: 'Documents Sent Here…', click: () => send('inbox') },
         { type: 'separator' },
         { label: 'Earlier Versions of This Chapter…', click: () => send('history') },

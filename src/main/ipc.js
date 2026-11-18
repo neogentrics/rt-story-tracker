@@ -265,6 +265,8 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('link:status', () => linking().status());
   handle('link:set', (on) => linking().setOn(on));
   handle('link:pair', (id) => linking().pair(id));
+  handle('link:open', (id) => linking().openApp(id));
+  handle('activity:set', (input) => workspace().setActivity(input ?? {}));
   handle('link:unlink', (id) => linking().unlink(id));
   handle('link:openInReader', busyWhile(workspace, (input) => linking().openInReader(input)));
   handle('inbox:list', () => inbox().list());

@@ -213,11 +213,13 @@ Every app in the suite is meant to stand alone, and nobody should need a second 
 
 ✅ **Chosen 18 November 2026: One release, 3.9.**
 
-The owner asked for the suite (3.8) and Records (3.9) together, so there is no 3.8. Records is built, tested and not yet
-released. The suite half is [planned](design/the-suite.md) and waits for the four decisions below, because Reader and the
-apps still to be built will copy it.
+The owner asked for the suite (3.8) and Records (3.9) together, so there is no 3.8. Both halves are built and tested and not
+yet released. The suite half is described in [the suite design](design/the-suite.md), and Reader and the apps still to be
+built will copy it.
 
-### 27. The suite's details (before the suite half is built)
+### 27. The suite's details
+
+✅ **Chosen 18 November 2026: all four as recommended.** Built in 3.9.
 
 Four choices, each with a recommendation, in [the suite design](design/the-suite.md#what-i-need-you-to-decide):
 

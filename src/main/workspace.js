@@ -47,6 +47,7 @@ class Workspace {
     this.passUntil = 0;
     this.mustReset = false;
     this.busy = 0;
+    this.activity = { mode: 'write', chapterId: null };
     this.records = new Records(this);
   }
 
@@ -93,6 +94,14 @@ class Workspace {
     this.lastReplace = null;
     this.passUntil = 0;
     this.mustReset = false;
+    this.activity = { mode: 'write', chapterId: null };
+  }
+
+  // What the author is looking at, for the line a linked app can ask for. Only what's checked here is kept.
+  setActivity({ mode, chapterId }) {
+    if (!['write', 'records'].includes(mode)) throw new Error('That isn’t somewhere in the app.');
+    const chapter = typeof chapterId === 'string' && this.project ? this.project.getItem(chapterId) : null;
+    this.activity = { mode, chapterId: chapter?.kind === 'chapter' ? chapter.id : null };
   }
 
   removeSample(id) {

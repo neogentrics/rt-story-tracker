@@ -97,6 +97,7 @@
       "createStartMenuShortcut": true,
       "shortcutName": "RT Story Tracker",
       "license": "LICENSE",
+      "include": "build/installer.nsh",
       "artifactName": "RTStoryTracker-${version}-Setup.exe"
     },
     "mac": {

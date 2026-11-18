@@ -1,7 +1,7 @@
 {
   "now": {
     "title": "3.9: Records, with the suite",
-    "note": "Records are built and tested. The suite half is planned and waits for four decisions.",
+    "note": "Built and tested on the VM, not released yet.",
     "items": [
       {
         "title": "Records",
@@ -9,7 +9,7 @@
       },
       {
         "title": "The suite",
-        "text": "The apps finding each other when installed, an Apps panel and a status line. The plan is written, and nothing is built until you decide four things."
+        "text": "The apps finding each other when installed, an Apps panel, a status line and a book’s word count on request. Webhooks and n8n are left for their own design."
       },
       {
         "title": "Released before this",
@@ -28,7 +28,7 @@
   "questions": [
     {
       "q": "Can the apps detect each other when they’re installed?",
-      "a": "Not yet: today they find each other only while running. The installed list and an Apps panel in every app are planned for 3.9, to the suite’s shared rules, and wait for four decisions."
+      "a": "In 3.9, yes, for this app: it says it’s installed, and an Apps panel lists installed, running and linked apps. RT Markdown Reader needs the same change on its side before the two see each other when closed."
     },
     {
       "q": "What happens to pictures in an imported file?",

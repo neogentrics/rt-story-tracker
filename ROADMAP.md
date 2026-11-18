@@ -35,8 +35,8 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
 | [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | 🚧 Released as 3.7.0, being tested by the owner |
-| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [planned](docs/design/the-suite.md) and waiting for the owner's decisions |
-| [v3.9](#v39--records) | Records, with the suite | 🚧 Records built and tested; the suite half comes after the owner's decisions |
+| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
+| [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
 | [v3.10](#v310--versions-of-a-record) | Versions of a record | Planned |
 | [v3.11](#v311--timeline-and-places) | Timeline and places | Planned |
 | [v3.12](#v312--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
@@ -198,20 +198,20 @@ app's own tests and against RT Markdown Reader 3.10 from source.
 
 > [!NOTE]
 > **Folded into 3.9 on 18 November 2026,** at the owner's request: the suite and Records ship as one release, 3.9, and
-> there is no 3.8. The plan is in [the suite design](docs/design/the-suite.md), with four decisions for the owner before
-> anything is built. Nothing below is built yet.
+> there is no 3.8. The plan, the owner's four decisions (all as recommended) and what was built are in
+> [the suite design](docs/design/the-suite.md). The table below is the original plan and says what became of each row.
 
 🙋 The apps know each other when they're installed, not only when they're running. Built to
 [the suite's rules](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md), not a second set.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋 Installed list | S | Each app leaves a small file saying it's installed and how to start it, and removes it when it's uninstalled. Replaces the guessing in Open in RT Markdown Reader. |
-| 🙋 Apps panel | M | The same panel in every app: which Recon Towers apps are on this computer, which are running, and which are linked. It offers to link one or open one. Finding an app never links it. |
-| 🙋 What it's doing | S | A linked app can ask for a short status, such as what's open. A locked project says nothing about itself, and no writing is ever in the answer. |
-| 🙋 Asking for facts | M | A linked app can ask for what this one owns: word counts, draft status, dictionary pronunciations. This app can ask RT Author Desk for a book's published facts. |
-| 🙋 Publish through RT Markdown Reader | S | Sending to WordPress, Ghost, Discord and wikis stays in RT Markdown Reader. This app hands it the chapter over App Link, and doesn't build its own. Never a locked project. |
-| Automations | M | Webhooks and n8n can start an export or a backup, or add a note to a project. Off until you turn it on, and locked projects stay out. |
+| ✅ 🙋 Installed list | S | Each app leaves a small file saying it's installed and how to start it, and removes it when it's uninstalled. Replaces the guessing in Open in RT Markdown Reader. |
+| ✅ 🙋 Apps panel | M | The same panel in every app: which Recon Towers apps are on this computer, which are running, and which are linked. It offers to link one or open one. Finding an app never links it. |
+| ✅ 🙋 What it's doing | S | A linked app can ask for a short status, such as what's open. A locked project says nothing about itself, and no writing is ever in the answer. |
+| ✅ 🙋 Asking for facts | M | A linked app can ask for what this one owns: word counts, draft status, dictionary pronunciations. This app can ask RT Author Desk for a book's published facts. |
+| ✅ 🙋 Publish through RT Markdown Reader | S | Sending to WordPress, Ghost, Discord and wikis stays in RT Markdown Reader. This app hands it the chapter over App Link, and doesn't build its own. Never a locked project. |
+| Automations | M | Webhooks and n8n can start an export or a backup, or add a note to a project. Off until you turn it on, and locked projects stay out. **Not in 3.9, as decided:** it opens a listener on this computer, so it gets its own design first. |
 
 **Test:** install each app on a clean computer, in either order, and each finds the other. Uninstall one and it goes from
 the list. Status from a locked project says nothing.
@@ -220,8 +220,7 @@ the list. Status from a locked project says nothing.
 
 🙋 Where the story bible begins: characters, and anything else an author wants to track. [How it's built](docs/design/records.md).
 
-🚧 **Built and tested on the VM, not released.** The suite half of this release (v3.8 above) is planned and waits for the
-owner's decisions.
+🚧 **Built and tested on the VM, not released.** The suite half of this release (v3.8 above) is built too.
 
 | Feature | Size | Details |
 |---|:-:|---|
