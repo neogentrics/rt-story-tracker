@@ -125,7 +125,7 @@ open the app from *System Settings → Privacy & Security*.
 | **Works offline** | No account, no server, and your writing never leaves your computer |
 | **Updates itself** | On Windows and the Linux AppImage. Mac and the `.deb` tell you when a new version is out |
 
-Coming next: versions of a record, a timeline and places, lore, ideas and research. See
+Coming next: web clips from Recon Browser, a timeline and places, lore, ideas and research. See
 the [roadmap](ROADMAP.md).
 
 ## How your writing is kept

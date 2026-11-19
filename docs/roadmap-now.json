@@ -1,7 +1,7 @@
 {
   "now": {
-    "title": "3.9 is built; 3.10 is being built",
-    "note": "3.9, Records with the suite, is built and in review. 3.10, Versions of a record, is being built on its own branch.",
+    "title": "3.9 and 3.10 are built; web clips are being added",
+    "note": "3.9 (Records with the suite) and the versions part of 3.10 are built and in review. Web clips from Recon Browser are being built into 3.10.",
     "items": [
       {
         "title": "Records",
@@ -16,12 +16,16 @@
         "text": "Freeze a record for each book, with a printable part and an author-only part, canon lock, and records printed as a PDF with a label like Record 0100 · Revision 2. A frozen version can never be changed or unfrozen."
       },
       {
-        "title": "Released before this",
-        "text": "3.7.1 is the latest release: the new name, and RT Markdown Reader on this computer."
+        "title": "Web clips from Recon Browser",
+        "text": "Recon Browser sends research to this app over App Link. A clip waits in the inbox, and nothing is filed or fetched without your choice. A locked project holds it until you unlock it."
       },
       {
         "title": "Still open from earlier",
         "text": "Your own test of the lock and of Find my files, a real Word manuscript, Pages on a Mac, and a real Scrivener project."
+      },
+      {
+        "title": "Released before this",
+        "text": "3.7.1 is the latest release: the new name, and RT Markdown Reader on this computer."
       }
     ]
   },

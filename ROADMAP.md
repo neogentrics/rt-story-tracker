@@ -37,7 +37,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), then [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1)) |
 | [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
 | [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
-| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Being built on the VM, after 3.9 |
+| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions built, clips being built, not released |
 | [v3.11](#v311--timeline-and-places) | Timeline and places | Planned |
 | [v3.12](#v312--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
 | [v3.13](#v313--where-every-book-stands) | Where every book stands | Planned |
@@ -242,8 +242,8 @@ on his own computer, and finding a character faster than in Notion.
 
 🙋 What a record said as of each book, for authors who need it. Off in the simple templates. [How it's built](docs/design/records.md#versions).
 
-🚧 **Being built on the VM, on its own branch after 3.9. Not released.** The choices behind it are decision 28 in
-[decisions](docs/decisions.md).
+🚧 **Versions are built and web clips are being built, on the VM. Not released.** The choices behind versions are decision 28
+in [decisions](docs/decisions.md). Clips are in this release so that Recon Browser 1.3 has somewhere to send them.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -252,8 +252,10 @@ on his own computer, and finding a character faster than in Notion.
 | 🙋 A printable part and an author-only part | S | Hidden lore and notes stay out of every print, export, status line and fact. |
 | Print records | M | A record or a set as a PDF, with labels such as *Record 0100 · Revision 2*. Replaces the dossier scripts. Built last. |
 | Canon lock | S | Locked items warn before they change, and change only if the author confirms. |
+| 🙋🛡️ Clips from Recon Browser | S | Web research sent by Recon Browser over App Link, as a document of kind `research` with its source as front matter. It waits in the inbox, and nothing is filed or fetched without your choice. A locked project holds it until unlocked. No new protocol: it uses the key you approve once. |
 
-**Test:** freeze a version, try to edit it, and print a set without the author-only part.
+**Test:** freeze a version, try to edit it, and print a set without the author-only part. Send a clip from Recon Browser with
+and without a link, and with a locked project.
 
 ## v3.11 — Timeline and places
 
@@ -277,7 +279,7 @@ on his own computer, and finding a character faster than in Notion.
 | 🙋 Lore pages | M | Free pages, with links both ways. |
 | 🙋 Story ideas | S | Jot it, tag it, and turn it into a book when it's ready. |
 | 🙋 Dictionaries | M | Glossary and invented words, with meanings and a pronunciation guide, including words from other languages. Feeds spell check and read aloud, and RT Markdown Reader's voices through App Link, so a name is taught once. |
-| 🙋 Research | M | Sources, notes, pictures and PDFs, attached to what they're for. |
+| 🙋 Research | M | Sources, notes, pictures and PDFs, attached to what they're for. Clips from Recon Browser become Research records, with the source as the citation. |
 | Citations | M | Bring in sources from BibTeX or Zotero, cite them, and build the list at the end. For research and non-fiction. |
 | One search | M | Across chapters, records, lore and research. |
 | 🙋 Smart search | M | Search by meaning as well as by word, on your own computer, beside One search. Using RT Markdown Reader's way of doing it. |
