@@ -37,7 +37,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), then [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1)) |
 | [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
 | [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
-| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions built, clips being built, not released |
+| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions and clips built and tested, not released |
 | [v3.11](#v311--timeline-and-places) | Timeline and places | Planned |
 | [v3.12](#v312--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
 | [v3.13](#v313--where-every-book-stands) | Where every book stands | Planned |
@@ -242,8 +242,8 @@ on his own computer, and finding a character faster than in Notion.
 
 🙋 What a record said as of each book, for authors who need it. Off in the simple templates. [How it's built](docs/design/records.md#versions).
 
-🚧 **Versions are built and web clips are being built, on the VM. Not released.** The choices behind versions are decision 28
-in [decisions](docs/decisions.md). Clips are in this release so that Recon Browser 1.3 has somewhere to send them.
+🚧 **Versions and web clips are built and tested on the VM. Not released.** The choices behind versions are decision 28 and behind
+clips decision 29, in [decisions](docs/decisions.md). Clips are in this release so that Recon Browser 1.3 has somewhere to send them.
 
 | Feature | Size | Details |
 |---|:-:|---|

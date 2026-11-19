@@ -49,18 +49,31 @@ const DETAIL_KEYS = { subtitle: 'subtitle', author: 'author', publisher: 'publis
 
 function splitFrontMatter(text) {
   const match = FRONT_MATTER.exec(text);
-  if (!match) return { body: text, title: null, details: {} };
+  if (!match) return { body: text, title: null, details: {}, fields: {} };
   const details = {};
+  const fields = {};
   let title = null;
+  let listKey = null;
   for (const line of match[1].split('\n')) {
+    const item = /^\s+-\s+(.*)$|^-\s+(.*)$/.exec(line);
+    if (item && listKey) {
+      fields[listKey].push((item[1] ?? item[2]).trim().replace(/^["']|["']$/g, ''));
+      continue;
+    }
     const pair = /^([A-Za-z_-]+)\s*:\s*(.*)$/.exec(line);
+    listKey = null;
     if (!pair) continue;
     const key = pair[1].toLowerCase();
     const value = pair[2].trim().replace(/^["']|["']$/g, '').replace(/\\"/g, '"');
+    if (value) fields[key] = value;
+    else {
+      fields[key] = [];
+      listKey = key;
+    }
     if (key === 'title') title = value;
     else if (DETAIL_KEYS[key] && value) details[DETAIL_KEYS[key]] = value;
   }
-  return { body: text.slice(match[0].length), title, details };
+  return { body: text.slice(match[0].length), title, details, fields };
 }
 
 function markdownToBlocks(text) {

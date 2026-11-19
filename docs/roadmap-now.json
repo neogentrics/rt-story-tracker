@@ -1,7 +1,7 @@
 {
   "now": {
-    "title": "3.9 and 3.10 are built; web clips are being added",
-    "note": "3.9 (Records with the suite) and the versions part of 3.10 are built and in review. Web clips from Recon Browser are being built into 3.10.",
+    "title": "3.9 and 3.10 are built, with web clips",
+    "note": "3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
     "items": [
       {
         "title": "Records",

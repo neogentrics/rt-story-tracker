@@ -253,6 +253,34 @@ Calls made while building it, which are the owner's to overrule:
 - **The first version has no "changes since".** Later ones list what changed, in print fields for print and in author-only
   fields for the author only.
 
+### 29. Web clips from Recon Browser (3.10)
+
+✅ **Chosen 18 November 2026,** from the owner through the orchestrating session. Recon Browser 1.3 sends research here, and
+this is the receiving end.
+
+| Question | Chosen |
+|---|---|
+| How does a clip get here? | Over App Link, the way every other document does, as `open_document` with `kind: "research"`, on a key the owner approves once. **No `rtstory://` protocol and no second inbox folder:** any web page can fire an operating system link, a command line can't carry a whole article, and a shared folder has no key. |
+| How does the source travel? | As front matter in the Markdown: `source_url`, `source_title`, `source_author`, `source_date`, `accessed`, `category`, `tags`, and a `Source:` line at the end, so any app can read a clip. |
+| Does Recon Browser show in the Apps panel? | Yes. `recon-browser` is a known suite id, so it's listed when installed or running and can be started from the installed list. |
+| Where does a clip land, until Research records exist (3.12)? | **One chapter in a book called Research,** made if it's missing, with the front matter kept as the first lines of the chapter. The owner can pick another book. In 3.12 a clip becomes a Research record, with the source as its citation. |
+
+The rules that came with it, which are built and tested: nothing is stored without the owner's choice in the inbox window; a
+locked project holds the clip in memory, never in a file; the Markdown goes through the same reader as any sent document; **a
+picture is never fetched on arrival or when the clip is added,** because that would tell the site it was read; at most 20 wait
+and each is at most 8 MB.
+
+Calls made while building it, which are the owner's to overrule:
+
+- **A picture stays as words.** `![A weir](https://…)` goes into the chapter as `[Image: A weir (https://…)]`, so the
+  reference survives and nothing is requested. Fetching a picture, as an attachment and only with the owner's yes, isn't built.
+- **The front matter is checked, not copied.** Only the seven known keys are kept, controlled characters are removed, a
+  web address must be `http` or `https` with no password in it, dates must be real-looking, and a category must be one of
+  Recon Browser's six. Anything else is dropped. Front matter that never closes is ignored and its lines stay in the text.
+- **The source lines are words in the chapter, so they count toward the book's word total.** A Research book with many clips
+  will show more words than the owner wrote. A way to keep a book out of the totals is a later job.
+- **A clip with no source still works.** The window shows no source line, and the chapter has none at the top.
+
 ## The order, and where to start
 
 ### 22. Build order

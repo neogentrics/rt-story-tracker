@@ -21,6 +21,12 @@ Versions of a record, for authors who need to say what a record said as of each 
 - Export everything writes the printable part of each record, and each frozen version as its own file. The author-only part is
   never in it. It stays in your project and its backups.
 
+- **Web clips from Recon Browser.** Recon Browser can send a highlighted passage, with its source, over App Link as a document of
+  kind research. It waits in the inbox, and nothing is filed by itself. You choose where it goes, and it starts on a book called
+  Research, made if it isn't there. It goes in as one chapter with its source at the top. A locked project holds it in memory
+  until you unlock it. A picture in a clip is never fetched, and shows as a reference in words. Recon Browser now shows in the
+  Apps panel when it's installed or running.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used

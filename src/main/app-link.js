@@ -312,11 +312,11 @@ class AppLink {
     return { name: other.name };
   }
 
-  async send(id, { name, text, intent }) {
+  async send(id, { name, text, intent, kind }) {
     const link = this.load()[id];
     if (!link) throw new LinkError('not_linked', 'That app isn’t linked.');
     const other = await this.reach(id);
-    await call(other.endpoint, 'open_document', { app: this.id, key: link.key, name: documentName(name), text, ...(intent === 'publish' ? { intent } : {}) }, SEND_MS);
+    await call(other.endpoint, 'open_document', { app: this.id, key: link.key, name: documentName(name), text, ...(intent === 'publish' ? { intent } : {}), ...(kind === 'research' ? { kind } : {}) }, SEND_MS);
     return { name: link.name };
   }
 

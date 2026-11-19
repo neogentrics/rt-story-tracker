@@ -18,7 +18,9 @@ export async function openInbox({ api, books, bookId, onAdded, onNext, onDiffere
   const [item] = await api.inboxList();
   if (!item) return;
 
-  const book = select('inbox-book', [...books.map((entry) => [entry.id, entry.title]), [NEW_BOOK, 'A new book']], bookId ?? NEW_BOOK);
+  // A web clip goes to the Research book, which is made if it isn't there. Anything else goes where the author last was.
+  const research = item.clip ? books.find((entry) => entry.title.trim().toLowerCase() === 'research') : null;
+  const book = select('inbox-book', [...books.map((entry) => [entry.id, entry.title]), [NEW_BOOK, item.clip ? 'A new book called Research' : 'A new book']], item.clip ? research?.id ?? NEW_BOOK : bookId ?? NEW_BOOK);
   const kind = select('inbox-as', item.options.map((option) => [option.mode, option.label]), item.options[0].mode);
   const size = `${formatCount(item.words)} ${item.words === 1 ? 'word' : 'words'}${item.pictures ? `, with ${item.pictures} ${item.pictures === 1 ? 'picture' : 'pictures'}` : ''}`;
 
@@ -34,10 +36,11 @@ export async function openInbox({ api, books, bookId, onAdded, onNext, onDiffere
   const dialog = el(
     'dialog',
     { id: 'inbox', class: 'dialog' },
-    el('h2', { id: 'inbox-title' }, `${item.from} sent “${item.name}”`),
-    el('p', { class: 'quiet-note' }, `${size}. It’s only in memory until you add it.`),
+    el('h2', { id: 'inbox-title' }, item.clip ? `${item.from} sent a web clip, “${item.name}”` : `${item.from} sent “${item.name}”`),
+    item.clip && item.clip.line ? el('p', { id: 'inbox-source', class: 'inbox-source' }, `From ${item.clip.line}`) : null,
+    el('p', { class: 'quiet-note' }, `${size}. It’s only in memory until you add it.${item.clip ? ' It goes in as one chapter, with its source at the top. Nothing on the page is fetched.' : ''}`),
     field('Add to', book),
-    field('As', kind),
+    item.clip ? null : field('As', kind),
     el('div', { class: 'dialog-actions spread' },
       el('button', { id: 'inbox-other', class: 'link', onclick: () => {
         dialog.close();

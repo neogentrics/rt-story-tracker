@@ -44,7 +44,7 @@ Finding an app never links it. You still approve each link once, in the app bein
 *All four were taken as recommended on 18 November 2026.*
 
 **1. Which apps may be started from the Apps panel?** The start path comes from a file any program on this computer could
-write. *Recommended:* only the five known suite ids, only when the path exists and is the app's own program, started with no
+write. *Recommended:* only the known suite ids, only when the path exists and is the app's own program, started with no
 extra arguments. A file from an unknown id is shown in the list but has no Open button.
 
 **2. Does the status line include the project's name?** *Recommended:* yes when the project isn't locked, because "Editing
@@ -105,7 +105,7 @@ In this app, on the branch for 3.9. The tests are `test/suite.test.cjs`, and the
 - **Apps panel.** In Preferences, under *Apps*, replacing *Linked apps*. Each row says installed, running and linked, shows the
   version and a status line for a linked app that's running, and offers **Open** for an installed app that isn't running,
   **Link** for a running one that isn't linked, and **Remove** for a linked one. This app doesn't list itself.
-- **Open.** Only the five suite ids, only a real program (a folder for a Mac `.app`, an `.exe` on Windows, an executable file
+- **Open.** Only the suite's own ids (the five, and Recon Browser from 3.10), only a real program (a folder for a Mac `.app`, an `.exe` on Windows, an executable file
   elsewhere), started with no arguments and `shell: false`. An unknown id is listed but has no Open button, and the launcher
   refuses it as well. This can't tell an app from a different program given the same id by something running as you.
 - **`status`.** A linked app only. `{ "state": "idle" | "open" | "busy", "line": "…" }`, with no `line` for `idle`. A project
@@ -131,3 +131,61 @@ In this app, on the branch for 3.9. The tests are `test/suite.test.cjs`, and the
    and `src/main/installed.js` is new. Keep Reader's own `id`.
 3. Read `intent: "publish"` in `open_document`.
 4. Say in `app-link.md`: `status`, `facts`, `get_fact`, the `intent` field, the installed list and the fact `book.progress`.
+
+## Clips
+
+Recon Browser 1.3 can send a highlighted passage, with where it came from, to this app. This is the receiving end, built in
+3.10. It adds nothing to the protocol except a value for a field `open_document` already has: `kind: "research"`. The choices
+are decision 29 in [decisions](decisions.md).
+
+**How one arrives.** Recon Browser is an App Link app with the id `recon-browser`. The owner links it once, with the usual
+question here. It sends `open_document` with `kind: "research"` and the Markdown as `text`. There's **no `rtstory://` link and
+no inbox folder.** A web page can fire an operating system link, a command line can't carry a whole article, and a shared folder
+has no key.
+
+**What it carries.** Front matter, then the words, ending with a `Source:` line:
+
+```
+---
+title: Medieval Aqueduct Architecture
+source_url: https://example.com/page
+source_title: The page's own title
+source_author: A. Writer
+source_date: 2026-04-12
+accessed: 2026-11-18
+category: setting
+tags: [research, aqueduct]
+---
+The highlighted words, as Markdown.
+
+Source: [The page's own title](https://example.com/page) by A. Writer (Accessed: 2026-11-18)
+```
+
+Every key is optional. A clip with no front matter, or front matter that never closes, is still a clip: it has no source to
+show. `category` is one of lore, character, setting, historical, science or general. The optional fields are for
+`docs/app-link.md` in the Reader repo, and the Reader session adds them there.
+
+**What happens here.** It waits in the inbox, in memory, like any document. The window says *Recon Browser sent a web clip*,
+shows the source on a line, and asks only *Add to*, which starts on a book called Research if there is one and otherwise offers
+to make it. It goes in as **one chapter**, with the source as its first lines (`source_url: …`) and then the clip. In 3.12
+the same lines are read into a Research record, with the source as its citation, so nothing needs to be typed twice.
+
+**The rules, all tested.**
+
+- Nothing is stored without the owner's choice. *Not now* and *Throw away* work as for any document.
+- A locked project holds the clip in memory until it's unlocked. No file holds it before that, and a test searches the profile,
+  the shared folder and the temp folder for it.
+- The Markdown goes through the same reader as any document sent to this app, which drops scripts and raw markup.
+- **A picture is never fetched,** on arrival or when the clip is added, because that would tell the site the owner read it. The
+  reference is kept as words: `[Image: A weir (https://…)]`. A test runs a local server and asserts it is never asked for
+  anything.
+- The front matter is checked and not copied: seven known keys, a web address must be `http` or `https`, and anything else is
+  dropped.
+- At most 20 clips wait, each at most 8 MB.
+
+**Recon Browser in the Apps panel.** `recon-browser` is a known suite id, so it's listed when it's installed or running, and can
+be started from the installed list like the others. It writes its own `installed/recon-browser.json`; this app doesn't.
+
+**Not built, and not tested.** Recon Browser's own sending side is in its own repo, so the tests use a small App Link playing
+Recon Browser. Fetching a picture as an attachment, with the owner's yes, isn't built. A Research book isn't kept out of word
+totals. A real clip from a real page hasn't been tried.
