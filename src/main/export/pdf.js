@@ -263,4 +263,4 @@ async function toPdf(model, layout) {
   return finish(await render(pageHtml(model, layout, { gutter, numbers, fillers, blanks, outline: false }), false), model);
 }
 
-module.exports = { blanksNeeded, fillersFor, toPdf };
+module.exports = { blanksNeeded, fillersFor, render, toPdf };

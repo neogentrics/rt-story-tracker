@@ -28,7 +28,14 @@ const LIMITS = {
   links: 300,
   number: 99999999,
   prefix: 12,
+  label: 30,
+  corrections: 200,
+  note: 500,
 };
+
+// Who a field is for. In a kind that keeps versions, a field is for the author alone unless it's said to be for print, so a
+// new field can't reach a printed page by accident.
+const AUDIENCES = ['print', 'author'];
 
 // Every kind of field says which tests make sense for it. `value` is what the author types, when the test needs one.
 const FILTER_TESTS = {
@@ -106,6 +113,7 @@ function cleanField(input, at) {
   const name = text(input.name ?? '', LIMITS.name, 'A field name');
   if (!name) throw new Error(`Field ${at + 1} needs a name.`);
   const field = { id: typeof input.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(input.id) ? input.id : randomId('f'), name, kind };
+  if (AUDIENCES.includes(input.audience)) field.audience = input.audience;
   if (kind === 'choice') {
     field.options = cleanOptions(input.options);
     if (input.many) field.many = true;
@@ -183,25 +191,60 @@ function cleanType(input) {
   if (ids.size !== fields.length) throw new Error('Two fields share an ID.');
   const views = (Array.isArray(input.views) ? input.views : []).map((view) => cleanView(view, fields));
   if (views.length > LIMITS.views) throw new Error(`A record type can have up to ${LIMITS.views} saved views.`);
-  return { fields, numbering: cleanNumbering(input.numbering), views };
+  const type = { fields, numbering: cleanNumbering(input.numbering), views };
+  if (input.versioning === true) type.versioning = true;
+  const word = typeof input.labelWord === 'string' ? input.labelWord.trim().slice(0, LIMITS.label) : '';
+  if (word && word !== 'Record') type.labelWord = word;
+  return type;
 }
 
 function parseType(details) {
   try {
     const parsed = JSON.parse(details);
-    return { fields: parsed.fields ?? [], numbering: parsed.numbering ?? null, views: parsed.views ?? [] };
+    return {
+      fields: parsed.fields ?? [],
+      numbering: parsed.numbering ?? null,
+      views: parsed.views ?? [],
+      versioning: parsed.versioning === true,
+      labelWord: typeof parsed.labelWord === 'string' && parsed.labelWord ? parsed.labelWord : 'Record',
+    };
   } catch {
-    return { fields: [], numbering: null, views: [] };
+    return { fields: [], numbering: null, views: [], versioning: false, labelWord: 'Record' };
   }
 }
 
+// What a record keeps in its details beside its values: its number, whether it's under canon lock, the notes meant for print
+// (a kind that keeps versions has these apart from the author's own notes), and a log of corrections to frozen versions.
 function parseRecord(details) {
   try {
     const parsed = JSON.parse(details);
-    return { number: Number.isInteger(parsed.number) ? parsed.number : null, values: parsed.values ?? {} };
+    return {
+      number: Number.isInteger(parsed.number) ? parsed.number : null,
+      values: parsed.values ?? {},
+      locked: parsed.locked === true,
+      printNotes: typeof parsed.printNotes === 'string' ? parsed.printNotes : '',
+      corrections: Array.isArray(parsed.corrections) ? parsed.corrections : [],
+    };
   } catch {
-    return { number: null, values: {} };
+    return { number: null, values: {}, locked: false, printNotes: '', corrections: [] };
   }
+}
+
+// Only what's set is written, so a record that uses none of this keeps the small details it always had.
+function writeRecord({ number, values, locked, printNotes, corrections }) {
+  const out = { number: number ?? null, values: values ?? {} };
+  if (locked) out.locked = true;
+  if (printNotes) out.printNotes = printNotes;
+  if (corrections?.length) out.corrections = corrections;
+  return JSON.stringify(out);
+}
+
+const audienceOf = (type, field) => field.audience ?? (type.versioning ? 'author' : 'print');
+
+// The label on a printed record: “Record W-007 · Revision 2”, or “Record · Revision 2” for one with no number.
+function versionLabel(type, number, revision, { draft = false } = {}) {
+  const head = [type.labelWord ?? 'Record', formatNumber(type.numbering, number)].filter(Boolean).join(' ');
+  return `${head} · Revision ${revision}${draft ? ' (draft)' : ''}`;
 }
 
 const isEmpty = (value) => value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0);
@@ -381,6 +424,7 @@ function matches(query, record, type, titleOf = () => '') {
 }
 
 module.exports = {
+  AUDIENCES,
   BUILT_IN,
   FIELD_KINDS,
   FILTER_TESTS,
@@ -389,6 +433,7 @@ module.exports = {
   NEEDS_VALUE,
   TEST_LABELS,
   applyView,
+  audienceOf,
   cleanNumberOf,
   cleanType,
   cleanValues,
@@ -404,4 +449,6 @@ module.exports = {
   rawValue,
   readNumber,
   showValue,
+  versionLabel,
+  writeRecord,
 };

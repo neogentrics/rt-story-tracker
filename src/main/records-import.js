@@ -414,7 +414,13 @@ class RecordImporter {
         numberTold = false;
       }
       if (existing) {
-        const current = parseRecord(records.recordItem(existing).details).values;
+        const kept = parseRecord(records.recordItem(existing).details);
+        if (kept.locked) {
+          problem(where, `“${name}” is under canon lock, so it was left alone.`);
+          result.skipped += 1;
+          return;
+        }
+        const current = kept.values;
         const saved = records.save({ id: existing, values: { ...current, ...values }, ...(notes ? { notes } : {}) });
         planned.push({ id: saved.id, name, values: { ...current, ...values }, links });
         result.updated += 1;
