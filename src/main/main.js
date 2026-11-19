@@ -168,10 +168,15 @@ function spellingMenu(window, params) {
   Menu.buildFromTemplate(template).popup({ window });
 }
 
+// A test can ask for a smaller window, such as the 1024 by 768 screen of a hosted Windows computer, with RTST_WINDOW_SIZE=1024x768.
+function windowSize() {
+  const [, width, height] = /^(\d{3,4})x(\d{3,4})$/.exec(process.env.RTST_WINDOW_SIZE ?? '') ?? [];
+  return width ? { width: Number(width), height: Number(height) } : { width: 1280, height: 820 };
+}
+
 function createWindow({ show = true } = {}) {
   const window = new BrowserWindow({
-    width: 1280,
-    height: 820,
+    ...windowSize(),
     minWidth: 900,
     minHeight: 560,
     show: false,
