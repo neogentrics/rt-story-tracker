@@ -39,6 +39,13 @@ Versions of a record, for authors who need to say what a record said as of each 
   file on the Recon Towers site, read when the panel opens or the app starts and kept for a day. The request carries nothing about
   you. If the file can't be reached it says *Couldn't check for updates* and carries on.
 
+- **Looks like the rest of the family.** A Help menu like RT Markdown Reader's: Help Center (F1), Keyboard Shortcuts, Check for Updates
+  and About with the version in its name. About is now a window in the app with links to the website, this release's notes, where to
+  report a problem and the source code, an engine line, the license and the open-source notices, and *Copy Version Details* for a bug
+  report. The library has a bar across the top with an apps icon and a **Preferences** button, so the themes and fonts can be found
+  before a project is open. Find Next (F3) and Find Previous (Shift+F3) are in the Edit menu, and File ends with Exit on Windows and
+  Linux. The Reader's Tutorial and Find a Command aren't here yet.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used

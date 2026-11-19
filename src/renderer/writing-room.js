@@ -8,7 +8,7 @@ import { openAttachments } from './attachments-dialog.js';
 import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
 import { icon } from './icons.js';
-import { APPS_EVENT, dotFor, openApps } from './apps-panel.js';
+import { createAppsButton } from './apps-panel.js';
 import { openInbox } from './inbox-dialog.js';
 import { LookupPanel } from './lookup-panel.js';
 import { Page } from './page.js';
@@ -78,11 +78,7 @@ export class WritingRoom {
       onOpenChapter: (id) => this.openChapterFromRecords(id),
     });
     // The apps icon: a dot that only summarises, with the same words as its name. The panel it opens carries the words.
-    this.appsDot = el('span', { class: 'apps-dot', 'aria-hidden': 'true', dataset: { dot: 'grey' } });
-    this.appsButton = el('button', { class: 'bar-button apps-button', onclick: () => openApps(api) }, icon('apps'), this.appsDot);
-    this.showAppsDot({ on: false, apps: [] });
-    this.onAppsStatus = (event) => this.showAppsDot(event.detail);
-    document.addEventListener(APPS_EVENT, this.onAppsStatus);
+    this.apps = createAppsButton(api);
     this.writeButton = el('button', { id: 'mode-write', class: 'mode-tab active', 'aria-pressed': 'true', onclick: () => this.showMode('write') }, 'Write');
     this.recordsButton = el('button', { id: 'mode-records', class: 'mode-tab', 'aria-pressed': 'false', onclick: () => this.showMode('records') }, 'Records');
     this.recordsRoot = el('div', { class: 'records-room', hidden: true });
@@ -120,7 +116,7 @@ export class WritingRoom {
             iconButton('focus-button write-only', 'focus', 'Focus mode', () => this.toggleFocus()),
             iconButton('trash-button', 'trash', 'Trash', () => this.showTrash()),
             iconButton('security-button', 'lock', 'Password and lock', () => onSecurity()),
-            this.appsButton,
+            this.apps.button,
             iconButton('prefs-button', 'settings', 'Preferences', () => onPreferences()),
           ),
         ),
@@ -199,7 +195,7 @@ export class WritingRoom {
 
   leave() {
     document.removeEventListener('keydown', this.keys);
-    document.removeEventListener(APPS_EVENT, this.onAppsStatus);
+    this.apps.destroy();
     this.records?.destroy();
     document.querySelectorAll('.mention-pop, .record-picker').forEach((node) => node.remove());
   }
@@ -316,6 +312,14 @@ export class WritingRoom {
     if (this.activePage.chapterId) this.activePage.findBar.open({ replacing });
   }
 
+  // F3 and Shift+F3: the next or previous match, opening Find first if it isn't open.
+  findStep(direction) {
+    const bar = this.activePage.chapterId ? this.activePage.findBar : null;
+    if (!bar) return;
+    if (bar.root.hidden) bar.open({});
+    else bar.step(direction);
+  }
+
   async afterReplace(outline) {
     this.outline = outline;
     await this.page.reload();
@@ -351,16 +355,7 @@ export class WritingRoom {
     });
   }
 
-  // Looked at once when the room opens, and again whenever the panel looks. Nothing asks on a timer.
-  showAppsDot(status) {
-    const { dot, words } = dotFor(status);
-    this.appsDot.dataset.dot = dot;
-    this.appsButton.title = words;
-    this.appsButton.setAttribute('aria-label', words);
-  }
-
   async start() {
-    this.api.linkStatus().then((status) => this.showAppsDot(status)).catch(() => {});
     this.renderLists();
     const remembered = this.remember.get(lastChapterKey(this.projectId));
     const node = remembered && findNode(this.outline, remembered);

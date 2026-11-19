@@ -28,6 +28,10 @@
         "text": "The panel says when another Recon Towers app has a newer version, with both numbers and a button to update or download it. It never stops two apps linking: only an incompatible link protocol does, and then it says which app needs an update. Nothing about you is sent when it checks."
       },
       {
+        "title": "Looks like the rest of the family",
+        "text": "A Help menu like RT Markdown Reader's with a Help Center and Keyboard Shortcuts, an About window with links and copyable version details, and a bar across the top of the library with Preferences, so the themes can be found before a project is open. A tutorial and a find-a-command box are still to come."
+      },
+      {
         "title": "Still open from earlier",
         "text": "Your own test of the lock and of Find my files, a real Word manuscript, Pages on a Mac, and a real Scrivener project."
       },

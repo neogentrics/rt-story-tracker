@@ -198,8 +198,35 @@ textarea {
 
 /* The library */
 
-.home {
+.library {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.library-bar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.1rem;
+  padding: 0.35rem 0.7rem;
+  background: linear-gradient(100deg, var(--bar-start), var(--bar-end));
+  color: var(--on-bar);
+  border-bottom: 1px solid rgb(255 255 255 / 14%);
+}
+
+.library-bar-name {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-weight: 600;
+}
+
+.home {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   display: grid;
   place-items: center;
@@ -2662,6 +2689,84 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
   margin: 0;
   padding-left: 1.2rem;
   font-size: 0.9rem;
+}
+
+/* About and Help */
+
+.about-dialog {
+  width: min(34rem, 92vw);
+}
+
+.about-top {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.about-top h2 {
+  margin: 0;
+}
+
+.about-version,
+.about-tech,
+.about-legal {
+  margin: 0.2rem 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.about-links {
+  margin: 0.8rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-links li {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.about-links span {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.help-dialog {
+  width: min(44rem, 94vw);
+}
+
+.help-body {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 0.4rem 0.2rem;
+}
+
+.help-topic h3,
+.shortcut-group h3 {
+  margin: 1rem 0 0.3rem;
+}
+
+.shortcut-group dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1.2rem;
+  margin: 0;
+}
+
+.shortcut-group dd {
+  margin: 0;
+}
+
+kbd {
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 5px;
+  font: 0.85rem var(--ui-font);
 }
 
 /* The Apps panel, in Preferences and from the toolbar */

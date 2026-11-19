@@ -1,5 +1,7 @@
 import { el } from './dom.js';
 import { applyLook } from './look.js';
+import { openAbout } from './about-dialog.js';
+import { openHelp } from './help-dialog.js';
 import { openPreferences } from './prefs.js';
 import { renderFailure, renderHome } from './home.js';
 import { renderLock } from './lock-screen.js';
@@ -128,6 +130,8 @@ function showFileLock({ file, label }) {
 async function showHome() {
   const [projects, waiting] = await Promise.all([api.listProjects(), api.inboxList()]);
   renderHome(root, {
+    api,
+    onPreferences: () => openPreferences(api),
     projects,
     waiting,
     onOpen: (id) => run(async () => enterRoom(await api.openProject(id))),
@@ -264,6 +268,11 @@ function onMenu(command) {
   if (command === 'preferences') openPreferences(api);
   if (command === 'find') room?.find();
   if (command === 'replace') room?.find({ replacing: true });
+  if (command === 'find-next') room?.findStep(1);
+  if (command === 'find-previous') room?.findStep(-1);
+  if (command === 'about') openAbout(api);
+  if (command === 'help-center') openHelp({ page: 'center' });
+  if (command === 'shortcuts') openHelp({ page: 'shortcuts' });
   if (command === 'focus') room?.toggleFocus();
   if (command === 'show-write') room?.showMode('write');
   if (command === 'show-records') room?.showMode('records');

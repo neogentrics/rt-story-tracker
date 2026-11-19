@@ -283,3 +283,36 @@ app can copy them.
 been tried against a stand-in app. Whether an installed Windows app is a self-updating installer or a portable copy can't be told
 from here, so on Windows every app is offered *Open to update*; a portable copy will be offered it too.
 
+## Looking like the same family
+
+The owner put the installed 3.7.1 next to RT Markdown Reader 3.11 and said this app didn't look like it belonged. This makes it look like
+the same family without copying every feature. The structure is the Reader's (its Help menu in `src/main/main.js`, its About window in
+`src/renderer/about-ui.js`), and the wording is in one small shared file, `src/shared/family.js`, that another app can copy.
+
+**Help menu.** *Help Center* (F1), *Keyboard Shortcuts*, *Check for Updates…* and *About RT Story Tracker 3.10.0*, with the version in the
+label, in that order. On a Mac, About is in the app menu, as the Reader does it. **Tutorial and Find a Command are the Reader's and aren't
+here yet.** They're on the roadmap for later.
+
+**Help Center and Keyboard Shortcuts** are two simple pages in one window, with the words in `src/shared/help-pages.js`. A test reads
+the menu and checks that every shortcut on the page is one the menu has, and the other way round, so the page can't drift.
+
+**About** is a window in the page, not the native box: the icon, the name, the version (and *portable* if it is), one line about the
+app, and four links: *Website* (the Recon Towers project page), *What's new in this version* (this release on GitHub), *Report a problem or
+suggest a feature* (the GitHub issues) and *Source code*. Under them an engine line (Electron, Chromium, Node and the system), then
+© year Recon Towers, *License*, *Open-source notices*, **Copy Version Details** and *Done*. The window names a link and never sends an
+address: the main process looks the name up in the shared file, so the window can't send anyone anywhere else. Copy Version Details
+puts the version, the engine and the system on the clipboard, and a test checks that nothing about the person is in it. With no window
+open (a Mac with every window closed) About is a short message box.
+
+**A bar across the top of the library,** like the one in the writing room and the Reader's: the app's name, the apps icon, and a
+**Preferences** button that opens the themes and fonts. Until now they were under File, then Preferences, or after a project opened, so
+they couldn't be found. The icon is the same code as the writing room's, so the two can't differ.
+
+**File and Edit, compared with the Reader's.** Added: *Exit* on Windows and Linux (the Reader's word for Quit), and *Find Next* (F3) and
+*Find Previous* (Shift+F3), which the Find bar already did with its arrows. Not added, because they don't make sense here or aren't
+built: Open Recent (the library is the list of projects), New Window (one project is open at a time), Save and Save As (everything saves
+itself), Close Tab, Copy as Formatted Text, Find in Folder, and the Reader's tools for documents in folders.
+
+**Not tested.** F1 can't be pressed by the real-app test (the menu takes the key before the page does), so it's checked on the menu item
+only. How the About and Help windows look on a Mac and on Windows hasn't been seen.
+

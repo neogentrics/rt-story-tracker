@@ -4,6 +4,7 @@
 // Refresh is pressed, never on a timer, and finding an app never links it.
 import { STATES, TITLE, UPDATE, dotOf, dotWords } from '../shared/suite-apps.js';
 import { el } from './dom.js';
+import { icon } from './icons.js';
 
 // The toolbar listens for this, so its dot is right after anything changes here.
 export const APPS_EVENT = 'apps-status';
@@ -94,6 +95,28 @@ export function createAppsPanel(api) {
     el('p', {}, refresh),
   );
   return { node, load: () => change(() => api.linkStatus()), show };
+}
+
+// The icon for a toolbar, on the writing screen and on the library screen: a dot that only summarises, and the same words as its name.
+// It looks once when it's made, and again whenever the panel looks. Nothing asks on a timer.
+export function createAppsButton(api) {
+  const dot = el('span', { class: 'apps-dot', 'aria-hidden': 'true', dataset: { dot: 'off' } });
+  const button = el('button', { class: 'bar-button apps-button', onclick: () => openApps(api) }, icon('apps'), dot);
+  const show = (status) => {
+    const { dot: kind, words } = dotFor(status);
+    dot.dataset.dot = kind;
+    button.title = words;
+    button.setAttribute('aria-label', words);
+  };
+  // A screen that has been replaced no longer listens. The panel only reports once the screen is on show, so this is never early.
+  const listen = (event) => {
+    if (button.isConnected) show(event.detail);
+    else document.removeEventListener(APPS_EVENT, listen);
+  };
+  document.addEventListener(APPS_EVENT, listen);
+  show({ on: false, apps: [] });
+  api.linkStatus().then(show).catch(() => {});
+  return { button, show, destroy: () => document.removeEventListener(APPS_EVENT, listen) };
 }
 
 // The toolbar icon opens this.

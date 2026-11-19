@@ -1,19 +1,26 @@
 'use strict';
 const { Menu } = require('electron');
+const { HELP_MENU } = require('../shared/family');
 
 // There's no Reload here on purpose: it would throw away whatever hasn't saved yet.
-function buildMenu({ send, checkForUpdates, about }) {
+// The Help menu is RT Markdown Reader's: Help Center, Keyboard Shortcuts, Check for Updates and About with the version in its label.
+// Its Tutorial and Find a Command aren't here yet.
+function buildMenu({ send, checkForUpdates, about, version }) {
   const isMac = process.platform === 'darwin';
+  const aboutLabel = HELP_MENU.about(version);
   const help = [
-    { label: 'Check for Updates…', click: checkForUpdates },
-    ...(isMac ? [] : [{ type: 'separator' }, { label: 'About RT Story Tracker', click: about }]),
+    { label: HELP_MENU.center.label, accelerator: HELP_MENU.center.accelerator, click: () => send('help-center') },
+    { label: HELP_MENU.shortcuts.label, click: () => send('shortcuts') },
+    { type: 'separator' },
+    { label: HELP_MENU.update.label, click: checkForUpdates },
+    ...(isMac ? [] : [{ type: 'separator' }, { label: aboutLabel, click: about }]),
   ];
   return Menu.buildFromTemplate([
     ...(isMac
       ? [{
           label: 'RT Story Tracker',
           submenu: [
-            { label: 'About RT Story Tracker', click: about },
+            { label: aboutLabel, click: about },
             { type: 'separator' },
             { label: 'Preferences…', accelerator: 'Cmd+,', click: () => send('preferences') },
             { type: 'separator' },
@@ -58,7 +65,7 @@ function buildMenu({ send, checkForUpdates, about }) {
           : [
               { label: 'Preferences…', accelerator: 'Ctrl+,', click: () => send('preferences') },
               { type: 'separator' },
-              { role: 'quit' },
+              { role: 'quit', label: 'Exit' },
             ]),
       ],
     },
@@ -75,6 +82,8 @@ function buildMenu({ send, checkForUpdates, about }) {
         { type: 'separator' },
         { label: 'Find…', accelerator: 'CmdOrCtrl+F', click: () => send('find') },
         { label: 'Replace…', accelerator: isMac ? 'Cmd+Alt+F' : 'Ctrl+H', click: () => send('replace') },
+        { label: 'Find Next', accelerator: 'F3', click: () => send('find-next') },
+        { label: 'Find Previous', accelerator: 'Shift+F3', click: () => send('find-previous') },
       ],
     },
     {
