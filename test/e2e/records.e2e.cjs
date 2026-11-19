@@ -129,7 +129,17 @@ const MOD = 'ControlOrMeta';
   await window.click('.ProseMirror .mention-mark', { modifiers: [MOD] });
   await window.waitForSelector('#lookup-panel .record-page');
   assert.equal(await window.inputValue('#lookup-panel .record-title'), 'Marit Vance');
-  assert.ok(await window.locator('.page-text').first().isVisible());
+  // The page is really there: wide enough to read, and nothing is on top of it, including the panel that was just opened. In a
+  // narrow window (RTST_WINDOW_SIZE=900x600 is the smallest) it's the lists that step aside.
+  const page = await window.locator('.page-text').first().boundingBox();
+  const panel = await window.locator('#lookup-panel').boundingBox();
+  assert.ok(page && page.width >= 300, `the page is at least 300 wide (it is ${page?.width})`);
+  assert.ok(page.x + page.width <= panel.x + 1, 'the look-up panel is beside the page, not over it');
+  assert.equal(await window.evaluate(() => {
+    const box = document.querySelector('.page-text').getBoundingClientRect();
+    const top = document.elementFromPoint(box.left + box.width / 2, box.top + Math.min(box.height / 2, 40));
+    return Boolean(top?.closest('.page-text'));
+  }), true, 'nothing covers the page');
   await window.click('#lookup-panel .lookup-head button[aria-label="Close the look-up panel"]');
   await window.waitForSelector('#lookup-panel', { state: 'hidden' });
 
