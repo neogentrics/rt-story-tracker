@@ -7,6 +7,7 @@ const { Backups } = require('./backups');
 const { exportFile } = require('./export');
 const { Importer } = require('./import');
 const { Inbox, isWritingFile } = require('./inbox');
+const { Versions } = require('./versions');
 const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
@@ -110,6 +111,9 @@ function openLibrary() {
       version: app.getVersion(),
       ask: askToLink,
       openPage: (page) => shell.openExternal(page),
+      // Only what the site's one small file says, kept for a day in this file.
+      // A test can point it at a server on this computer, and nothing else can: the address is the site's.
+      versions: new Versions({ file: path.join(root, 'versions-cache.json'), ...(/^http:\/\/127\.0\.0\.1:\d+\//.test(process.env.RTST_VERSIONS_URL ?? '') ? { url: process.env.RTST_VERSIONS_URL } : {}) }),
       // Only an installed copy says it's installed. Running from the source isn't.
       launchPath: process.env.RTST_INSTALLED_LAUNCH || (app.isPackaged ? launchPathFor({ execPath: process.execPath, appImage: process.env.APPIMAGE }) : null),
     });
@@ -409,6 +413,7 @@ if (!app.requestSingleInstanceLock()) {
       updater.start();
       backups?.start();
       linking?.apply().catch(() => {});
+      linking?.checkVersions();
       const given = process.argv.slice(1).find(isWritingFile);
       if (given) takeWritingFile(given);
     }

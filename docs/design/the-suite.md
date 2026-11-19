@@ -242,3 +242,44 @@ library screen doesn't have one yet. Recon Browser has been added to the shared 
 asked for status. `test/e2e/apps-status.e2e.cjs` drives the real window through every dot, the panel, Refresh, Link, Remove, Get it
 and turning App Link on and off.
 
+## Updates and compatibility
+
+The Apps panel also says when an app has a newer version, and when two apps can't link. It follows the plan in `docs/app-suite.md` in
+the rt-markdown-reader repo ("Updates and compatibility"), and it's built in 3.10.
+
+**What decides whether two apps link.** Their App Link protocol, and the kinds of document each accepts, which `hello` already says.
+Never the app's own version number, so two apps on different releases link fine, and an ordinary release can't break a link. Two
+small additions to protocol 1 carry the rest: `hello` now also says `minProtocol`, the oldest protocol the app will link with, and an
+installed file may say it too. An app that doesn't say it is taken to accept protocol 1, as before.
+
+**The one case that blocks.** If the other app speaks a protocol older than this one's minimum, or this one is older than the other's
+minimum (a security fix raised it), no link is made, and the older app shows **Needs an update to link**. That app is found and
+listed, not hidden, and the panel says which of the two needs the update. Two apps with no kind of document in common also can't link,
+but only when both list some, so an app that only sends, such as Recon Browser, still links. Nothing else blocks.
+
+**The nudge.** An app with a newer release shows **Update available** with both numbers: "you have 3.7.1, the latest is 3.9.0". The
+button is **Open to update** for an app that updates itself (the Windows installer, and a Linux AppImage, which is told by the start
+path in the installed file) and **Download** for the rest. An app that is already open has no button, since it updates itself. It
+never takes away a Link or Open button.
+
+**Where "latest" comes from.** One small file on our own site, `https://recontowers.com/apps/versions.json`, not GitHub. The address is
+in one place, `VERSIONS_URL` in `src/main/versions.js`, so it can change. The rules:
+
+- It's read when the app starts (if App Link is on) and when the panel opens, and the answer is kept for a day, in one small file in
+  the library folder that holds only what the site said. **Refresh** asks again, because that is the person asking. A failure is kept
+  for an hour so a computer that's offline isn't asked at every click.
+- The request is a plain GET of the address: **no query string, no ids, no list of what's installed, no cookies, no referrer and no
+  headers of ours.** It's made with Node's own fetch, so it doesn't carry this app's name or version in its user agent as Chromium's
+  would. A test with a fake fetch, and one against a server in the real app, check what was sent.
+- If the site hasn't published the file (404) that's "not available" and nothing is said. If it can't be reached the panel says
+  **Couldn't check for updates** and carries on with everything else.
+- What comes back is untrusted: it's size-limited, and only a plain version number and an https page on the site are kept.
+
+**The words,** in `src/shared/suite-apps.js` with the app list: *Update available*, *Needs an update to link*, *Couldn't check for
+updates*, *Open to update* and *Download*. `isNewer`, `linkability` and `updateButton` are there too, with no dependencies, so another
+app can copy them.
+
+**Not tested.** Nothing has been tried against the real file, because the site doesn't publish it yet. A protocol other than 1 has only
+been tried against a stand-in app. Whether an installed Windows app is a self-updating installer or a portable copy can't be told
+from here, so on Windows every app is offered *Open to update*; a portable copy will be offered it too.
+

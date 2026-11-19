@@ -24,6 +24,10 @@
         "text": "A small icon on the toolbar with a dot that shows whether other Recon Towers apps are linked, found or off, and opens a panel that lists every app with what you can do about it. It says it in words as well as colour."
       },
       {
+        "title": "Updates in the Apps panel",
+        "text": "The panel says when another Recon Towers app has a newer version, with both numbers and a button to update or download it. It never stops two apps linking: only an incompatible link protocol does, and then it says which app needs an update. Nothing about you is sent when it checks."
+      },
+      {
         "title": "Still open from earlier",
         "text": "Your own test of the lock and of Find my files, a real Word manuscript, Pages on a Mac, and a real Scrivener project."
       },

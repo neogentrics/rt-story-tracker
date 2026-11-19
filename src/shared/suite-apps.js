@@ -56,4 +56,50 @@ function dotOf({ on, apps = [] }) {
 const TITLE = 'Recon Towers apps';
 const dotWords = (dot) => `${TITLE}: ${DOTS[dot]}`;
 
-module.exports = { DOTS, STATES, STORE, SUITE_APPS, SUITE_IDS, TITLE, appById, dotOf, dotWords, stateOf };
+// Updates and compatibility. Whether two apps link is decided by their App Link version and the kinds of document each accepts, and
+// never by the app's own version number, so an ordinary release can't break a link. Only an incompatible protocol, or a security
+// fix that raised the minimum, blocks one. A newer version is only a nudge, and never stops a link that would otherwise work.
+// The wording is the same in every app.
+const UPDATE = {
+  available: 'Update available',
+  needs: 'Needs an update to link',
+  unreachable: 'Couldn’t check for updates',
+  open: 'Open to update',
+  download: 'Download',
+};
+
+const VERSION = /^(\d{1,4})\.(\d{1,4})\.(\d{1,4})$/;
+const validVersion = (text) => typeof text === 'string' && VERSION.test(text);
+
+// Is `latest` newer than `have`? Anything that isn't a plain version number is never "newer", so a odd string can't raise a nudge.
+function isNewer(latest, have) {
+  if (!validVersion(latest) || !validVersion(have)) return false;
+  const [a, b] = [latest, have].map((text) => VERSION.exec(text).slice(1).map(Number));
+  for (let at = 0; at < 3; at += 1) if (a[at] !== b[at]) return a[at] > b[at];
+  return false;
+}
+
+// "you have 3.7.1, the latest is 3.9.0"
+const updateLine = ({ have, latest }) => `you have ${have}, the latest is ${latest}`;
+
+// Which button goes with an update: an app that updates itself (the Windows installer and the Linux AppImage) is opened, and the rest
+// are downloaded. Another app's launch path is how this is told from here.
+function updateButton({ platform, launch = '', running = false }) {
+  const selfUpdates = platform === 'win32' || (platform === 'linux' && /\.AppImage$/i.test(launch));
+  if (!selfUpdates) return 'download';
+  return running ? '' : 'open';
+}
+
+// Can these two apps link? Each side is { protocol, minProtocol, accepts }, as `hello` and the installed file say them. It's the
+// older app that needs the update: `who` is 'them' when the other app is too old for this one, and 'us' when this one is too old for
+// it. Kinds of document only matter when both sides list some and have none in common.
+function linkability({ mine, theirs }) {
+  const minimum = (side) => (Number.isInteger(side.minProtocol) && side.minProtocol >= 1 ? side.minProtocol : 1);
+  if (!Number.isInteger(theirs.protocol) || theirs.protocol < minimum(mine)) return { ok: false, who: 'them' };
+  if (mine.protocol < minimum(theirs)) return { ok: false, who: 'us' };
+  const [ours, theirKinds] = [mine.accepts, theirs.accepts].map((list) => (Array.isArray(list) ? list : []));
+  if (ours.length && theirKinds.length && !ours.some((kind) => theirKinds.includes(kind))) return { ok: false, who: 'them' };
+  return { ok: true };
+}
+
+module.exports = { DOTS, STATES, STORE, SUITE_APPS, SUITE_IDS, TITLE, UPDATE, appById, dotOf, dotWords, isNewer, linkability, stateOf, updateButton, updateLine, validVersion };

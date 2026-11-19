@@ -85,13 +85,15 @@ function readInstalled(shared, { platform = process.platform, exists = fs.exists
     } catch {
       continue;
     }
-    if (info?.protocol !== PROTOCOL || !validId(info.id) || `${info.id}.json` !== name) continue;
+    // A newer protocol is still listed, so the panel can say it needs an update to link.
+    if (!Number.isInteger(info?.protocol) || info.protocol < 1 || info.protocol > 1000 || !validId(info.id) || `${info.id}.json` !== name) continue;
     if (typeof info.launch !== 'string' || !path.isAbsolute(info.launch) || info.launch.length > MAX_PATH) continue;
     if (!exists(info.launch)) {
       fs.rmSync(file, { force: true });
       continue;
     }
-    found.push({ id: info.id, name: clean(info.name, info.id), version: clean(String(info.version ?? '')), launch: info.launch, known: SUITE_IDS.includes(info.id) });
+    const minProtocol = Number.isInteger(info.minProtocol) && info.minProtocol >= 1 && info.minProtocol <= 1000 ? info.minProtocol : 1;
+    found.push({ id: info.id, name: clean(info.name, info.id), version: clean(String(info.version ?? '')), launch: info.launch, protocol: info.protocol, minProtocol, known: SUITE_IDS.includes(info.id) });
   }
   return found;
 }

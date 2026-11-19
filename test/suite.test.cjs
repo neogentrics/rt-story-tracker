@@ -6,7 +6,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { AppLink, call } = require('../src/main/app-link');
+const net = require('node:net');
+const { AppLink, call, endpointFor } = require('../src/main/app-link');
+const { Versions } = require('../src/main/versions');
 const { Inbox } = require('../src/main/inbox');
 const { launchInstalled, launchPathFor, readInstalled, removeInstalled, writeInstalled } = require('../src/main/installed');
 const { Linking } = require('../src/main/linking');
@@ -20,7 +22,7 @@ const fakeVault = () => ({
   open: (data) => Buffer.from(data).toString(),
 });
 
-function setUp(t, { on = true, launchPath = null, startApp } = {}) {
+function setUp(t, { on = true, launchPath = null, startApp, versions, platform } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-suite-'));
   const folder = path.join(dir, 'shared');
   const tempDir = path.join(dir, 'temp');
@@ -31,7 +33,7 @@ function setUp(t, { on = true, launchPath = null, startApp } = {}) {
   process.env.NMR_LINK_DIR = folder;
   const linking = new Linking({
     workspace, settings, vault: fakeVault(), inbox: new Inbox(), root: path.join(dir, 'library'), tempDir, home: dir, dataDir: dir,
-    version: '3.9.0', ask: async () => true, places: () => [], launchPath, ...(startApp ? { startApp } : {}),
+    version: '3.9.0', ask: async () => true, places: () => [], launchPath, ...(startApp ? { startApp } : {}), ...(versions ? { versions } : {}), ...(platform ? { platform } : {}),
   });
   const peers = [];
   t.after(async () => {
@@ -96,9 +98,12 @@ test('a file for an app that’s gone is cleared away, and a bad file is ignored
   fs.writeFileSync(path.join(folder, 'garbage.json'), '{ not json');
   fs.writeFileSync(path.join(folder, 'rt-author-desk.json'), JSON.stringify({ protocol: 1, id: 'someone-else', launch: real }));
   fs.writeFileSync(path.join(folder, 'rt-future.json'), JSON.stringify({ protocol: 2, id: 'rt-future', launch: real }));
-  assert.deepEqual(readInstalled(dir).map((item) => item.id), ['rt-press']);
+  fs.writeFileSync(path.join(folder, 'rt-nonsense.json'), JSON.stringify({ protocol: 0, id: 'rt-nonsense', launch: real }));
+  fs.writeFileSync(path.join(folder, 'rt-text.json'), JSON.stringify({ protocol: 'two', id: 'rt-text', launch: real }));
+  assert.deepEqual(readInstalled(dir).map((item) => [item.id, item.protocol]).sort(), [['rt-future', 2], ['rt-press', 1]], 'a newer protocol is listed, so it can be told it needs an update');
   assert.equal(fs.existsSync(path.join(folder, 'rt-audio-studio.json')), false, 'the stale one is deleted');
-  assert.equal(readInstalled(dir)[0].known, true);
+  assert.equal(readInstalled(dir).find((item) => item.id === 'rt-press').known, true);
+  assert.equal(readInstalled(dir).find((item) => item.id === 'rt-future').known, false);
 });
 
 test('only the suite’s own apps are started, only real programs, with no arguments and no shell', (t) => {
@@ -319,7 +324,7 @@ test('a chapter sent to publish carries the hint, and an app that doesn’t know
 
 // The Apps status, shared by every app
 
-const { DOTS, SUITE_APPS, SUITE_IDS, STATES, dotOf, dotWords, stateOf } = require('../src/shared/suite-apps');
+const { DOTS, SUITE_APPS, SUITE_IDS, STATES, UPDATE, dotOf, dotWords, isNewer, linkability, stateOf, updateButton, updateLine } = require('../src/shared/suite-apps');
 
 test('the shared list has every app once, with a name, a line and an https page, and is the one list the launcher trusts', () => {
   assert.deepEqual(SUITE_IDS, ['rt-markdown-reader', 'rt-story-tracker', 'rt-author-desk', 'rt-press', 'rt-audio-studio', 'recon-browser']);
@@ -411,4 +416,169 @@ test('only linked apps are asked what they are doing', async (t) => {
   asked.length = 0;
   await space.linking.status();
   assert.deepEqual(asked, ['rt-markdown-reader'], 'linked: asked, once, when the list was looked at');
+});
+
+// Updates and compatibility
+
+const latestFile = (apps) => new Versions({ fetchIt: async () => ({ ok: true, status: 200, text: async () => JSON.stringify({ apps }) }) });
+
+// An app that answers `hello` with whatever it's told to, on its own socket, so a protocol this app doesn't speak can be tried.
+async function fakeApp(t, space, { id = 'rt-press', name = 'RT Press', hello }) {
+  const dir = path.join(space.dir, `fake-${id}`);
+  fs.mkdirSync(dir, { recursive: true });
+  const endpoint = endpointFor(dir);
+  const server = net.createServer((sock) => {
+    sock.setEncoding('utf8');
+    sock.on('error', () => {});
+    sock.on('data', (chunk) => {
+      const request = JSON.parse(chunk.split('\n')[0]);
+      sock.write(`${JSON.stringify({ id: request.id, result: request.method === 'hello' ? { app: id, name, ...hello } : {} })}\n`);
+    });
+  });
+  await new Promise((resolve) => { server.listen(endpoint, resolve); });
+  t.after(() => server.close());
+  fs.mkdirSync(space.folder, { recursive: true });
+  fs.writeFileSync(path.join(space.folder, `${id}.json`), JSON.stringify({ protocol: hello.protocol, id, name, version: hello.version, endpoint }));
+}
+
+test('the wording is the same in every app, and a version is only ever "newer" when both are plain version numbers', () => {
+  assert.deepEqual([UPDATE.available, UPDATE.needs, UPDATE.unreachable], ['Update available', 'Needs an update to link', 'Couldn’t check for updates']);
+  assert.deepEqual([UPDATE.open, UPDATE.download], ['Open to update', 'Download']);
+  assert.equal(updateLine({ have: '3.7.1', latest: '3.9.0' }), 'you have 3.7.1, the latest is 3.9.0');
+  assert.equal(isNewer('3.9.0', '3.7.1'), true);
+  assert.equal(isNewer('3.10.0', '3.9.9'), true, 'numbers, not text');
+  assert.equal(isNewer('3.7.1', '3.7.1'), false);
+  assert.equal(isNewer('3.7.0', '3.7.1'), false);
+  for (const odd of ['latest', '3.7', '3.7.1-beta', '', null, undefined, '9'.repeat(50)]) {
+    assert.equal(isNewer(odd, '1.0.0'), false);
+    assert.equal(isNewer('9.9.9', odd), false);
+  }
+});
+
+test('which button an update gets: Open for an app that updates itself, Download for the rest', () => {
+  assert.equal(updateButton({ platform: 'win32', launch: 'C:/Programs/RT Press.exe' }), 'open');
+  assert.equal(updateButton({ platform: 'linux', launch: '/home/a/RTPress.AppImage' }), 'open');
+  assert.equal(updateButton({ platform: 'linux', launch: '/usr/bin/rt-press' }), 'download');
+  assert.equal(updateButton({ platform: 'darwin', launch: '/Applications/RT Press.app' }), 'download');
+  assert.equal(updateButton({ platform: 'win32', launch: 'C:/x.exe', running: true }), '', 'an app that’s open updates itself, so there is nothing to press');
+});
+
+test('only the protocol and the kinds of document decide whether two apps link, never the version number', () => {
+  const mine = { protocol: 1, minProtocol: 1, accepts: ['markdown', 'text'] };
+  assert.deepEqual(linkability({ mine, theirs: { protocol: 1, accepts: ['markdown'] } }), { ok: true });
+  assert.deepEqual(linkability({ mine, theirs: { protocol: 1, version: '0.0.1', accepts: ['markdown'] } }), { ok: true }, 'a very old release links fine');
+  assert.deepEqual(linkability({ mine, theirs: { protocol: 1, version: '99.0.0' } }), { ok: true }, 'and so does a very new one');
+  assert.deepEqual(linkability({ mine, theirs: { protocol: 2, minProtocol: 1 } }), { ok: true }, 'a newer protocol that still accepts this one');
+  assert.deepEqual(linkability({ mine, theirs: { protocol: 2, minProtocol: 2 } }), { ok: false, who: 'us' }, 'this app is the old one');
+  assert.deepEqual(linkability({ mine: { ...mine, protocol: 2, minProtocol: 2 }, theirs: { protocol: 1 } }), { ok: false, who: 'them' }, 'the other app is the old one');
+  assert.equal(linkability({ mine, theirs: {} }).ok, false, 'no protocol at all');
+  assert.equal(linkability({ mine, theirs: { protocol: 1, accepts: ['audio'] } }).ok, false, 'nothing in common to send');
+  assert.equal(linkability({ mine, theirs: { protocol: 1, accepts: [] } }).ok, true, 'an app that sends and accepts nothing, such as a browser, still links');
+});
+
+test('a newer version shows the nudge, with the right button, and never blocks a link', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-inst-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const versions = latestFile({
+    'rt-markdown-reader': { version: '3.12.0', url: 'https://recontowers.com/apps/rt-markdown-reader/' },
+    'rt-press': { version: '1.2.0' },
+    'rt-audio-studio': { version: '1.0.0' },
+  });
+  const space = setUp(t, { versions, platform: 'win32' });
+  await space.linking.apply();
+  writeInstalled(space.folder, { id: 'rt-press', name: 'RT Press', version: '1.0.0', launch: program(dir, 'rt-press') });
+  writeInstalled(space.folder, { id: 'rt-audio-studio', name: 'RT Audio Studio', version: '1.0.0', launch: program(dir, 'rt-audio-studio') });
+  await space.peer();
+  const find = async (id) => (await space.linking.status()).apps.find((app) => app.id === id);
+
+  const reader = await find('rt-markdown-reader');
+  assert.deepEqual([reader.version, reader.update.have, reader.update.latest, reader.update.line], ['3.11.0', '3.11.0', '3.12.0', 'you have 3.11.0, the latest is 3.12.0']);
+  assert.equal(reader.update.action, '', 'it’s open, so it updates itself');
+  assert.equal(reader.canLink, true, 'and the nudge doesn’t stop the link');
+  const press = await find('rt-press');
+  assert.deepEqual([press.update.line, press.update.action, press.needsUpdate], ['you have 1.0.0, the latest is 1.2.0', 'open', '']);
+  assert.equal((await find('rt-audio-studio')).update, null, 'the same version is no nudge');
+  assert.equal((await find('rt-author-desk')).update, null, 'and an app that isn’t installed has nothing to update');
+
+  space.linking.platform = 'darwin';
+  assert.equal((await find('rt-press')).update.action, 'download');
+
+  await space.linking.pair('rt-markdown-reader');
+  const linked = await find('rt-markdown-reader');
+  assert.deepEqual([linked.state, linked.linked, linked.update.latest], ['linked', true, '3.12.0'], 'linked, with the nudge still showing');
+  assert.equal((await space.linking.status()).updates, 'ok');
+});
+
+test('Download opens the page the site gave for that app, and otherwise the one in the shared list', async (t) => {
+  const space = setUp(t, { versions: latestFile({ 'rt-press': { version: '1.2.0', url: 'https://recontowers.com/apps/rt-press/' } }) });
+  const opened = [];
+  space.linking.openPage = (page) => opened.push(page);
+  await space.linking.status();
+  space.linking.getApp('rt-press');
+  space.linking.getApp('rt-author-desk');
+  assert.deepEqual(opened, ['https://recontowers.com/apps/rt-press/', SUITE_APPS.find((app) => app.id === 'rt-author-desk').page]);
+});
+
+test('an app on a protocol this one doesn’t speak is found, says it needs an update, and can’t be linked', async (t) => {
+  const space = setUp(t, { versions: latestFile({}) });
+  await space.linking.apply();
+  await fakeApp(t, space, { hello: { protocol: 2, minProtocol: 2, version: '2.0.0', accepts: ['markdown'] } });
+  const press = (await space.linking.status()).apps.find((app) => app.id === 'rt-press');
+  assert.deepEqual([press.state, press.running, press.needsUpdate, press.canLink], ['found', true, 'us', false]);
+  await assert.rejects(() => space.linking.pair('rt-press'), /Needs an update to link/);
+  assert.deepEqual(space.linking.load(), {}, 'and nothing was linked');
+});
+
+test('an app that is only ahead, or only different, still links: an ordinary release never breaks a link', async (t) => {
+  const space = setUp(t, { versions: latestFile({}) });
+  await space.linking.apply();
+  await fakeApp(t, space, { hello: { protocol: 2, minProtocol: 1, version: '9.0.0', accepts: ['markdown', 'audio'] } });
+  const press = (await space.linking.status()).apps.find((app) => app.id === 'rt-press');
+  assert.deepEqual([press.needsUpdate, press.canLink, press.version], ['', true, '9.0.0']);
+});
+
+test('an app that’s installed on a newer protocol, but not running, says it needs an update too', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-inst-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const space = setUp(t, { versions: latestFile({}) });
+  fs.mkdirSync(path.join(space.folder, 'installed'), { recursive: true });
+  fs.writeFileSync(path.join(space.folder, 'installed', 'rt-press.json'), JSON.stringify({ protocol: 2, minProtocol: 2, id: 'rt-press', name: 'RT Press', version: '2.0.0', launch: program(dir, 'rt-press') }));
+  const press = (await space.linking.status()).apps.find((app) => app.id === 'rt-press');
+  assert.deepEqual([press.state, press.needsUpdate, press.canLink], ['installed', 'us', false]);
+});
+
+test('the answer is asked for when the panel opens, kept for a day, and asked again on Refresh; an unreachable file is said, and carried on from', async (t) => {
+  let asked = 0;
+  let down = false;
+  const clock = { at: 10_000_000 };
+  const versions = new Versions({
+    now: () => clock.at,
+    fetchIt: async () => {
+      asked += 1;
+      if (down) throw new Error('offline');
+      return { ok: true, status: 200, text: async () => JSON.stringify({ apps: { 'rt-press': { version: '1.2.0' } } }) };
+    },
+  });
+  const space = setUp(t, { versions });
+  await space.linking.status();
+  await space.linking.status();
+  assert.equal(asked, 1, 'opening it twice in a day asks once');
+  down = true;
+  await space.linking.status({ refresh: true });
+  assert.equal(asked, 2);
+  const unreachable = await space.linking.status();
+  assert.equal(unreachable.updates, 'unreachable');
+  assert.equal(unreachable.apps.length, 5, 'and the panel carries on with everything else');
+  assert.equal(asked, 2, 'a failure isn’t asked again at every click');
+  const none = setUp(t);
+  assert.equal((await none.linking.status()).updates, 'unavailable', 'with no file yet, nothing is said');
+});
+
+test('on start the site is asked only when App Link is on', async (t) => {
+  let asked = 0;
+  const versions = new Versions({ fetchIt: async () => { asked += 1; return { ok: false, status: 404, text: async () => '' }; } });
+  await setUp(t, { versions, on: false }).linking.checkVersions();
+  assert.equal(asked, 0);
+  await setUp(t, { versions, on: true }).linking.checkVersions();
+  assert.equal(asked, 1);
 });

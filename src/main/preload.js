@@ -34,7 +34,7 @@ contextBridge.exposeInMainWorld('storyTracker', {
   exportProject: () => call('project:export'),
   importProject: (file) => call('project:import', file),
   importLocked: (input) => call('project:importLocked', input),
-  linkStatus: () => call('link:status'),
+  linkStatus: (options) => call('link:status', options),
   setLink: (on) => call('link:set', on),
   pairApp: (id) => call('link:pair', id),
   openApp: (id) => call('link:open', id),

@@ -254,6 +254,7 @@ clips decision 29, in [decisions](docs/decisions.md). Clips are in this release 
 | Canon lock | S | Locked items warn before they change, and change only if the author confirms. |
 | 🙋🛡️ Clips from Recon Browser | S | Web research sent by Recon Browser over App Link, as a document of kind `research` with its source as front matter. It waits in the inbox, and nothing is filed or fetched without your choice. A locked project holds it until unlocked. No new protocol: it uses the key you approve once. |
 | 🙋 Apps status icon | S | A small icon on the toolbar whose dot says at a glance whether other Recon Towers apps are linked, found or off, in words as well as colour. It opens the Apps panel, which lists every app with what you can do about it, including where to get one you don't have yet. The same in every app. |
+| 🙋🛡️ Updates and compatibility in the Apps panel | S | The panel says when another app has a newer version, with both numbers and the right button, and it never stops a link. Two apps link or don't by their App Link version, never by the app's version, so an ordinary release can't break a link. Only an incompatible protocol blocks, and then the older app says *Needs an update to link*. The latest versions come from one small file on the Recon Towers site, with nothing about you in the request. |
 
 **Test:** freeze a version, try to edit it, and print a set without the author-only part. Send a clip from Recon Browser with
 and without a link, and with a locked project. Watch the apps dot go grey, amber and green as you install, find and link

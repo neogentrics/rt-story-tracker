@@ -7,8 +7,12 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const net = require('node:net');
 const path = require('node:path');
+const { UPDATE, linkability, validVersion } = require('../shared/suite-apps');
 
 const PROTOCOL = 1;
+// The oldest protocol this app will link with. It only goes up when a security fix needs it to, and then an older app is told it
+// needs an update to link. An ordinary release never changes it.
+const MIN_PROTOCOL = 1;
 const APP_ID = 'rt-story-tracker';
 const APP_NAME = 'RT Story Tracker';
 const ACCEPTS = ['markdown', 'text'];
@@ -102,6 +106,20 @@ function call(endpoint, method, params, timeout = CALL_MS) {
   });
 }
 
+const MINE = { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, accepts: ACCEPTS };
+
+// What another app says about itself, cleaned: a version number, the protocol it speaks and the oldest it accepts, and the kinds of
+// document it takes. Whatever else it says is ignored. `fallback` is the file it left in the folder.
+function describeHello(hello, fallback = {}) {
+  const wanted = (value, otherwise) => (Number.isInteger(value) && value >= 1 && value <= 1000 ? value : otherwise);
+  return {
+    version: validVersion(hello?.version) ? hello.version : validVersion(fallback.version) ? fallback.version : '',
+    protocol: wanted(hello?.protocol, fallback.protocol),
+    minProtocol: wanted(hello?.minProtocol, 1),
+    accepts: Array.isArray(hello?.accepts) ? hello.accepts.filter((kind) => typeof kind === 'string' && /^[a-z0-9._-]{1,32}$/.test(kind)).slice(0, 12) : [],
+  };
+}
+
 class AppLink {
   // load and save keep { id: { name, key } }. ask({ id, name }) resolves true or false. open({ from, name, text, path,
   // attachments, kind, intent }) takes a document. status() says what the app is doing, as { state, line }, and facts is
@@ -180,7 +198,7 @@ class AppLink {
   }
 
   handle(method, params) {
-    if (method === 'hello') return { protocol: PROTOCOL, app: this.id, name: this.name, version: this.version, accepts: ACCEPTS };
+    if (method === 'hello') return { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, app: this.id, name: this.name, version: this.version, accepts: ACCEPTS };
     if (method === 'pair') return this.pairRequest(params);
     if (method === 'open_document') return this.openRequest(params);
     if (method === 'unlink') return this.unlinkRequest(params);
@@ -198,8 +216,10 @@ class AppLink {
     return { id, ...link };
   }
 
-  async pairRequest({ app: id, name }) {
+  async pairRequest({ app: id, name, protocol, minProtocol, accepts }) {
     if (!validId(id) || id === this.id) throw new LinkError('bad_request', 'Give the app’s id.');
+    // An app that says which protocol it speaks is checked. One that doesn't is taken to be the first protocol, as before.
+    if (protocol !== undefined && !linkability({ mine: MINE, theirs: describeHello({ protocol, minProtocol, accepts }) }).ok) throw new LinkError('needs_update', `${UPDATE.needs}.`);
     const shown = cleanName(name);
     if (!shown) throw new LinkError('bad_request', 'Give the app’s name.');
     if (this.asking) throw new LinkError('busy', `${this.name} is already asking something.`);
@@ -276,9 +296,10 @@ class AppLink {
     const seen = await Promise.all(names.filter((name) => name.endsWith('.json') && name !== `${this.id}.json`).map(async (name) => {
       try {
         const info = JSON.parse(fs.readFileSync(path.join(this.folder, name), 'utf8'));
-        if (info?.protocol !== PROTOCOL || !validId(info.id) || `${info.id}.json` !== name || !validEndpoint(info.endpoint, this.platform)) return null;
-        await call(info.endpoint, 'hello', {}, 1500);
-        return { id: info.id, name: cleanName(info.name, info.id), endpoint: info.endpoint };
+        // An app on another protocol is still found, so it can be told it needs an update. Whether it can be linked is decided below.
+        if (!Number.isInteger(info?.protocol) || info.protocol < 1 || !validId(info.id) || `${info.id}.json` !== name || !validEndpoint(info.endpoint, this.platform)) return null;
+        const hello = await call(info.endpoint, 'hello', {}, 1500);
+        return { id: info.id, name: cleanName(info.name, info.id), endpoint: info.endpoint, ...describeHello(hello, info) };
       } catch {
         return null;
       }
@@ -300,13 +321,14 @@ class AppLink {
   async reach(id) {
     const found = (await this.found()).find((item) => item.id === id);
     if (!found) throw new LinkError('not_running', 'That app isn’t running.');
+    if (!linkability({ mine: MINE, theirs: found }).ok) throw new LinkError('needs_update', `${UPDATE.needs}.`);
     return found;
   }
 
   // Asks another app to link with this one. The person answers over there.
   async pairWith(id) {
     const other = await this.reach(id);
-    const result = await call(other.endpoint, 'pair', { app: this.id, name: this.name }, ASK_MS + 5000);
+    const result = await call(other.endpoint, 'pair', { app: this.id, name: this.name, protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, accepts: ACCEPTS }, ASK_MS + 5000);
     if (typeof result?.key !== 'string' || result.key.length < 32) throw new LinkError('failed', 'That app didn’t finish linking.');
     this.save({ ...this.load(), [id]: { name: other.name, key: result.key } });
     return { name: other.name };
@@ -355,4 +377,4 @@ class AppLink {
   }
 }
 
-module.exports = { APP_ID, APP_NAME, AppLink, LinkError, PROTOCOL, call, cleanName, documentName, endpointFor, sharedFolder, validEndpoint, validId };
+module.exports = { APP_ID, APP_NAME, AppLink, LinkError, MIN_PROTOCOL, PROTOCOL, call, cleanName, documentName, endpointFor, sharedFolder, validEndpoint, validId };

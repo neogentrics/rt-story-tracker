@@ -32,6 +32,13 @@ Versions of a record, for authors who need to say what a record said as of each 
   words (Linked, Found not linked, Installed not running, Not installed) and one button (Open, Link or Get it). Finding an app
   never links it, and nothing is checked on a timer: it looks when the window opens, when the panel opens and on Refresh.
 
+- **The Apps panel says when an app has an update, and when two apps can't link.** *Update available* shows both numbers, with *Open to
+  update* for an app that updates itself and *Download* for the rest, and it never stops a link. Whether two apps link depends on
+  their App Link version and the kinds of document they accept, never on the app's version, so a normal release never breaks a link.
+  If a security fix ever raises the minimum, the older app shows *Needs an update to link*. The latest versions come from one small
+  file on the Recon Towers site, read when the panel opens or the app starts and kept for a day. The request carries nothing about
+  you. If the file can't be reached it says *Couldn't check for updates* and carries on.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used

@@ -285,7 +285,7 @@ function registerSecurity({ security, workspace, window }) {
 }
 
 function registerLinking({ linking, inbox, workspace }) {
-  handle('link:status', () => linking().status());
+  handle('link:status', (options) => linking().status(options));
   handle('link:set', (on) => linking().setOn(on));
   handle('link:pair', (id) => linking().pair(id));
   handle('link:open', (id) => linking().openApp(id));

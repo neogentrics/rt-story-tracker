@@ -2715,6 +2715,12 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
   display: block;
 }
 
+.app-info .app-update,
+.app-info .app-needs {
+  display: block;
+  font-weight: 600;
+}
+
 
 .app-row {
   align-items: flex-start;
