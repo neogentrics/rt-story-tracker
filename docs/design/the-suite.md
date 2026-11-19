@@ -316,3 +316,40 @@ itself), Close Tab, Copy as Formatted Text, Find in Folder, and the Reader's too
 **Not tested.** F1 can't be pressed by the real-app test (the menu takes the key before the page does), so it's checked on the menu item
 only. How the About and Help windows look on a Mac and on Windows hasn't been seen.
 
+## Look and feel
+
+The owner wants one look and feel across every app, and `docs/app-suite.md` in the rt-markdown-reader repo ("Look and feel in every app",
+2026-11-19) says what that is, with RT Markdown Reader as the reference. This is how this app stands against it in 3.10, and what is left.
+
+| The standard says | This app |
+|---|---|
+| Menus short: Reader caps File at 20 items, with the less-used ones in a submenu | **Done.** File has 11 items. The project's own commands (Import, Export, Print, Find My Files, Attachments, Book Details, Earlier Versions, Documents Sent Here and the three for RT Markdown Reader) are in *File, This Project*, with the same keys. A test caps every menu at 20 items, File at 14, and checks what's in the submenu. |
+| Help in this order: Help Center (F1), Tutorial, Check for Updates…, About with the version | **Done, except Tutorial.** The order is kept. Keyboard Shortcuts stays as well, as it does in the Reader. **There's no Tutorial item until there is a tutorial,** so there's no dead entry. It's in v3.20 on the roadmap. Once an update is ready the item says *Restart to Update (3.11.0)*, as the Reader's does. |
+| Help Center with guides as Markdown files in a `help` folder, searchable | **Later (v3.20).** Today it's a short page of topics in `src/shared/help-pages.js`. |
+| A tutorial, offered the first run | **Later (v3.20).** |
+| About window with four links, an engine line, copyright, license, notices and Copy details | **Done** (see *Looking like the same family* above). |
+| One Preferences window on Ctrl+comma, in sections | **Already so, not touched.** The library now has a **Preferences** button too, since the themes couldn't be found. |
+| Shared themes with Glass, Follow System, fonts, and a contrast test | **Already so, not touched.** |
+| Colour-safe, and Customize Theme | **Later (v3.20).** |
+| Toolbar: icon buttons with names; an adjustable toolbar in the Reader's v3.13 | Buttons have names, and that's now tested. **The adjustable toolbar is copied from the Reader when it exists (its v3.13).** The apps icon is at the right end. |
+| Updates: *Restart to update*, or a link to the download where the system can't update itself | **Already so**, with the Reader's words (below). |
+| Accessibility: every button named, keyboard use, checked automatically | **Started.** One test, `test/e2e/accessibility.e2e.cjs`, opens 20 screens and dialogs, checks 784 controls, and runs the main flows from the keyboard. See below. |
+| Languages: every word in a table, Spanish, French, German, right-to-left | **Later (Ongoing).** |
+| Command palette on Ctrl+K, changeable shortcuts | **Later (v3.20).** Ctrl+K is *Look Up a Record* here today, so it moves into the palette when the palette arrives. |
+| Wording: *Open*, *Save*, *Restart to update*, *Check for Updates…* | **Done where the Reader has a word.** See below. |
+
+**Wording, against the Reader's labels.** *Open Project File…* is now *Open…*, and *Save a Copy of This Project…* is *Save a Copy…* (the Reader
+has no Save a Copy). *Quit* is *Exit* on Windows and Linux. The update banner says *Version X is ready to install.* with *Restart to
+update*, and *Version X is available.* with *Download*. Check for Updates answers *You're up to date*, *Version X is ready to install*,
+*Version X is available* and *Couldn't check for updates*, in a box titled Check for Updates, with typographic apostrophes as the Reader
+has. Where the Reader has no label (the records, versions and the story bible) the app's own words stay.
+
+**The accessibility test.** It opens the library, a project being written, Records with a kind and a record, Preferences, the Apps panel,
+the Trash, Export, Attachments, Book Details, Earlier Versions, Password and Lock, the Help Center, Keyboard Shortcuts, About, the look-up
+panel and Find, and checks every button, link, field, select, summary and editor on each for a name: an aria-label, a label, a title or
+words inside it. A placeholder isn't a name. The test first proves it catches an unnamed button, a field with only a placeholder and a
+link with only a picture. From the keyboard alone it types a project's name and starts it with Enter, Tabs to Preferences and opens it,
+checks focus moves into the dialog and comes back, opens the Apps panel with Space, adds a chapter and types in it, and switches to
+Records. Escape closes every dialog. **Not covered:** Import and Find My Files, which begin with the system's own file chooser, the lock
+screen, and screen readers themselves: a name is checked for, not how a screen reader reads it. Contrast is the existing theme test's job.
+

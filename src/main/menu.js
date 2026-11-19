@@ -5,14 +5,16 @@ const { HELP_MENU } = require('../shared/family');
 // There's no Reload here on purpose: it would throw away whatever hasn't saved yet.
 // The Help menu is RT Markdown Reader's: Help Center, Keyboard Shortcuts, Check for Updates and About with the version in its label.
 // Its Tutorial and Find a Command aren't here yet.
-function buildMenu({ send, checkForUpdates, about, version }) {
+function buildMenu({ send, checkForUpdates, about, version, updateReady = null }) {
   const isMac = process.platform === 'darwin';
   const aboutLabel = HELP_MENU.about(version);
   const help = [
     { label: HELP_MENU.center.label, accelerator: HELP_MENU.center.accelerator, click: () => send('help-center') },
     { label: HELP_MENU.shortcuts.label, click: () => send('shortcuts') },
     { type: 'separator' },
-    { label: HELP_MENU.update.label, click: checkForUpdates },
+    updateReady
+      ? { label: HELP_MENU.restart(updateReady), click: () => send('restart-to-update') }
+      : { label: HELP_MENU.update.label, click: checkForUpdates },
     ...(isMac ? [] : [{ type: 'separator' }, { label: aboutLabel, click: about }]),
   ];
   return Menu.buildFromTemplate([
@@ -38,22 +40,28 @@ function buildMenu({ send, checkForUpdates, about, version }) {
         { label: 'New Chapter', accelerator: 'CmdOrCtrl+N', click: () => send('new-chapter') },
         { label: 'New Book', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new-book') },
         { type: 'separator' },
-        { label: 'Open Project File…', accelerator: 'CmdOrCtrl+O', click: () => send('open-file') },
-        { label: 'Save a Copy of This Project…', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('export') },
+        { label: 'Open…', accelerator: 'CmdOrCtrl+O', click: () => send('open-file') },
+        { label: 'Save a Copy…', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('export') },
         { type: 'separator' },
-        { label: 'Import…', accelerator: 'CmdOrCtrl+Shift+I', click: () => send('import') },
-        { label: 'Find My Files…', click: () => send('find-files') },
-        { label: 'Attachments…', click: () => send('attachments') },
-        { label: 'Export…', accelerator: 'CmdOrCtrl+E', click: () => send('export-book') },
-        { label: 'Print…', accelerator: 'CmdOrCtrl+P', click: () => send('print') },
-        { label: 'Book Details…', click: () => send('details') },
-        { type: 'separator' },
-        { label: 'Open Chapter in RT Markdown Reader', click: () => send('reader-chapter') },
-        { label: 'Open Book in RT Markdown Reader', click: () => send('reader-book') },
-        { label: 'Publish Chapter with RT Markdown Reader…', click: () => send('reader-publish') },
-        { label: 'Documents Sent Here…', click: () => send('inbox') },
-        { type: 'separator' },
-        { label: 'Earlier Versions of This Chapter…', click: () => send('history') },
+        // The commands for the project that's open go in one submenu, so File stays short, as it does in RT Markdown Reader.
+        {
+          label: 'This Project',
+          submenu: [
+            { label: 'Import…', accelerator: 'CmdOrCtrl+Shift+I', click: () => send('import') },
+            { label: 'Export…', accelerator: 'CmdOrCtrl+E', click: () => send('export-book') },
+            { label: 'Print…', accelerator: 'CmdOrCtrl+P', click: () => send('print') },
+            { type: 'separator' },
+            { label: 'Find My Files…', click: () => send('find-files') },
+            { label: 'Attachments…', click: () => send('attachments') },
+            { label: 'Book Details…', click: () => send('details') },
+            { label: 'Earlier Versions of This Chapter…', click: () => send('history') },
+            { type: 'separator' },
+            { label: 'Documents Sent Here…', click: () => send('inbox') },
+            { label: 'Open Chapter in RT Markdown Reader', click: () => send('reader-chapter') },
+            { label: 'Open Book in RT Markdown Reader', click: () => send('reader-book') },
+            { label: 'Publish Chapter with RT Markdown Reader…', click: () => send('reader-publish') },
+          ],
+        },
         { label: 'Trash', click: () => send('trash') },
         { type: 'separator' },
         { label: 'Password and Lock…', click: () => send('security') },

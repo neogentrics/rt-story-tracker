@@ -46,6 +46,11 @@ Versions of a record, for authors who need to say what a record said as of each 
   before a project is open. Find Next (F3) and Find Previous (Shift+F3) are in the Edit menu, and File ends with Exit on Windows and
   Linux. The Reader's Tutorial and Find a Command aren't here yet.
 
+- **Matches the suite's look and feel.** File is shorter: Import, Export, Print and the other commands for the project are in *File, This
+  Project*, with the same keys. Words follow RT Markdown Reader's: *Open…*, *Exit*, and an update that is *ready to install* with
+  *Restart to update*; once one is ready, Help says *Restart to Update*. A new test opens the main screens and dialogs and checks that
+  every control has a name and that the main flows work from the keyboard. There's no Tutorial item in Help yet.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used

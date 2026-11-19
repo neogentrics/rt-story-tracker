@@ -41,7 +41,12 @@ let mainWindow = null;
 let flushCount = 0;
 let quitting = false;
 
-const updater = new Updater((status) => mainWindow?.webContents.send('update:status', status));
+// Once an update is ready the Help menu says so, as RT Markdown Reader's does, so the menu is built again.
+const updater = new Updater((status) => {
+  mainWindow?.webContents.send('update:status', status);
+  if (menuHooks) Menu.setApplicationMenu(buildMenu({ ...menuHooks, updateReady: status.state === 'ready' ? status.version : null }));
+});
+let menuHooks = null;
 
 // The system's own encrypted storage. On Linux with no keyring Electron falls back to a fixed password, which is no
 // protection at all, so that counts as having none.
@@ -356,14 +361,14 @@ function showAbout() {
 async function checkForUpdatesFromMenu() {
   const result = await updater.check();
   const messages = {
-    current: `You have the latest version, ${app.getVersion()}.`,
-    downloading: `Version ${result.version} is downloading. You'll be asked to restart when it's ready.`,
-    ready: `Version ${result.version} is ready. Use Restart to update at the top of the window.`,
-    available: `Version ${result.version} is available. Use Download at the top of the window.`,
-    off: 'Updates are off in this copy of the app.',
-    error: `Couldn't check for updates: ${result.message}`,
+    current: { message: 'You’re up to date', detail: `RT Story Tracker ${app.getVersion()} is the latest version.` },
+    downloading: { message: `Version ${result.version} is downloading`, detail: 'You’ll be asked to restart when it’s ready.' },
+    ready: { message: `Version ${result.version} is ready to install`, detail: 'Choose Help, then Restart to Update, or press Restart to update at the top of the window.' },
+    available: { message: `Version ${result.version} is available`, detail: 'This copy can’t update itself. Choose Download at the top of the window.' },
+    off: { message: 'Updates are off in this copy of the app', detail: '' },
+    error: { type: 'warning', message: 'Couldn’t check for updates', detail: result.message ? `${result.message}` : 'Check your internet connection and try again.' },
   };
-  dialog.showMessageBox(mainWindow, { type: 'info', message: messages[result.state] ?? messages.current });
+  dialog.showMessageBox(mainWindow, { type: 'info', title: 'Check for Updates', buttons: ['OK'], ...(messages[result.state] ?? messages.current) });
 }
 
 if (!app.requestSingleInstanceLock()) {
@@ -425,14 +430,13 @@ if (!app.requestSingleInstanceLock()) {
         return file;
       },
     });
-    Menu.setApplicationMenu(
-      buildMenu({
-        send: (command) => mainWindow?.webContents.send('menu:command', command),
-        checkForUpdates: checkForUpdatesFromMenu,
-        about: showAbout,
-        version: app.getVersion(),
-      }),
-    );
+    menuHooks = {
+      send: (command) => mainWindow?.webContents.send('menu:command', command),
+      checkForUpdates: checkForUpdatesFromMenu,
+      about: showAbout,
+      version: app.getVersion(),
+    };
+    Menu.setApplicationMenu(buildMenu(menuHooks));
     mainWindow = createWindow({ show: !selfTestFile });
     // A locked project shouldn't stay open behind a locked screen or a sleeping laptop.
     for (const event of ['lock-screen', 'suspend']) powerMonitor.on(event, () => mainWindow?.webContents.send('menu:command', 'auto-lock'));

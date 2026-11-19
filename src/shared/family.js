@@ -40,6 +40,7 @@ const HELP_MENU = {
   center: { label: 'Help Center', accelerator: 'F1' },
   shortcuts: { label: 'Keyboard Shortcuts' },
   update: { label: 'Check for Updates…' },
+  restart: (version) => `Restart to Update (${version})`,
   about: (version) => `About ${APP_NAME} ${version}`,
 };
 

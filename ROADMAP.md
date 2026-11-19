@@ -256,6 +256,7 @@ clips decision 29, in [decisions](docs/decisions.md). Clips are in this release 
 | 🙋 Apps status icon | S | A small icon on the toolbar whose dot says at a glance whether other Recon Towers apps are linked, found or off, in words as well as colour. It opens the Apps panel, which lists every app with what you can do about it, including where to get one you don't have yet. The same in every app. |
 | 🙋🛡️ Updates and compatibility in the Apps panel | S | The panel says when another app has a newer version, with both numbers and the right button, and it never stops a link. Two apps link or don't by their App Link version, never by the app's version, so an ordinary release can't break a link. Only an incompatible protocol blocks, and then the older app says *Needs an update to link*. The latest versions come from one small file on the Recon Towers site, with nothing about you in the request. |
 | 🙋 Looks like the same family | S | A Help menu like the Reader's (Help Center, Keyboard Shortcuts, Check for Updates, About with the version), About as a window in the app with its links and *Copy Version Details*, a top bar on the library screen with Preferences and the apps icon, and F3 for Find Next. The Reader's **Tutorial** and **Find a Command** are left for later. |
+| 🙋 Matches the suite's look and feel | S | Menus and words like RT Markdown Reader's, as set out in `docs/app-suite.md` there. File is short, with the project's own commands in a **This Project** submenu. Help is Help Center, Check for Updates and About with the version (Keyboard Shortcuts is kept, as in the Reader), and **Tutorial is left out of the menu until it exists**. Labels follow the Reader's (*Open…*, *Exit*, *Restart to Update*). One automated test opens every main screen, checks that every control has a name and that the main flows work from the keyboard. |
 
 **Test:** freeze a version, try to edit it, and print a set without the author-only part. Send a clip from Recon Browser with
 and without a link, and with a locked project. Watch the apps dot go grey, amber and green as you install, find and link
@@ -397,6 +398,10 @@ leaving the computer.
 | 🙋 Your own shortcuts | M | Change any keyboard shortcut. |
 | 🙋 Customize Theme | M | Change a theme's colours, and share them with RT Markdown Reader. |
 | 🙋 Colour-safe | S | Colours that work for colour-blind readers, in every theme. |
+| 🙋 Tutorial | M | A hands-on tour with a practice chapter, offered the first time the app opens, skippable and resumable, and replayed from Help. People who update from an older version get it too. The Help menu has no Tutorial item until this exists. |
+| 🙋 Help Center guides | M | Numbered, searchable guides kept as plain Markdown files in a `help` folder, like RT Markdown Reader's, each able to jump to the setting it explains. The Help Center in 3.10 is a short page of topics; these replace it. |
+| 🙋 Command palette and shortcuts | S | The palette moves to Ctrl+K as in the Reader, so *Look Up a Record*, which has Ctrl+K today, becomes a command in it and keeps a key of its own. Every command can be run by name and any shortcut changed. |
+| Adjustable toolbar | S | Hide, reorder and shrink toolbar buttons, with names beside the icons if wanted. Copied from RT Markdown Reader's when it exists, in its v3.13. |
 
 **Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme.
 
@@ -435,9 +440,9 @@ these devices sync with it.
 | Feature | Size | Details |
 |---|:-:|---|
 | Code signing | S | Windows and Mac, as for RT Markdown Reader. |
-| Tutorial & Help Center | M | A first-run tutorial and a Help Center that grow with each release; any author has to be able to start alone. |
-| Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. |
-| Languages | L | The app in other languages, right-to-left text. |
+| Tutorial & Help Center | M | Built in [v3.20](#v320--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
+| Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. Started in 3.10: one test opens every main screen and checks every control has a name and the main flows work from the keyboard. |
+| Languages | L | Every word of the app's own in one table per feature, with Spanish, French and German and right-to-left layouts, as in RT Markdown Reader. Product names aren't translated. |
 | Recon Towers App Store | S | StoryTracker goes back on the App Store page when the rebuild is done. Until then it stays on The Bench. |
 
 ## Open decisions

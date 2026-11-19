@@ -241,7 +241,7 @@ function showUpdate(status) {
   const banner = document.getElementById('update-banner');
   if (status.state === 'ready') {
     banner.replaceChildren(
-      `Version ${status.version} is ready.`,
+      `Version ${status.version} is ready to install.`,
       el('button', {
         id: 'update-restart',
         onclick: async () => {
@@ -252,7 +252,7 @@ function showUpdate(status) {
     );
   } else if (status.state === 'available') {
     banner.replaceChildren(
-      `Version ${status.version} is out.`,
+      `Version ${status.version} is available.`,
       el('a', { href: status.url, target: '_blank', rel: 'noreferrer' }, 'Download'),
     );
   } else {
@@ -270,6 +270,7 @@ function onMenu(command) {
   if (command === 'replace') room?.find({ replacing: true });
   if (command === 'find-next') room?.findStep(1);
   if (command === 'find-previous') room?.findStep(-1);
+  if (command === 'restart-to-update') document.getElementById('update-restart')?.click();
   if (command === 'about') openAbout(api);
   if (command === 'help-center') openHelp({ page: 'center' });
   if (command === 'shortcuts') openHelp({ page: 'shortcuts' });

@@ -10,7 +10,7 @@ const Module = require('node:module');
 const { ABOUT, APP_NAME, BLURB, HELP_MENU, LINKS, REPO, WEBSITE, copyright, detailsText, versionWords } = require('../src/shared/family');
 const { HELP_TOPICS, SHORTCUTS, showKeys } = require('../src/shared/help-pages');
 
-function menuFor({ platform = 'linux', version = '3.10.0' } = {}) {
+function menuFor({ platform = 'linux', version = '3.10.0', updateReady = null } = {}) {
   const sent = [];
   const real = Module._load;
   Module._load = function load(request, ...rest) {
@@ -21,7 +21,7 @@ function menuFor({ platform = 'linux', version = '3.10.0' } = {}) {
   try {
     delete require.cache[require.resolve('../src/main/menu')];
     const { buildMenu } = require('../src/main/menu');
-    const template = buildMenu({ send: (command) => sent.push(command), checkForUpdates: () => sent.push('check'), about: () => sent.push('about-box'), version });
+    const template = buildMenu({ send: (command) => sent.push(command), checkForUpdates: () => sent.push('check'), about: () => sent.push('about-box'), version, updateReady });
     return { template, sent };
   } finally {
     Object.defineProperty(process, 'platform', was);
@@ -41,6 +41,19 @@ test('the Help menu has the Reader’s items in its order, with the version in A
   assert.equal(HELP_MENU.about('3.7.1'), 'About RT Story Tracker 3.7.1');
 });
 
+test('the Help menu keeps the standard’s order, says Restart to Update once one is ready, and leaves Tutorial out until it exists', () => {
+  const order = ['Help Center', 'Check for Updates…', 'About RT Story Tracker 3.10.0'];
+  const labelsNow = labels(menuFor().template.find((menu) => menu.label === 'Help').submenu).filter((label) => order.includes(label));
+  assert.deepEqual(labelsNow, order, 'Help Center, then Check for Updates, then About with the version');
+  const ready = menuFor({ updateReady: '3.11.0' });
+  const help = ready.template.find((menu) => menu.label === 'Help').submenu;
+  assert.equal(labels(help).includes('Check for Updates…'), false);
+  const restart = help.find((item) => item.label === 'Restart to Update (3.11.0)');
+  restart.click();
+  assert.deepEqual(ready.sent, ['restart-to-update']);
+  assert.equal(labels(menuFor().template.flatMap((menu) => menu.submenu ?? [])).includes('Tutorial'), false, 'no dead Tutorial item');
+});
+
 test('each Help item asks the window for its page, and About is in the window, not a native box', () => {
   const { template, sent } = menuFor();
   const help = template.find((menu) => menu.label === 'Help').submenu.filter((item) => item.click);
@@ -56,6 +69,45 @@ test('on a Mac, About is in the app menu with the version, and the Help menu doe
   assert.equal(template[0].label, 'RT Story Tracker');
   assert.equal(template[0].submenu[0].label, 'About RT Story Tracker 3.10.0');
   assert.deepEqual(labels(template.find((menu) => menu.label === 'Help').submenu), ['Help Center', 'Keyboard Shortcuts', '-', 'Check for Updates…']);
+});
+
+test('File stays short, as the Reader’s does: the project’s own commands are in a This Project submenu', () => {
+  const REAL = (items) => items.filter((item) => item.type !== 'separator');
+  for (const platform of ['linux', 'darwin']) {
+    const { template } = menuFor({ platform });
+    for (const menu of template) assert.ok(REAL(menu.submenu).length <= 20, `${menu.label} has ${REAL(menu.submenu).length} items`);
+    const file = REAL(template.find((menu) => menu.label === 'File').submenu);
+    assert.ok(file.length <= 14, `File has ${file.length} items`);
+  }
+  const file = menuFor().template.find((menu) => menu.label === 'File').submenu;
+  const project = file.find((item) => item.label === 'This Project').submenu;
+  assert.deepEqual(REAL(project).map((item) => item.label), [
+    'Import…', 'Export…', 'Print…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Earlier Versions of This Chapter…',
+    'Documents Sent Here…', 'Open Chapter in RT Markdown Reader', 'Open Book in RT Markdown Reader', 'Publish Chapter with RT Markdown Reader…',
+  ]);
+  const top = labels(file);
+  for (const moved of ['Import…', 'Export…', 'Print…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…']) {
+    assert.equal(top.includes(moved), false, `${moved} is in This Project, not File`);
+  }
+  assert.deepEqual(top.filter((label) => label !== '-'), ['New Chapter', 'New Book', 'Open…', 'Save a Copy…', 'This Project', 'Trash', 'Password and Lock…', 'Lock Project', 'Library', 'Preferences…', 'Exit']);
+  // They still work, with the keys they had.
+  const again = menuFor();
+  const keyed = again.template.find((menu) => menu.label === 'File').submenu.find((item) => item.label === 'This Project').submenu;
+  assert.deepEqual(['Import…', 'Export…', 'Print…'].map((name) => keyed.find((item) => item.label === name).accelerator), ['CmdOrCtrl+Shift+I', 'CmdOrCtrl+E', 'CmdOrCtrl+P']);
+  keyed.find((item) => item.label === 'Import…').click();
+  keyed.find((item) => item.label === 'Print…').click();
+  assert.deepEqual(again.sent, ['import', 'print']);
+});
+
+test('the words are the Reader’s where it has them: Open…, Exit, Check for Updates… and Restart to update', () => {
+  const file = menuFor().template.find((menu) => menu.label === 'File').submenu;
+  assert.equal(labels(file).includes('Open…'), true);
+  assert.equal(labels(file).includes('Open Project File…'), false);
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main', 'main.js'), 'utf8');
+  for (const words of ['You’re up to date', 'is ready to install', 'Couldn’t check for updates', "title: 'Check for Updates'"]) assert.ok(main.includes(words), words);
+  const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'app.js'), 'utf8');
+  for (const words of ['is ready to install.', 'Restart to update', 'is available.', 'Download']) assert.ok(app.includes(words), words);
+  assert.equal(/is out\./.test(app), false);
 });
 
 test('File ends with Exit where there is no app menu, Edit has Find Next and Previous, and the others keep their items', () => {
