@@ -320,6 +320,7 @@ textarea {
   height: 100%;
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
 }
 
 .room-header {
@@ -2475,6 +2476,19 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 }
 
 /* The look-up panel beside the page */
+
+/* The two lists, the look-up panel (25rem) and a page that can still be read need about 82rem. In a narrower window, such as the
+   smallest one the app allows or a hosted 1024 by 768 screen, the lists step aside while the panel is open and come back when it
+   closes, so the page is never squeezed to nothing or covered. */
+@container (max-width: 82rem) {
+  .room:has(.lookup-pane:not([hidden])) .column:not(.page-column) {
+    display: none;
+  }
+
+  .room:has(.lookup-pane:not([hidden])) .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
 .lookup-pane {
   flex: 0 0 25rem;
