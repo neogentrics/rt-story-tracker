@@ -189,3 +189,56 @@ be started from the installed list like the others. It writes its own `installed
 **Not built, and not tested.** Recon Browser's own sending side is in its own repo, so the tests use a small App Link playing
 Recon Browser. Fetching a picture as an attachment, with the owner's yes, isn't built. A Research book isn't kept out of word
 totals. A real clip from a real page hasn't been tried.
+
+## The apps status icon
+
+An icon at the right end of the toolbar, with a dot, that opens the Apps panel. It's built in 3.10, in the plan the owner set out
+in `docs/app-suite.md` in the rt-markdown-reader repo ("Apps status in every app"), and this app is the one the others copy.
+
+**The dot only summarises.** The panel and the icon's name carry the words, so colour is never the only signal, and the four dots
+differ in shape as well as colour.
+
+| Dot | Shape | Means | Name read out |
+|---|---|---|---|
+| Green | filled | At least one other app is linked | Recon Towers apps: An app is linked |
+| Amber | filled with a ring | Apps are installed or running, and none is linked | Recon Towers apps: Apps found, none linked |
+| Grey | a ring | No other app was found | Recon Towers apps: No other app found |
+| Off | a dashed ring | App Link is off. The panel says so and has a **Turn on** button | Recon Towers apps: App Link is off |
+
+**The panel** lists every app in the suite, not only the ones that are here, each with one state and its button. This app isn't
+listed to itself.
+
+| State | Button | When |
+|---|---|---|
+| Linked | Open, if it's installed and not running; and Remove | A link has been approved, open or not |
+| Found, not linked | Link | It's running. Link asks for the one-time approval in the other app |
+| Installed, not running | Open | Its `installed/<id>.json` is there and the `launch` path in it still exists |
+| Not installed | Get it | Opens that app's page on the Recon Towers store |
+
+Something that left an installed file but isn't one of the suite's apps is listed too, with no Open and no Get it.
+
+**The rules.**
+
+- Finding an app never links it.
+- Nothing is checked on a timer. It looks once when the window opens, when the panel opens and when **Refresh** is pressed. (After
+  Open it looks once more a few seconds later, because that is the moment the person is waiting to see the app appear.)
+- An app is installed only if its file exists *and* the program it names still does. A file whose program is gone is deleted.
+- Status is asked only of linked apps that are running, and a locked project says nothing about itself, not even its name.
+- **Get it** takes an app's id, never an address. The page is looked up in the shared list in the main process, must be `https`,
+  and is opened in the browser.
+- No new protocol and no background service.
+
+**One shared file.** `src/shared/suite-apps.js` holds the list (id, name, a short line and the store page for each app), the four
+states and their wording, the four dots and their wording, and the two small functions that pick them. It has no dependencies,
+so another app can copy it as it is. The launcher in `src/main/installed.js` uses the same list, so an app is added in one place.
+A new app is one more line, and it appears in every app's panel by an ordinary update.
+
+**Not known yet.** Only RT Story Tracker's own store page is a real address. The others open the store's list of projects until
+each app has a page, and each address is changed in the shared file when it does. The icon is on the writing screen's toolbar; the
+library screen doesn't have one yet. Recon Browser has been added to the shared list with the five apps in
+`app-suite.md`, so the Reader repo's table needs the same line.
+
+**Tested.** `test/suite.test.cjs` covers the list, the four states, the four dots, the installed check, Get it and which apps are
+asked for status. `test/e2e/apps-status.e2e.cjs` drives the real window through every dot, the panel, Refresh, Link, Remove, Get it
+and turning App Link on and off.
+

@@ -157,10 +157,10 @@ test('the Apps list joins installed, running and linked, and finding an app neve
   writeInstalled(space.folder, { id: 'rt-story-tracker', name: 'Me', version: '9', launch: program(dir, 'rt-story-tracker') });
   const { links } = await space.peer();
   const apps = (await space.linking.status()).apps;
-  assert.deepEqual(apps.map((app) => app.id), ['rt-markdown-reader', 'rt-press'], 'this app isn’t listed to itself');
+  assert.deepEqual(apps.map((app) => app.id), ['rt-markdown-reader', 'rt-author-desk', 'rt-press', 'rt-audio-studio', 'recon-browser'], 'every app in the suite but this one, in the shared order');
   const reader = apps[0];
-  assert.deepEqual([reader.running, reader.linked, reader.installed, reader.canOpen], [true, false, false, false]);
-  const press = apps[1];
+  assert.deepEqual([reader.running, reader.linked, reader.installed, reader.canOpen, reader.state], [true, false, false, false, 'found']);
+  const press = apps.find((app) => app.id === 'rt-press');
   assert.deepEqual([press.running, press.linked, press.installed, press.canOpen, press.version], [false, false, true, true, '1.0.0']);
   assert.deepEqual(links(), {}, 'nothing was linked by looking');
   await space.linking.pair('rt-markdown-reader');
@@ -176,7 +176,8 @@ test('with App Link off, installed apps are still listed but nothing is running 
   writeInstalled(space.folder, { id: 'rt-press', name: 'RT Press', version: '1.0.0', launch: program(dir, 'rt-press') });
   const status = await space.linking.status();
   assert.equal(status.on, false);
-  assert.deepEqual(status.apps.map((app) => [app.id, app.running, app.canOpen]), [['rt-press', false, true]]);
+  assert.deepEqual(status.apps.filter((app) => app.installed).map((app) => [app.id, app.running, app.canOpen]), [['rt-press', false, true]]);
+  assert.equal(status.apps.every((app) => !app.running), true);
 });
 
 test('Open starts an installed app that isn’t running, and nothing else', async (t) => {
@@ -314,4 +315,100 @@ test('a chapter sent to publish carries the hint, and an app that doesn’t know
   assert.equal(peer.documents[1].intent, undefined, 'a plain open has no hint');
   space.workspace.locked = true;
   await assert.rejects(() => space.linking.openInReader({ scope: 'chapter', id: chapter.id, publish: true }), /never sent/);
+});
+
+// The Apps status, shared by every app
+
+const { DOTS, SUITE_APPS, SUITE_IDS, STATES, dotOf, dotWords, stateOf } = require('../src/shared/suite-apps');
+
+test('the shared list has every app once, with a name, a line and an https page, and is the one list the launcher trusts', () => {
+  assert.deepEqual(SUITE_IDS, ['rt-markdown-reader', 'rt-story-tracker', 'rt-author-desk', 'rt-press', 'rt-audio-studio', 'recon-browser']);
+  assert.equal(new Set(SUITE_IDS).size, SUITE_APPS.length);
+  for (const app of SUITE_APPS) {
+    assert.match(app.id, /^[a-z0-9][a-z0-9-]+$/);
+    assert.ok(app.name && app.about, `${app.id} has a name and a line`);
+    assert.match(app.page, /^https:\/\/recontowers\.com\//, `${app.id} opens a page on the store`);
+  }
+  assert.equal(require('../src/main/installed').SUITE_IDS, SUITE_IDS, 'one list, not a second copy');
+});
+
+test('an app is in one of four states, in words, and the words are the same everywhere', () => {
+  assert.equal(stateOf({ linked: true, running: true, installed: true }), 'linked');
+  assert.equal(stateOf({ linked: true }), 'linked', 'a link outlasts the app being closed');
+  assert.equal(stateOf({ running: true }), 'found');
+  assert.equal(stateOf({ running: true, installed: true }), 'found');
+  assert.equal(stateOf({ installed: true }), 'installed');
+  assert.equal(stateOf({}), 'missing');
+  assert.deepEqual(Object.values(STATES).map((state) => [state.words, state.button]), [['Linked', 'Open'], ['Found, not linked', 'Link'], ['Installed, not running', 'Open'], ['Not installed', 'Get it']]);
+});
+
+test('the dot is green, amber, grey or off, and each has words', () => {
+  assert.equal(dotOf({ on: false, apps: [{ linked: true }] }), 'off', 'off wins, since nothing can be found or asked');
+  assert.equal(dotOf({ on: true, apps: [{ installed: true }, { linked: true }] }), 'green');
+  assert.equal(dotOf({ on: true, apps: [{ installed: true }] }), 'amber');
+  assert.equal(dotOf({ on: true, apps: [{ running: true }] }), 'amber');
+  assert.equal(dotOf({ on: true, apps: [{}, {}] }), 'grey');
+  assert.equal(dotOf({ on: true, apps: [] }), 'grey');
+  assert.deepEqual(Object.keys(DOTS).sort(), ['amber', 'green', 'grey', 'off']);
+  for (const dot of Object.keys(DOTS)) assert.match(dotWords(dot), /^Recon Towers apps: .+/);
+  assert.equal(new Set(Object.values(DOTS)).size, 4, 'no two dots say the same thing');
+});
+
+test('the Apps list gives each app its state, and Get it opens only a page from the shared list', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-inst-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const space = setUp(t);
+  const opened = [];
+  space.linking.openPage = (page) => opened.push(page);
+  await space.linking.apply();
+  writeInstalled(space.folder, { id: 'rt-press', name: 'RT Press', version: '1', launch: program(dir, 'rt-press') });
+  await space.peer();
+  const states = () => space.linking.status().then(({ apps }) => Object.fromEntries(apps.map((app) => [app.id, app.state])));
+  assert.deepEqual(await states(), { 'rt-markdown-reader': 'found', 'rt-author-desk': 'missing', 'rt-press': 'installed', 'rt-audio-studio': 'missing', 'recon-browser': 'missing' });
+  await space.linking.pair('rt-markdown-reader');
+  assert.equal((await states())['rt-markdown-reader'], 'linked');
+  const apps = (await space.linking.status()).apps;
+  assert.deepEqual(apps.map((app) => [app.id, app.canGet]), [['rt-markdown-reader', false], ['rt-author-desk', true], ['rt-press', false], ['rt-audio-studio', true], ['recon-browser', true]]);
+
+  space.linking.getApp('rt-author-desk');
+  assert.deepEqual(opened, [SUITE_APPS.find((app) => app.id === 'rt-author-desk').page]);
+  for (const bad of ['https://evil.example/', 'rt-story-tracker', '../x', '', undefined, { page: 'https://evil.example/' }]) {
+    assert.throws(() => space.linking.getApp(bad), /isn’t known/);
+  }
+  assert.equal(opened.length, 1, 'nothing else was opened');
+
+  // A program that merely left a file behind is listed, never started, and has nothing to get.
+  writeInstalled(space.folder, { id: 'unknown-thing', name: 'Unknown', version: '1', launch: program(dir, 'unknown-thing') });
+  const odd = (await space.linking.status()).apps.find((app) => app.id === 'unknown-thing');
+  assert.deepEqual([odd.state, odd.canOpen, odd.canGet], ['installed', false, false]);
+});
+
+test('an installed file whose program is gone doesn’t count as installed, and looking never links', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-inst-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const space = setUp(t);
+  const gone = program(dir, 'rt-press');
+  writeInstalled(space.folder, { id: 'rt-press', name: 'RT Press', version: '1', launch: gone });
+  fs.rmSync(gone);
+  const press = (await space.linking.status()).apps.find((app) => app.id === 'rt-press');
+  assert.deepEqual([press.installed, press.state], [false, 'missing']);
+  assert.equal(fs.existsSync(path.join(space.folder, 'installed', 'rt-press.json')), false, 'and the stale file is removed');
+  assert.deepEqual(space.linking.load(), {}, 'nothing linked');
+});
+
+test('only linked apps are asked what they are doing', async (t) => {
+  const space = setUp(t);
+  await space.linking.apply();
+  const { app } = await space.peer();
+  const asked = [];
+  const original = space.linking.server.statusOf.bind(space.linking.server);
+  space.linking.server.statusOf = (id) => { asked.push(id); return original(id); };
+  const before = (await space.linking.status()).apps;
+  assert.deepEqual(asked, [], 'found but not linked: not asked');
+  assert.equal(before.find((item) => item.id === 'rt-markdown-reader').line, '');
+  assert.equal(app.running, true);
+  await space.linking.pair('rt-markdown-reader');
+  asked.length = 0;
+  await space.linking.status();
+  assert.deepEqual(asked, ['rt-markdown-reader'], 'linked: asked, once, when the list was looked at');
 });

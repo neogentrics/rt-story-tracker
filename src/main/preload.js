@@ -38,6 +38,7 @@ contextBridge.exposeInMainWorld('storyTracker', {
   setLink: (on) => call('link:set', on),
   pairApp: (id) => call('link:pair', id),
   openApp: (id) => call('link:open', id),
+  getApp: (id) => call('link:get', id),
   setActivity: (input) => call('activity:set', input),
   unlinkApp: (id) => call('link:unlink', id),
   openInReader: (input) => call('link:openInReader', input),

@@ -20,6 +20,10 @@
         "text": "Recon Browser sends research to this app over App Link. A clip waits in the inbox, and nothing is filed or fetched without your choice. A locked project holds it until you unlock it."
       },
       {
+        "title": "Apps status icon",
+        "text": "A small icon on the toolbar with a dot that shows whether other Recon Towers apps are linked, found or off, and opens a panel that lists every app with what you can do about it. It says it in words as well as colour."
+      },
+      {
         "title": "Still open from earlier",
         "text": "Your own test of the lock and of Find my files, a real Word manuscript, Pages on a Mac, and a real Scrivener project."
       },

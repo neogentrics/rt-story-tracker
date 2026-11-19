@@ -292,7 +292,8 @@ test('Recon Browser shows in the Apps panel when it’s installed or running, an
   const space = setUp(t);
   space.linking.startApp = (entry) => started.push(entry.id);
   await space.linking.apply();
-  assert.equal((await space.linking.status()).apps.some((app) => app.id === 'recon-browser'), false, 'not installed, not running: not listed');
+  const missing = (await space.linking.status()).apps.find((app) => app.id === 'recon-browser');
+  assert.deepEqual([missing.state, missing.canOpen, missing.canGet], ['missing', false, true], 'not installed, not running: listed, to be got');
   await assert.rejects(() => space.linking.openApp('recon-browser'), /isn’t installed/);
 
   writeInstalled(space.folder, { id: 'recon-browser', name: 'Recon Browser', version: '1.3.0', launch: program });

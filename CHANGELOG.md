@@ -27,6 +27,11 @@ Versions of a record, for authors who need to say what a record said as of each 
   until you unlock it. A picture in a clip is never fetched, and shows as a reference in words. Recon Browser now shows in the
   Apps panel when it's installed or running.
 
+- **An apps icon on the toolbar,** with a dot: green when an app is linked, amber when apps are found and none is, grey when none is
+  found, and a dashed ring when App Link is off. It opens the Apps panel, which now lists every Recon Towers app with one state in
+  words (Linked, Found not linked, Installed not running, Not installed) and one button (Open, Link or Get it). Finding an app
+  never links it, and nothing is checked on a timer: it looks when the window opens, when the panel opens and on Refresh.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used

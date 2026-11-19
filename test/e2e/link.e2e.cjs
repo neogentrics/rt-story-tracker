@@ -66,7 +66,7 @@ const answerYes = (app) => app.evaluate(({ dialog }) => { dialog.showMessageBox 
   await window.check('#pref-link');
   await window.waitForSelector('[aria-label="Link RT Markdown Reader"]');
   assert.ok(fs.existsSync(path.join(shared, 'rt-story-tracker.json')));
-  assert.match(await window.textContent('.app-row[data-app="rt-markdown-reader"]'), /running/);
+  assert.match(await window.textContent('.app-row[data-app="rt-markdown-reader"]'), /Found, not linked/);
   await window.click('[aria-label="Link RT Markdown Reader"]');
   await window.waitForSelector('[aria-label="Remove the link to RT Markdown Reader"]');
   await window.click('#pref-close');

@@ -2650,7 +2650,57 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
   font-size: 0.9rem;
 }
 
-/* The Apps panel in Preferences */
+/* The Apps panel, in Preferences and from the toolbar */
+
+.apps-button {
+  position: relative;
+}
+
+/* A dot that only summarises: the panel and the button's name say it in words. Green is filled, amber is filled with a ring,
+   grey is a ring, and off is a dashed ring, so the four differ by shape too. */
+.apps-dot {
+  position: absolute;
+  right: 0.2rem;
+  bottom: 0.2rem;
+  width: 0.62rem;
+  height: 0.62rem;
+  border: 2px solid var(--on-bar);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.apps-dot[data-dot='green'] {
+  border-color: #2fbf71;
+  background: #2fbf71;
+}
+
+.apps-dot[data-dot='amber'] {
+  border-color: #ffb020;
+  background: #ffb020;
+  box-shadow: 0 0 0 1.5px var(--on-bar);
+}
+
+.apps-dot[data-dot='grey'] {
+  opacity: 0.7;
+}
+
+.apps-dot[data-dot='off'] {
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.apps-off {
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+}
+
+.app-info .app-about {
+  display: block;
+}
+
 
 .app-row {
   align-items: flex-start;

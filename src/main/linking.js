@@ -10,6 +10,7 @@ const { APP_ID, APP_NAME, AppLink, LinkError, sharedFolder, validId } = require(
 const { exportFile, safeName } = require('./export');
 const { launchInstalled, readInstalled, writeInstalled } = require('./installed');
 const { writeFileSafely } = require('./storage/keys');
+const { SUITE_APPS, appById, stateOf } = require('../shared/suite-apps');
 
 const READER_ID = 'rt-markdown-reader';
 const LINKS_FILE = 'app-links.bin';
@@ -39,9 +40,9 @@ const nodesOf = (node, kind) => (node.kind === kind ? [node] : node.children.fla
 
 class Linking {
   // launchPath is where this app starts from, for the installed list, and is null when it isn't an installed copy.
-  // startApp starts another installed app.
-  constructor({ workspace, settings, vault, inbox, root, home, dataDir, version, ask, places = readerPlaces, launch = launchReader, launchPath = null, startApp = launchInstalled, tempDir = os.tmpdir() }) {
-    Object.assign(this, { workspace, settings, vault, inbox, root, home, dataDir, version, ask, places, launch, launchPath, startApp, tempDir });
+  // startApp starts another installed app, and openPage opens a web page for the person.
+  constructor({ workspace, settings, vault, inbox, root, home, dataDir, version, ask, places = readerPlaces, launch = launchReader, launchPath = null, startApp = launchInstalled, openPage = () => {}, tempDir = os.tmpdir() }) {
+    Object.assign(this, { workspace, settings, vault, inbox, root, home, dataDir, version, ask, places, launch, launchPath, startApp, openPage, tempDir });
     this.file = path.join(root, LINKS_FILE);
     // Links made under this app's old App Link id can't work, so they go, and the app offers to link again.
     fs.rmSync(path.join(root, OLD_LINKS_FILE), { force: true });
@@ -124,14 +125,19 @@ class Linking {
     }
   }
 
-  // What the person sees: every suite app installed here or running or linked, whether it's linked, and a line about what
-  // a linked app that's running is doing. Finding an app never links it.
+  // What the person sees: every app in the suite, whether it's on this computer, running or linked, and a line about what a
+  // linked app that's running is doing. An app that isn't there is still listed, so it can be got. Something else that left an
+  // installed file is listed too, with no button to start it. Finding an app never links it, and nothing here is asked on a
+  // timer: it's looked at when the person asks.
   async apps() {
     const rows = new Map();
     const row = (id, name) => {
-      if (!rows.has(id)) rows.set(id, { id, name, version: '', installed: false, running: false, linked: false, known: false, canOpen: false, line: '' });
+      if (!rows.has(id)) rows.set(id, { id, name, about: '', version: '', installed: false, running: false, linked: false, known: false, canOpen: false, line: '' });
       return rows.get(id);
     };
+    for (const app of SUITE_APPS) {
+      if (app.id !== APP_ID) Object.assign(row(app.id, app.name), { about: app.about, known: true });
+    }
     for (const item of readInstalled(this.sharedFolder())) {
       if (item.id !== APP_ID) Object.assign(row(item.id, item.name), { installed: true, version: item.version, known: item.known });
     }
@@ -140,10 +146,14 @@ class Linking {
     for (const [id, link] of Object.entries(this.load())) {
       const found = row(id, link.name);
       found.linked = true;
-      found.name = link.name || found.name;
+      if (!found.known) found.name = link.name || found.name;
     }
     const list = [...rows.values()];
-    for (const item of list) item.canOpen = item.installed && item.known && !item.running;
+    for (const item of list) {
+      item.canOpen = item.installed && item.known && !item.running;
+      item.state = stateOf(item);
+      item.canGet = item.known && !item.installed && !item.running;
+    }
     await Promise.all(list.filter((item) => item.linked && item.running && this.server).map(async (item) => {
       try {
         item.line = (await this.server.statusOf(item.id)).line;
@@ -151,7 +161,15 @@ class Linking {
         // It didn't say, which is no reason to hide it.
       }
     }));
-    return list.sort((a, b) => a.name.localeCompare(b.name));
+    const place = (item) => (item.known ? SUITE_APPS.findIndex((app) => app.id === item.id) : SUITE_APPS.length);
+    return list.sort((a, b) => place(a) - place(b) || a.name.localeCompare(b.name));
+  }
+
+  // "Get it": opens the app's page on the store. The address comes from the shared list by id, never from the window.
+  getApp(id) {
+    const app = appById(id);
+    if (!app || app.id === APP_ID || !/^https:\/\//.test(app.page)) throw new Error('That app isn’t known.');
+    this.openPage(app.page);
   }
 
   async status() {

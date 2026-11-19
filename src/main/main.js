@@ -109,6 +109,7 @@ function openLibrary() {
       dataDir: app.getPath('userData'),
       version: app.getVersion(),
       ask: askToLink,
+      openPage: (page) => shell.openExternal(page),
       // Only an installed copy says it's installed. Running from the source isn't.
       launchPath: process.env.RTST_INSTALLED_LAUNCH || (app.isPackaged ? launchPathFor({ execPath: process.execPath, appImage: process.env.APPIMAGE }) : null),
     });

@@ -10,7 +10,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROTOCOL = 1;
-const SUITE_IDS = ['rt-markdown-reader', 'rt-story-tracker', 'rt-author-desk', 'rt-press', 'rt-audio-studio', 'recon-browser'];
+const { SUITE_IDS } = require('../shared/suite-apps');
 const FOLDER = 'installed';
 const MAX_PATH = 1024;
 

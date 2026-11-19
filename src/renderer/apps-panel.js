@@ -1,0 +1,106 @@
+// The Apps panel: every Recon Towers app, whether it's linked, found or installed or not there at all, and the one button that
+// goes with each. It's shown in Preferences and from the toolbar icon, and both are this. The words come from
+// ../shared/suite-apps.js, which every app copies, so they say the same thing in each. The panel looks when it opens and when
+// Refresh is pressed, never on a timer, and finding an app never links it.
+import { STATES, TITLE, dotOf, dotWords } from '../shared/suite-apps.js';
+import { el } from './dom.js';
+
+// The toolbar listens for this, so its dot is right after anything changes here.
+export const APPS_EVENT = 'apps-status';
+
+export function dotFor(status) {
+  const dot = dotOf(status);
+  return { dot, words: dotWords(dot) };
+}
+
+export function createAppsPanel(api) {
+  const list = el('ul', { id: 'linked-apps', class: 'word-list' });
+  const note = el('p', { id: 'link-note', class: 'quiet-note', role: 'status' });
+  const off = el('div', { id: 'apps-off', class: 'apps-off', role: 'status', hidden: true },
+    el('span', {}, 'App Link is off, so no other app can find this one and none can be linked. '),
+    el('button', { id: 'apps-turn-on', onclick: () => change(() => api.setLink(true)) }, 'Turn on'));
+  const toggle = el('input', { id: 'pref-link', type: 'checkbox', onchange: () => change(() => api.setLink(toggle.checked)) });
+  const refresh = el('button', { id: 'apps-refresh', type: 'button', onclick: () => change(() => api.linkStatus()) }, 'Refresh');
+
+  const show = (status) => {
+    toggle.checked = status.on;
+    off.hidden = status.on;
+    note.textContent = status.error ?? (status.on && !status.safe ? 'This computer has no safe place to keep a link, so links last until the app closes.' : '');
+    const start = (item) => {
+      note.textContent = `Starting ${item.name}…`;
+      change(() => api.openApp(item.id));
+      // An app takes a few seconds to come up, so look once more after the person has asked to start one.
+      setTimeout(() => {
+        if (list.isConnected) change(() => api.linkStatus());
+      }, 4000);
+    };
+    const buttons = (item) => [
+      item.canOpen ? el('button', { 'aria-label': `Open ${item.name}`, onclick: () => start(item) }, STATES.linked.button) : null,
+      item.state === 'found' && status.on
+        ? el('button', { 'aria-label': `Link ${item.name}`, onclick: () => {
+          note.textContent = `Answer in ${item.name}.`;
+          change(() => api.pairApp(item.id));
+        } }, STATES.found.button)
+        : null,
+      item.canGet ? el('button', { 'aria-label': `Get ${item.name}`, onclick: () => change(async () => {
+        await api.getApp(item.id);
+        return status;
+      }) }, STATES.missing.button) : null,
+      item.linked ? el('button', { class: 'quiet', 'aria-label': `Remove the link to ${item.name}`, onclick: () => change(() => api.unlinkApp(item.id)) }, 'Remove') : null,
+    ];
+    const row = (item) => el(
+      'li',
+      { class: 'word-row app-row', dataset: { app: item.id, state: item.state } },
+      el(
+        'span',
+        { class: 'app-info' },
+        el('strong', {}, item.name),
+        item.version ? el('small', {}, ` ${item.version}`) : null,
+        el('small', { class: 'app-states' }, ` · ${STATES[item.state].words}`),
+        item.about ? el('small', { class: 'app-about' }, item.about) : null,
+        item.line ? el('small', { class: 'app-line' }, item.line) : null,
+      ),
+      el('span', { class: 'app-buttons' }, ...buttons(item)),
+    );
+    list.replaceChildren(...(status.apps.length ? status.apps.map(row) : [el('li', { class: 'quiet-note' }, 'No other Recon Towers app was found on this computer.')]));
+    document.dispatchEvent(new CustomEvent(APPS_EVENT, { detail: status }));
+  };
+
+  async function change(work) {
+    try {
+      show(await work());
+    } catch (error) {
+      note.textContent = error.message;
+    }
+  }
+
+  const node = el(
+    'div',
+    { class: 'apps-panel' },
+    el('p', { class: 'quiet-note' }, 'The other Recon Towers apps. Finding one never links it: you link once, and answer in the app being asked.'),
+    off,
+    el('label', { class: 'check' }, toggle, 'Let Recon Towers apps on this computer find this one and link with it'),
+    el('p', { class: 'quiet-note' }, 'A linked app can send you documents, and you choose where each one goes. It can see a short line about what’s open, and ask for a book’s word count. It can’t read your writing. A project with a password is never described or sent.'),
+    list,
+    note,
+    el('p', {}, refresh),
+  );
+  return { node, load: () => change(() => api.linkStatus()), show };
+}
+
+// The toolbar icon opens this.
+export async function openApps(api) {
+  document.getElementById('apps-dialog')?.remove();
+  const panel = createAppsPanel(api);
+  const dialog = el(
+    'dialog',
+    { id: 'apps-dialog', class: 'dialog', 'aria-label': TITLE },
+    el('h2', {}, TITLE),
+    panel.node,
+    el('div', { class: 'dialog-actions' }, el('button', { id: 'apps-close', class: 'primary', onclick: () => dialog.close() }, 'Done')),
+  );
+  dialog.addEventListener('close', () => dialog.remove());
+  document.body.append(dialog);
+  dialog.showModal();
+  await panel.load();
+}
