@@ -398,12 +398,13 @@ leaving the computer.
 | 🙋 Your own shortcuts | M | Change any keyboard shortcut. |
 | 🙋 Customize Theme | M | Change a theme's colours, and share them with RT Markdown Reader. |
 | 🙋 Colour-safe | S | Colours that work for colour-blind readers, in every theme. |
+| 🙋 Metallic look | S | A third look beside Solid and Glass, copied from RT Markdown Reader's 3.13 once it ships there (built, in testing, not released). It works with every theme, together with the shared themes, Glass and Colour-safe, and the contrast test covers it. |
 | 🙋 Tutorial | M | A hands-on tour with a practice chapter, offered the first time the app opens, skippable and resumable, and replayed from Help. People who update from an older version get it too. The Help menu has no Tutorial item until this exists. |
 | 🙋 Help Center guides | M | Numbered, searchable guides kept as plain Markdown files in a `help` folder, like RT Markdown Reader's, each able to jump to the setting it explains. The Help Center in 3.10 is a short page of topics; these replace it. |
 | 🙋 Command palette and shortcuts | S | The palette moves to Ctrl+K as in the Reader, so *Look Up a Record*, which has Ctrl+K today, becomes a command in it and keeps a key of its own. Every command can be run by name and any shortcut changed. |
 | Adjustable toolbar | S | Hide, reorder and shrink toolbar buttons, with names beside the icons if wanted. Copied from RT Markdown Reader's when it exists, in its v3.13. |
 
-**Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme.
+**Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme, with Glass and with Metallic.
 
 ## v4.0 — The companion
 

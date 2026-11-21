@@ -43,12 +43,16 @@
   },
   "waiting": {
     "title": "A test and {decisions} decisions",
-    "text": "A power cut during a lock is simulated, not tested for real, and the decisions below. None of them hold up 3.7."
+    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below. 3.9 and 3.10 are built and wait for your go-ahead to release."
   },
   "questions": [
     {
       "q": "Can the apps detect each other when they’re installed?",
       "a": "In 3.9, yes, for this app: it says it’s installed, and an Apps panel lists installed, running and linked apps. RT Markdown Reader needs the same change on its side before the two see each other when closed."
+    },
+    {
+      "q": "Where are the themes?",
+      "a": "Under File, then Preferences (Ctrl+,), or the gear at the top right once a project is open. The next release also puts a Preferences button on the library screen, so they are easy to find."
     },
     {
       "q": "What happens to pictures in an imported file?",
@@ -60,7 +64,7 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader is adding a third look, Metallic, beside Solid and Glass. This app copies it once it ships there (v3.20), along with Colour-safe and Customize Theme."
     },
     {
       "q": "Will it read text aloud?",
