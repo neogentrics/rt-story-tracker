@@ -51,6 +51,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.21](#v321--pictures-and-tables-on-the-page) | Pictures and tables on the page | Planned |
 | [v3.22](#v322--hear-it-and-say-it) | Hear it and say it | Planned |
 | [v3.23](#v323--find-your-way-around) | Find your way around | Planned |
+| [v3.24](#v324--writing-patterns) | Writing patterns | Waiting for the owner's go |
 | [v4.0](#v40--the-companion) | The companion | Planned |
 | [Later](#later--only-if-needed) | Only if needed | Ideas |
 | [Ongoing](#ongoing--polish--distribution) | Polish & distribution | Ongoing |
@@ -458,6 +459,24 @@ leaving the computer.
 | Adjustable toolbar | S | Hide, reorder and shrink toolbar buttons, with names beside the icons if wanted. Copied from RT Markdown Reader's when it exists, in its v3.13. |
 
 **Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme, with each of the three looks.
+
+## v3.24 — Writing patterns
+
+🙋 **Waiting for the owner's go. Nothing here is being built.** When he says go, it moves up to just after [v3.13](#v313--connect-claude).
+It finds what makes writing sound machine-made or careless, across a whole book or series, so you can correct, edit or keep each one and
+the writing sounds like you. RT Story Tracker and RT Markdown Reader are the first two apps to get it. The suite's description is under
+*Writing patterns in every app that edits text* in
+[docs/app-suite.md](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md) in the Reader's repository.
+
+| Feature | Size | Details |
+|---|:-:|---|
+| 🙋 A check with no AI | M | **The first layer, built first.** It runs on your computer, offline. It finds repeated words and phrases, repeated sentence openings, sentences that are all very much the same length, stock phrases AI overuses, and phrases from your own banned list. Every flag says why. |
+| 🙋 Your banned phrases | M | The phrases you never want to see, kept once for all the apps in the App Link folder that's yours on this computer, and counted across a whole book or series, so a habit shows. The list can be exported as a *never write these* block to give an AI session. |
+| 🙋 You decide on every flag | S | Flags are marks you accept, reject or ignore. Nothing is ever changed by itself, and each rule can be turned off. It makes no promise to get past AI detectors. |
+| 🙋🛡️ An optional AI pass | M | **The second layer,** for what rules can't see. It uses your own choice of service, or a model on your computer, and is off until you turn it on. Your words stay on your computer: nothing is sent to a service unless you turn this on and choose one. |
+
+**Test:** with the computer offline, check a whole series: each flag says why, a banned phrase is counted across every book, and no word
+of the writing changes until you accept a change. Turn a rule off and its flags go. With the AI pass off, nothing is sent anywhere.
 
 ## v4.0 — The companion
 
