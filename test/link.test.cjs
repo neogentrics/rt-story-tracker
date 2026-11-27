@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const net = require('node:net');
 const os = require('node:os');
 const path = require('node:path');
-const { AppLink, LinkError, call, cleanName, documentName, endpointFor, sharedFolder, validEndpoint } = require('../src/main/app-link');
+const { AppLink, KINDS, LinkError, call, cleanName, describeHello, documentName, endpointFor, sharedFolder, validEndpoint } = require('../src/main/app-link');
 const { Inbox, isWritingFile } = require('../src/main/inbox');
 const { Linking, launchReader, readerPlaces } = require('../src/main/linking');
 const { Security } = require('../src/main/security');
@@ -89,10 +89,25 @@ test('App Link stays off until it’s turned on, and leaves nothing behind when 
   const info = JSON.parse(fs.readFileSync(path.join(space.folder, 'rt-story-tracker.json'), 'utf8'));
   assert.deepEqual([info.protocol, info.id, info.name, info.version], [1, 'rt-story-tracker', 'RT Story Tracker', '3.7.0']);
   assert.equal(validEndpoint(info.endpoint), true);
-  assert.deepEqual(await call(info.endpoint, 'hello', {}), { protocol: 1, minProtocol: 1, app: 'rt-story-tracker', name: 'RT Story Tracker', version: '3.7.0', accepts: ['markdown', 'text'] });
+  assert.deepEqual(await call(info.endpoint, 'hello', {}), { protocol: 1, minProtocol: 1, app: 'rt-story-tracker', name: 'RT Story Tracker', version: '3.7.0', accepts: ['markdown', 'text'], kinds: ['research'] });
   await space.linking.setOn(false);
   assert.equal(fs.existsSync(path.join(space.folder, 'rt-story-tracker.json')), false);
   assert.equal(space.settings.values.appLink, false);
+});
+
+test('the kinds this app says it does something with are the ones README.md lists', () => {
+  const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8');
+  const section = readme.split('### What this app does with each kind of document')[1]?.split(/^##/m)[0] ?? '';
+  const listed = [...section.matchAll(/^\| `([a-z0-9._-]+)` \|/gm)].map((match) => match[1]);
+  assert.deepEqual(listed, KINDS);
+  assert.deepEqual(KINDS, ['research'], 'a kind is listed only once the app really does something special with it');
+});
+
+test('another app’s kinds are read and cleaned, and one that says nothing about them has none', () => {
+  assert.deepEqual(describeHello({ protocol: 1, kinds: ['chapter', 'research'] }).kinds, ['chapter', 'research']);
+  for (const kinds of [undefined, null, 'research', { research: true }]) assert.deepEqual(describeHello({ protocol: 1, kinds }).kinds, [], String(kinds));
+  assert.deepEqual(describeHello({ protocol: 1, kinds: [1, null, 'Not Allowed', '<b>', 'x'.repeat(33), 'note'] }).kinds, ['note']);
+  assert.equal(describeHello({ protocol: 1, kinds: Array.from({ length: 40 }, (_, at) => `k${at}`) }).kinds.length, 12);
 });
 
 test('a document sent over a link waits in the inbox, and nothing is filed by itself', async (t) => {

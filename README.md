@@ -130,6 +130,17 @@ open the app from *System Settings → Privacy & Security*.
 Coming next: sorting the files you bring in (3.11), read aloud (3.12), Connect Claude (3.13), then a
 timeline and places, lore, ideas and research. See the [roadmap](ROADMAP.md).
 
+### What this app does with each kind of document
+
+Another Recon Towers app can say what kind of document it's sending. When one asks what this app is, it's told which kinds get more
+than the usual handling, as `kinds`:
+
+| Kind | What this app does with it |
+|---|---|
+| `research` | A web clip. It waits to be filed with its source, and starts on a book called *Research* |
+
+A document of any other kind arrives as a plain document, and you choose where it goes.
+
 ## How your writing is kept
 
 Every project is an encrypted database in the app's own folder, with its own random key. A project with no password can be

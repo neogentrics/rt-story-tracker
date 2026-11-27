@@ -247,7 +247,16 @@ and turning App Link on and off.
 The Apps panel also says when an app has a newer version, and when two apps can't link. It follows the plan in `docs/app-suite.md` in
 the rt-markdown-reader repo ("Updates and compatibility"), and it's built in 3.10.
 
-**What decides whether two apps link.** Their App Link protocol, and the kinds of document each accepts, which `hello` already says.
+**What each app does with each kind of document.** From 3.11 `hello` also answers `kinds`: the kinds of document the app does
+something special with, so a sender can offer an action for one kind only where it will mean something. This app answers
+`['research']`, because a web clip is the only kind it handles that way. A document of any other kind is still taken, as a plain
+document. An app that sends no `kinds` is an older one, and has none. The app reads another app's `kinds` when it asks it to describe
+itself, cleaned like everything else in the answer. Nothing in the Apps panel shows them, and nothing the app sends depends on them
+yet. `kinds` never decides whether two apps link. It's an addition to protocol 1, so older apps carry on as before. The list is also
+in `README.md`, and a test keeps the two the same.
+
+**What decides whether two apps link.** Their App Link protocol, and the formats of document each accepts, which `hello` already says
+as `accepts`.
 Never the app's own version number, so two apps on different releases link fine, and an ordinary release can't break a link. Two
 small additions to protocol 1 carry the rest: `hello` now also says `minProtocol`, the oldest protocol the app will link with, and an
 installed file may say it too. An app that doesn't say it is taken to accept protocol 1, as before.

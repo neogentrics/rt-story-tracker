@@ -67,6 +67,9 @@ Files you bring in. This will be 3.11.
   Apps*, has no scrolling box of its own either.
 
 ### Changed
+- **App Link capability change:** when another Recon Towers app asks what this one is, the answer now also lists `kinds`, the kinds of
+  document it does something special with. Here that's `research`, for web clips, and nothing else. Any other kind still arrives as a
+  plain document. It never decides whether two apps link, and apps that don't know it carry on as before.
 - **A project opened in 3.11 can't be opened in 3.10 or earlier,** which will say it was saved by a newer version. The app keeps a copy
   of the project from before the change, with its other backups of it.
 - **The Light and Dark themes are now called Paper and Night,** as in the other Recon Towers apps. Nothing else about them changes.

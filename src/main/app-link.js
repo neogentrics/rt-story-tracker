@@ -16,6 +16,11 @@ const MIN_PROTOCOL = 1;
 const APP_ID = 'rt-story-tracker';
 const APP_NAME = 'RT Story Tracker';
 const ACCEPTS = ['markdown', 'text'];
+// The kinds of document this app does something special with, so a sender can offer an action for a kind only where it means something.
+// Only a web clip is handled that way. A document of any other kind is still taken, as a plain document, so no other kind is listed: that
+// would promise what isn't built. README.md has the same list, and a test holds the two together. Kinds never decide whether two apps
+// link.
+const KINDS = ['research'];
 const MAX_LINE = 8 * 1024 * 1024;
 const ASK_MS = 120000;
 const CALL_MS = 5000;
@@ -108,15 +113,19 @@ function call(endpoint, method, params, timeout = CALL_MS) {
 
 const MINE = { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, accepts: ACCEPTS };
 
-// What another app says about itself, cleaned: a version number, the protocol it speaks and the oldest it accepts, and the kinds of
-// document it takes. Whatever else it says is ignored. `fallback` is the file it left in the folder.
+const words = (list) => (Array.isArray(list) ? list.filter((word) => typeof word === 'string' && /^[a-z0-9._-]{1,32}$/.test(word)).slice(0, 12) : []);
+
+// What another app says about itself, cleaned: a version number, the protocol it speaks and the oldest it accepts, the formats of
+// document it takes, and the kinds it does something special with. An app that says nothing about kinds, as an older one does, has
+// none. Whatever else it says is ignored. `fallback` is the file it left in the folder.
 function describeHello(hello, fallback = {}) {
   const wanted = (value, otherwise) => (Number.isInteger(value) && value >= 1 && value <= 1000 ? value : otherwise);
   return {
     version: validVersion(hello?.version) ? hello.version : validVersion(fallback.version) ? fallback.version : '',
     protocol: wanted(hello?.protocol, fallback.protocol),
     minProtocol: wanted(hello?.minProtocol, 1),
-    accepts: Array.isArray(hello?.accepts) ? hello.accepts.filter((kind) => typeof kind === 'string' && /^[a-z0-9._-]{1,32}$/.test(kind)).slice(0, 12) : [],
+    accepts: words(hello?.accepts),
+    kinds: words(hello?.kinds),
   };
 }
 
@@ -198,7 +207,7 @@ class AppLink {
   }
 
   handle(method, params) {
-    if (method === 'hello') return { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, app: this.id, name: this.name, version: this.version, accepts: ACCEPTS };
+    if (method === 'hello') return { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, app: this.id, name: this.name, version: this.version, accepts: ACCEPTS, kinds: KINDS };
     if (method === 'pair') return this.pairRequest(params);
     if (method === 'open_document') return this.openRequest(params);
     if (method === 'unlink') return this.unlinkRequest(params);
@@ -377,4 +386,4 @@ class AppLink {
   }
 }
 
-module.exports = { APP_ID, APP_NAME, AppLink, LinkError, MIN_PROTOCOL, PROTOCOL, call, cleanName, documentName, endpointFor, sharedFolder, validEndpoint, validId };
+module.exports = { APP_ID, APP_NAME, AppLink, KINDS, LinkError, MIN_PROTOCOL, PROTOCOL, call, cleanName, describeHello, documentName, endpointFor, sharedFolder, validEndpoint, validId };
