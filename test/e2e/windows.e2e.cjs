@@ -93,6 +93,16 @@ function sideways(within) {
     .map((node) => `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}.${typeof node.className === 'string' ? node.className.trim().split(/\s+/).join('.') : ''}: ${node.scrollWidth} wide in ${node.clientWidth}`);
 }
 
+// Run in the page: "null" or "undefined" on show, which is what's written when a part of a screen that isn't there is added as if it were.
+function strayWords() {
+  const found = [];
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+    if (/^\s*(?:(?:null|undefined|\[object [A-Za-z]+\])\s*)+$/.test(node.textContent) && !node.parentElement.closest('[hidden], .ProseMirror, textarea, script')) found.push(`“${node.textContent}” in ${node.parentElement.id || node.parentElement.className || node.parentElement.tagName}`);
+  }
+  return found;
+}
+
 // Run in the page: what's wrong with the top bar.
 function barProblems() {
   const found = [];
@@ -131,7 +141,26 @@ function whereCommands(commands) {
   }));
 }
 
+// A made-up folder for Find my files, with a question to ask and files of several sections, a document to import and some records.
+function sources() {
+  const put = (rel, text) => {
+    const full = path.join(work, ...rel.split('/'));
+    fs.mkdirSync(path.dirname(full), { recursive: true });
+    fs.writeFileSync(full, text);
+    return full;
+  };
+  for (const name of ['Chapter 1.txt', 'Chapter 2.txt', 'A very long name for a loose page that nobody could place anywhere sensible.txt']) put(`stories/Book_1_The_Long_Road_Home/${name}`, `Words in ${name}.`);
+  put('stories/Book_1_The_Long_Road_Home/Art/map of the whole country and all its roads.png', 'picture');
+  put('stories/Book_1_The_Long_Road_Home/Audio/a reading.mp3', 'sound');
+  return {
+    folder: path.join(work, 'stories'),
+    document: put('one/An imported document with quite a long name.md', '# One\n\nSome words.\n\n# Two\n\nMore words.\n'),
+    records: put('two/people.csv', 'Name,Role,Home\nMarit,Main,The mill\nOlen,Other,The ford\n'),
+  };
+}
+
 (async () => {
+  const made = sources();
   for (const [size, scale] of SIZES) {
     const at = `${size}${scale === 1 ? '' : ` at ${scale * 100}%`}`;
     const { app, window, errors } = await launch({ RTST_USER_DATA: path.join(work, `p-${size}-${scale}`), RTST_WINDOW_SIZE: size }, scale);
@@ -145,6 +174,7 @@ function whereCommands(commands) {
       await settle(window);
       assert.deepEqual(await window.evaluate(unreachable, within), [], `${what} at ${at}`);
       assert.deepEqual(await window.evaluate(sideways, within), [], `${what} at ${at} needs no sideways scrolling`);
+      assert.deepEqual(await window.evaluate(strayWords), [], `${what} at ${at} shows no stray “null”`);
     };
 
     await clean('the empty library', null);
@@ -283,6 +313,60 @@ function whereCommands(commands) {
     await window.click('#open-library');
     await window.waitForSelector('.project-row');
     await clean('the library with a project', null);
+
+    // At the smallest sizes, also the screens that begin with choosing a file, and the password and lock screens.
+    if (askedWidth <= 1024 && askedHeight <= 576) {
+      const choose = (file) => app.evaluate(({ dialog }, chosen) => { dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [chosen] }); }, file);
+      await choose(made.folder);
+      await window.click('#find-files');
+      await window.waitForSelector('#plan-tree');
+      await clean('the Find my files preview', 'dialog[open]');
+      assert.ok((await window.locator('#plan-tree').boundingBox()).height >= 90, `the plan has room at ${at}`);
+      await window.click('#plan-go');
+      await window.waitForSelector('#report-total', { timeout: 60000 });
+      await clean('the Find my files report', 'dialog[open]');
+      await window.click('#report-close');
+      await window.waitForSelector('.room');
+      await choose(made.document);
+      await press('import-button');
+      await window.waitForSelector('dialog[open]');
+      await clean('Import', 'dialog[open]');
+      await window.keyboard.press('Escape');
+      await window.waitForFunction(() => !document.querySelector('dialog[open]'));
+      await window.click('#mode-records');
+      await window.waitForSelector('.records-empty, .record-browser');
+      await choose(made.records);
+      await window.locator('#empty-bring-in, #import-records').first().click();
+      await window.waitForSelector('#records-import[open]');
+      await clean('bringing records in', '#records-import');
+      await window.click('#import-choose-files');
+      await window.waitForSelector('#import-summary');
+      await clean('bringing records in, with a file chosen', '#records-import');
+      await window.keyboard.press('Escape');
+      await window.waitForSelector('#records-import', { state: 'detached' });
+      await window.click('#mode-write');
+
+      // A password: both steps, the screen after, the lock screen and its other ways in.
+      await press('security-button');
+      await window.waitForSelector('#new-password');
+      await clean('setting a password', 'dialog[open]');
+      await window.fill('#new-password', 'seven silver spoons');
+      await window.fill('#new-password-again', 'seven silver spoons');
+      await window.click('#security-next');
+      await window.waitForSelector('#recovery-key');
+      await clean('the recovery key', 'dialog[open]');
+      await window.check('#recovery-saved');
+      await window.click('#recovery-continue');
+      await window.waitForSelector('#security-done', { timeout: 60000 });
+      await clean('the password is set', 'dialog[open]');
+      await window.click('#security-done');
+      await menu(app, 'lock');
+      await window.waitForSelector('#lock-screen');
+      await clean('the lock screen', null);
+      await window.click('#lock-forgot');
+      await clean('forgot your password', null);
+      if (process.env.RTST_SHOTS) await window.screenshot({ path: path.join(process.env.RTST_SHOTS, `w-lock-${size}.png`) });
+    }
     if (process.env.RTST_SHOTS) await window.screenshot({ path: path.join(process.env.RTST_SHOTS, `w-library-${size}.png`) });
     assert.deepEqual(errors, [], at);
     await app.close();

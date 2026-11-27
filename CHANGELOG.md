@@ -24,6 +24,9 @@ Files you bring in. This will be 3.11.
   from the keyboard. The lists narrow, and in a very small window books and chapters share one column. Long chapter and record titles
   wrap instead of being cut off, even in a full window. Preferences, Files and Records fit narrow windows. The window can now be made as
   small as 640 by 400, and never opens larger than the screen, including a small laptop with Windows scaled to 150 percent.
+- **The word “null” no longer shows on screen.** It appeared on the forgot-password screen, on the screen for changing a password, and
+  on a record's page, where a part of the screen that wasn't needed was written out as that word.
+- **Bringing records in fits a narrow window,** with each column of the file on its own lines, so nothing scrolls sideways.
 
 ### Changed
 - **Questions start on a likely answer.** Find my files no longer starts on *attachments*. Writing it can't place starts on *Notes*,

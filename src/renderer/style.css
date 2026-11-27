@@ -3571,3 +3571,52 @@ kbd {
     display: none;
   }
 }
+
+/* Bringing records in, in a narrow window: each column of the file is a block of its own, with where it goes underneath, so nothing has
+   to be scrolled sideways to be chosen. */
+
+@media (max-width: 760px) {
+  .import-table-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .import-table,
+  .import-table tbody {
+    display: block;
+  }
+
+  /* The headings are still read out, but take no room. */
+  .import-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .import-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--panel-edge);
+  }
+
+  .import-table th,
+  .import-table td {
+    display: block;
+    min-width: 0;
+    padding: 0.1rem 0.2rem;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .import-table .import-samples,
+  .import-table td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .import-table select {
+    width: 100%;
+  }
+}

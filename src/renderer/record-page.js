@@ -161,7 +161,9 @@ export class RecordPage {
     this.printHost = el('div', { class: 'record-notes-host print-notes-host' });
     this.lockBanner = el('div', { class: 'lock-banner', role: 'status', hidden: true });
     this.backlinksBox = el('section', { class: 'record-backlinks', 'aria-label': 'Linked from' });
-    this.root.replaceChildren(
+    // fill, not replaceChildren: a part that isn't there would be written as the word "null".
+    fill(
+      this.root,
       head,
       this.lockBanner,
       this.versionStrip(),

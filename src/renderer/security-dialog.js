@@ -1,5 +1,5 @@
 // Setting a password and looking after the ways in. Everything here is checked again by the app, in src/main/security.js.
-import { el } from './dom.js';
+import { el, fill } from './dom.js';
 import { icon } from './icons.js';
 
 const MIN_PASSWORD = 8;
@@ -142,13 +142,13 @@ function setPasswordFlow({ api, dialog, beforeChange, onChanged, onError }) {
   const read = (field) => field.querySelector('input').value;
 
   async function lock(password) {
-    dialog.replaceChildren(...workingScreen('Locking this project…'));
+    fill(dialog, ...workingScreen('Locking this project…'));
     try {
       await beforeChange();
       const result = await api.setPassword({ password, label: label.value });
       onChanged(result.opened);
       const now = await api.securityStatus();
-      dialog.replaceChildren(...offersScreen({ api, dialog, result, status: now, onDone: () => {} }));
+      fill(dialog, ...offersScreen({ api, dialog, result, status: now, onDone: () => {} }));
     } catch (error) {
       dialog.close();
       onError(error.message);
@@ -164,10 +164,10 @@ function setPasswordFlow({ api, dialog, beforeChange, onChanged, onError }) {
     }
     const password = read(first);
     const text = await api.makeRecovery();
-    dialog.replaceChildren(...recoveryScreen(api, text, label.value, { action: 'Lock this project', onAction: () => lock(password), onCancel: () => dialog.close() }));
+    fill(dialog, ...recoveryScreen(api, text, label.value, { action: 'Lock this project', onAction: () => lock(password), onCancel: () => dialog.close() }));
   }
 
-  dialog.replaceChildren(
+  fill(dialog,
     el('h2', {}, 'Password and lock'),
     el('p', { class: 'quiet-note' }, 'Right now this project is encrypted with a key built into the app. That keeps out other programs, but not someone determined. With a password, the files are a garbled mess to anyone without it.'),
     first,
@@ -187,7 +187,7 @@ function changePasswordScreen({ api, dialog, heading, words, onDone, canCancel =
   const second = passwordField('new-password-again', 'The same again');
   const problem = el('p', { id: 'security-error', class: 'lock-error', role: 'alert', hidden: true });
   const read = (field) => field.querySelector('input').value;
-  dialog.replaceChildren(
+  fill(dialog,
     el('h2', {}, heading),
     words ? el('p', { class: 'quiet-note' }, words) : null,
     first,
@@ -212,7 +212,7 @@ function changePasswordScreen({ api, dialog, heading, words, onDone, canCancel =
 function authenticatorScreen({ api, dialog, setup, onDone }) {
   const code = el('input', { id: 'authenticator-code', type: 'text', inputmode: 'numeric', 'aria-label': 'Code', autocomplete: 'off' });
   const problem = el('p', { id: 'security-error', class: 'lock-error', role: 'alert', hidden: true });
-  dialog.replaceChildren(
+  fill(dialog,
     el('h2', {}, 'Add an authenticator'),
     el('p', { class: 'quiet-note' }, 'Scan this with any authenticator app, or type the key in. After that, this computer asks for a code before it opens the project.'),
     el('img', { id: 'authenticator-picture', class: 'authenticator-picture', src: setup.picture, alt: 'A code to scan with an authenticator app' }),
@@ -258,14 +258,14 @@ async function waysScreen(context) {
   }) });
   const label = el('input', { id: 'locked-label', type: 'text', maxlength: '60', value: status.label, placeholder: 'Locked project', onchange: () => api.renameLocked(label.value) });
 
-  dialog.replaceChildren(
+  fill(dialog,
     el('h2', {}, 'Password and lock'),
     el('p', { class: 'quiet-note' }, 'This project is locked. These are the ways in.'),
     el('ul', { id: 'ways', class: 'way-list' },
       row('Password', 'For every day.', el('button', { id: 'way-change-password', onclick: guarded(() => changePasswordScreen({ api, dialog, heading: 'Change your password', onDone: again })) }, 'Change')),
       row('Recovery key', 'For when you forget your password, on any computer.', el('button', { id: 'way-new-recovery', onclick: guarded(async () => {
         const text = await api.makeRecovery();
-        dialog.replaceChildren(...recoveryScreen(api, text, status.label, {
+        fill(dialog, ...recoveryScreen(api, text, status.label, {
           action: 'Use this key',
           onAction: async () => {
             await api.replaceRecovery();
@@ -300,7 +300,7 @@ async function waysScreen(context) {
     el('div', { class: 'dialog-actions spread' },
       el('button', { id: 'security-remove', class: 'quiet', onclick: guarded(async () => {
         if (!window.confirm('Remove the password? Anyone who gets these files could then read them. Backups made while it was locked keep their own password.')) return;
-        dialog.replaceChildren(...workingScreen('Removing the password…'));
+        fill(dialog, ...workingScreen('Removing the password…'));
         await beforeChange();
         const { opened } = await api.removeLock();
         onChanged(opened);
