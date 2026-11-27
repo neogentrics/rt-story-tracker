@@ -67,6 +67,8 @@ Files you bring in.
   not named as a copy, then the one nearest the top. The others are listed as its copies. This applies to imports from now on, and a
   book already brought in the wrong way isn't changed.
 - **Bringing records in fits a narrow window,** with each column of the file on its own lines, so nothing scrolls sideways.
+- **Bringing records in is laid out in one column** at every size. It was spread over two by mistake, which in some windows left the
+  box for a new kind's name too narrow to type in.
 - **The Recon Towers apps window is easy to read.** It's as wide as Preferences, with larger text and buttons, and every app shows at
   once instead of in a small box that scrolled. On a small screen the whole window scrolls. The list in *Preferences*, under *Linked
   Apps*, has no scrolling box of its own either.

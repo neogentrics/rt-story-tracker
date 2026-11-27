@@ -372,6 +372,9 @@ function sources() {
       await window.click('#import-choose-files');
       await window.waitForSelector('#import-summary');
       await clean('bringing records in, with a file chosen', '#records-import');
+      // One column at every size. In two, how narrow a field got depended on the window and on what was in the file.
+      const form = await window.$eval('#records-import .import-body', (body) => ({ lefts: [...new Set([...body.children].map((part) => Math.round(part.getBoundingClientRect().left)))], name: Math.round(document.querySelector('#import-new-name')?.getBoundingClientRect().width ?? 999) }));
+      assert.ok(form.lefts.length === 1 && form.name >= 150, `bringing records in is one column, with room to type the new kind's name, at ${at}: ${JSON.stringify(form)}`);
       await window.keyboard.press('Escape');
       await window.waitForSelector('#records-import', { state: 'detached' });
       await window.click('#mode-write');

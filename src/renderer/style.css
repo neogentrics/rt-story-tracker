@@ -1657,6 +1657,13 @@ mark,
   gap: 1.2rem;
 }
 
+/* Bringing records in is one column. It shares a class with the chapter import, which has two, and in two the table took what it wanted
+   and left the fields beside it too little room: in some windows the box for a new kind's name had none at all. */
+#records-import .import-body {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
 .import-sections {
   max-height: 45vh;
   overflow: auto;
