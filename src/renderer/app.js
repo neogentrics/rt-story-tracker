@@ -271,6 +271,7 @@ function onMenu(command) {
   if (command === 'preferences') openPreferences(api);
   if (command === 'find') room?.find();
   if (command === 'replace') room?.find({ replacing: true });
+  if (command === 'context-comment') room?.commentOnSelection();
   if (command === 'find-next') room?.findStep(1);
   if (command === 'find-previous') room?.findStep(-1);
   if (command === 'restart-to-update') document.getElementById('update-restart')?.click();

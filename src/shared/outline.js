@@ -75,4 +75,21 @@ function resolveStep(root, id, step) {
   return besideTarget(target, parent, id, step > 0 ? 'after' : 'before');
 }
 
-module.exports = { CHILD_KINDS, canHold, findNode, indexTree, resolveDrop, resolveStep };
+// The rows a list shows: each node and what's inside it, except inside anything folded away. `closed` stops at a kind whose insides
+// the list never shows, as the list of books stops at a book.
+function visibleRows(nodes, { folded = new Set(), closed = () => false } = {}, depth = 0) {
+  return nodes.flatMap((node) => [
+    { node, depth },
+    ...(closed(node) || folded.has(node.id) ? [] : visibleRows(node.children, { folded, closed }, depth + 1)),
+  ]);
+}
+
+// What a node is inside, nearest first, not counting the project itself.
+function holdersOf(root, id) {
+  const index = indexTree(root);
+  const found = [];
+  for (let above = index.get(id)?.parent; above && above.id !== root.id; above = index.get(above.id).parent) found.push(above.id);
+  return found;
+}
+
+module.exports = { CHILD_KINDS, canHold, findNode, holdersOf, indexTree, resolveDrop, resolveStep, visibleRows };

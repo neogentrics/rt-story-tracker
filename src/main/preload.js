@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('storyTracker', {
   rename: (input) => call('item:rename', input),
   move: (input) => call('item:move', input),
   trashItem: (id) => call('item:trash', id),
+  duplicateItem: (id) => call('item:duplicate', id),
   restoreItem: (id) => call('item:restore', id),
   listTrash: () => call('trash:list'),
   trashProject: (id) => call('library:trashProject', id),

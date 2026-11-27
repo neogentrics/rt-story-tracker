@@ -98,6 +98,7 @@ open the app from *System Settings → Privacy & Security*.
 | **The other Recon Towers apps** | An Apps panel lists the ones on this computer, installed or running, and links you once. A linked app can send you documents, see a short line about what's open, and ask for a book's word count, never your writing |
 | **Series, books, parts, chapters** | Three columns, as in the old app. A project holds series and books, and a book holds parts and chapters |
 | **Move things around** | Drag a chapter to reorder it, into a part, or to another book. Alt and the arrow keys work too |
+| **Lists that fit how you work** | Resize the two lists, fold series and parts away, and right-click anything in them to rename, move, duplicate, export or trash it. The Menu key and Shift+F10 open the same menu |
 | **Live word counts** | For the chapter, the book and the whole project, as you type |
 | **Saves itself** | A couple of seconds after you pause, and every five seconds while you type. There's no Save button to forget |
 | **Spell check** | With your own dictionary, so invented names stop being marked wrong |

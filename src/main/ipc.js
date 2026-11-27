@@ -327,6 +327,7 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
   handle('item:rename', (input) => workspace().rename(input));
   handle('item:move', (input) => workspace().move(input));
   handle('item:trash', (id) => workspace().trashItem(id));
+  handle('item:duplicate', (id) => workspace().duplicate(id));
   handle('item:restore', (id) => workspace().restoreItem(id));
   handle('trash:list', () => workspace().listTrash());
   handle('library:trashProject', (id) => workspace().trashProject(id));

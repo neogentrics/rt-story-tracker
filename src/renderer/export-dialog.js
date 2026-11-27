@@ -27,14 +27,14 @@ function tick(id, label, checked) {
 }
 
 // `scopes` is what can be exported from where the author is, nearest first.
-export function openExport({ api, scopes, format: wanted, preview = false, onError }) {
+export function openExport({ api, scopes, scope: first = 'book', format: wanted, preview = false, onError }) {
   document.getElementById('export')?.remove();
   const layout = savedLayout();
 
   const scope = el('select', { id: 'export-scope', onchange: () => refresh() }, scopes.map((item, at) => el('option', { value: String(at) }, item.label)));
   const format = el('select', { id: 'export-format', onchange: () => refresh() }, options(EXPORT_FORMATS));
   format.value = wanted ?? localStorage.getItem(FORMAT_KEY) ?? 'docx';
-  scope.value = String(Math.max(0, scopes.findIndex((item) => item.scope === 'book')));
+  scope.value = String(Math.max(0, scopes.findIndex((item) => item.scope === first)));
 
   const trim = el('select', { id: 'export-trim' }, options(TRIM_SIZES));
   trim.value = layout.trim;

@@ -1,5 +1,5 @@
 // The three columns: books, then the chapters of the chosen book, then the page.
-import { canHold, findNode, indexTree, resolveDrop, resolveStep } from '../shared/outline.js';
+import { canHold, findNode, holdersOf, indexTree, resolveDrop, resolveStep, visibleRows } from '../shared/outline.js';
 import { el, formatCount, shortCount, words } from './dom.js';
 import { openDetails } from './details-dialog.js';
 import { openExport } from './export-dialog.js';
@@ -8,6 +8,8 @@ import { createBarFit } from './bar-fit.js';
 import { openFiles } from './files-dialog.js';
 import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
+import { createListSplitters } from './list-splitters.js';
+import { closeMenu, openMenu } from './popup-menu.js';
 import { icon } from './icons.js';
 import { createAppsButton } from './apps-panel.js';
 import { openInbox } from './inbox-dialog.js';
@@ -31,9 +33,8 @@ function iconButton(id, name, label, onclick) {
   return el('button', { class: `bar-button ${id}`, title: label, 'aria-label': label, onclick }, icon(name));
 }
 
-function flatten(nodes, depth = 0) {
-  return nodes.flatMap((node) => [{ node, depth }, ...flatten(node.kind === 'book' ? [] : node.children, depth + 1)]);
-}
+// Which kinds fold away what's inside them.
+const FOLDS = new Set(['series', 'part']);
 
 function chaptersOf(node) {
   return node.kind === 'chapter' ? [node] : node.children.flatMap(chaptersOf);
@@ -50,6 +51,7 @@ export class WritingRoom {
     this.remember = remember;
     this.projectId = opened.id;
     this.outline = opened.outline;
+    this.folded = this.readFolded();
     this.bookId = null;
     this.chapterId = null;
     this.dragId = null;
@@ -73,7 +75,7 @@ export class WritingRoom {
       type: 'search',
       placeholder: 'Filter chapters…',
       'aria-label': 'Filter chapters',
-      oninput: () => this.applyFilter(),
+      oninput: () => this.renderChapters(),
     });
     this.pageRoot = el('div', { class: 'pane' });
     this.secondRoot = el('div', { class: 'pane', hidden: true });
@@ -122,7 +124,10 @@ export class WritingRoom {
           el(
             'div',
             { class: 'bar-side' },
-            iconButton('toggle-lists', 'menu', 'Show or hide the lists', () => this.room.classList.toggle('lists-hidden')),
+            iconButton('toggle-lists', 'menu', 'Show or hide the lists', () => {
+              this.room.classList.toggle('lists-hidden');
+              this.splitters.apply();
+            }),
             el('button', { id: 'open-library', class: 'bar-primary', title: 'Library', 'aria-label': 'Library', onclick: () => onLibrary() }, icon('library'), el('span', { class: 'bar-text' }, 'Library')),
             el('div', { class: 'mode-tabs', role: 'group', 'aria-label': 'Show' }, this.writeButton, this.recordsButton),
           ),
@@ -136,36 +141,37 @@ export class WritingRoom {
       ),
     );
 
-    this.columns.append(
+    this.bookFolds = this.foldTools('series');
+    this.partFolds = this.foldTools('part');
+    const booksColumn = el(
+      'section',
+      { class: 'column', 'aria-label': 'Books', oncontextmenu: (event) => this.listMenu(event, 'books') },
+      el('div', { class: 'column-head' }, el('h2', {}, 'Books'), this.bookFolds),
+      this.bookList,
       el(
-        'section',
-        { class: 'column', 'aria-label': 'Books' },
-        el('h2', {}, 'Books'),
-        this.bookList,
-        el(
-          'div',
-          { class: 'column-actions' },
-          el('button', { id: 'add-book', onclick: () => this.addBook() }, icon('plus'), 'Book'),
-          el('button', { id: 'add-series', onclick: () => this.addSeries() }, icon('plus'), 'Series'),
-        ),
+        'div',
+        { class: 'column-actions' },
+        el('button', { id: 'add-book', onclick: () => this.addBook() }, icon('plus'), 'Book'),
+        el('button', { id: 'add-series', onclick: () => this.addSeries() }, icon('plus'), 'Series'),
       ),
-      el(
-        'section',
-        { class: 'column', 'aria-label': 'Chapters' },
-        this.bookHeading,
-        this.filter,
-        this.chapterList,
-        el(
-          'div',
-          { class: 'column-actions' },
-          el('button', { id: 'add-chapter', class: 'primary', onclick: () => this.addChapter() }, icon('plus'), 'Chapter'),
-          el('button', { id: 'add-part', onclick: () => this.addPart() }, icon('plus'), 'Part'),
-        ),
-      ),
-      this.pages,
     );
+    const chaptersColumn = el(
+      'section',
+      { class: 'column', 'aria-label': 'Chapters', oncontextmenu: (event) => this.listMenu(event, 'chapters') },
+      el('div', { class: 'column-head' }, this.bookHeading, this.partFolds),
+      this.filter,
+      this.chapterList,
+      el(
+        'div',
+        { class: 'column-actions' },
+        el('button', { id: 'add-chapter', class: 'primary', onclick: () => this.addChapter() }, icon('plus'), 'Chapter'),
+        el('button', { id: 'add-part', onclick: () => this.addPart() }, icon('plus'), 'Part'),
+      ),
+    );
+    this.columns.append(booksColumn, chaptersColumn, this.pages);
 
     this.room = root.querySelector('.room');
+    this.splitters = createListSplitters({ columns: this.columns, books: booksColumn, chapters: chaptersColumn, page: this.pages, remember });
     this.barFit = createBarFit({
       header, title: barTitle, bar: barRight, tools, leaving: LEAVE_ORDER, core: STAY_LONGEST,
       showWords: (level) => this.renderBarWords(level),
@@ -210,6 +216,8 @@ export class WritingRoom {
     document.removeEventListener('keydown', this.keys);
     this.apps.destroy();
     this.barFit?.destroy();
+    this.splitters?.destroy();
+    closeMenu();
     this.records?.destroy();
     document.querySelectorAll('.mention-pop, .record-picker').forEach((node) => node.remove());
   }
@@ -253,6 +261,7 @@ export class WritingRoom {
   async openChapterFromRecords(id) {
     await this.showMode('write');
     await this.openChapter(id, { focus: true });
+    this.reveal(id);
   }
 
   toggleLookup() {
@@ -438,11 +447,11 @@ export class WritingRoom {
       }));
   }
 
-  exportScopes() {
+  exportScopes(chapterId = this.activePage.chapterId, bookId = this.bookId) {
     const scopes = [];
-    const chapter = this.activePage.chapterId && findNode(this.outline, this.activePage.chapterId);
+    const chapter = chapterId && findNode(this.outline, chapterId);
     if (chapter) scopes.push({ scope: 'chapter', id: chapter.id, label: `This chapter: ${chapter.title}` });
-    const book = this.bookId && findNode(this.outline, this.bookId);
+    const book = bookId && findNode(this.outline, bookId);
     if (book) scopes.push({ scope: 'book', id: book.id, label: `This book: ${book.title}` });
     const holder = book && indexTree(this.outline).get(book.id)?.parent;
     if (holder?.kind === 'series') scopes.push({ scope: 'series', id: holder.id, label: `This series: ${holder.title}` });
@@ -454,7 +463,11 @@ export class WritingRoom {
     await this.attempt(async () => {
       await this.flush();
       if (!(await ensurePass(this.api, 'Exported files aren’t protected: anyone can read them.'))) return;
-      openExport({ api: this.api, scopes: this.exportScopes(), onError: (text) => this.showMessage(text), ...options });
+      // From a row's menu, what's offered is that book or chapter, whatever is open.
+      const { target, ...rest } = options;
+      const node = target && findNode(this.outline, target);
+      const scopes = node ? this.exportScopes(node.kind === 'chapter' ? node.id : null, node.kind === 'book' ? node.id : this.bookOf(node.id)?.id) : this.exportScopes();
+      openExport({ api: this.api, scopes, scope: node?.kind ?? 'book', onError: (text) => this.showMessage(text), ...rest });
     });
   }
 
@@ -581,7 +594,7 @@ export class WritingRoom {
 
   async restoreRow(id) {
     this.outline = await this.api.restoreItem(id);
-    this.renderLists();
+    this.reveal(id);
     this.clearMessage();
     await this.records?.refresh();
   }
@@ -619,7 +632,8 @@ export class WritingRoom {
   // Lists
 
   renderLists() {
-    const shelves = flatten(this.outline.children);
+    // The list of books never shows what's inside a book.
+    const shelves = visibleRows(this.outline.children, { folded: this.folded, closed: (node) => node.kind === 'book' });
     this.bookList.replaceChildren(...shelves.map(({ node, depth }) => this.row(node, depth)));
     this.updateBarWords();
     this.renderChapters();
@@ -628,15 +642,31 @@ export class WritingRoom {
   renderChapters() {
     const book = this.bookId && findNode(this.outline, this.bookId);
     this.bookHeading.textContent = book ? book.title : 'Chapters';
-    const chapters = book ? flatten(book.children) : [];
+    // A search looks everywhere, so nothing stays folded while there are words in the filter.
+    const chapters = book ? visibleRows(book.children, { folded: this.filter.value.trim() ? new Set() : this.folded }) : [];
     this.chapterList.replaceChildren(...chapters.map(({ node, depth }) => this.row(node, depth)));
     this.applyFilter();
     this.showSelection();
     this.showCounts();
+    this.bookFolds.hidden = this.idsOf('series').length === 0;
+    this.partFolds.hidden = this.idsOf('part').length === 0;
   }
 
   row(node, depth) {
     const title = el('span', { class: 'row-title' }, node.title);
+    const folds = FOLDS.has(node.kind);
+    // While there are words in the chapter filter, parts show what's in them.
+    const folded = folds && this.folded.has(node.id) && !(node.kind === 'part' && this.filter.value.trim());
+    const arrow = folds
+      ? el('button', {
+        class: 'row-fold',
+        type: 'button',
+        'aria-expanded': String(!folded),
+        'aria-label': `${folded ? 'Expand' : 'Collapse'} ${node.title}`,
+        title: folded ? 'Expand' : 'Collapse',
+        onclick: () => this.setFolded(node.id, !folded),
+      }, icon('chevron'))
+      : null;
     const main = el(
       'button',
       {
@@ -655,12 +685,14 @@ export class WritingRoom {
         draggable: 'true',
         dataset: { id: node.id },
         onkeydown: (event) => this.onRowKey(event, node, title),
+        oncontextmenu: (event) => this.rowMenu(event, node),
         ondragstart: (event) => this.onDragStart(event, node),
         ondragend: () => this.onDragEnd(),
         ondragover: (event) => this.onDragOver(event, node, item),
         ondragleave: () => this.clearDropMarks(item),
         ondrop: (event) => this.onDrop(event, node, item),
       },
+      arrow,
       main,
       el(
         'span',
@@ -700,6 +732,9 @@ export class WritingRoom {
       row.classList.toggle('selected', selected);
       row.classList.toggle('beside', row.dataset.id === this.secondPage?.chapterId);
       row.querySelector('.row-main').setAttribute('aria-current', String(selected));
+      // A folded series or part says when the book or chapter that's open is inside it.
+      const holds = row.querySelector('.row-fold[aria-expanded="false"]') && [this.bookId, this.chapterId].some((id) => id && holdersOf(this.outline, id).includes(row.dataset.id));
+      row.classList.toggle('holds-selected', Boolean(holds));
     }
     this.showSubtitle();
   }
@@ -761,6 +796,153 @@ export class WritingRoom {
     });
   }
 
+  // Folding. What's folded is remembered for each project, on this computer.
+
+  readFolded() {
+    try {
+      return new Set(JSON.parse(this.remember.get(`folded:${this.projectId}`) || '[]'));
+    } catch {
+      return new Set();
+    }
+  }
+
+  saveFolded() {
+    this.remember.set(`folded:${this.projectId}`, JSON.stringify([...this.folded]));
+  }
+
+  // Every series in the project, or every part in the book that's showing.
+  idsOf(kind) {
+    const top = kind === 'part' ? this.bookId && findNode(this.outline, this.bookId) : this.outline;
+    return top ? [...indexTree(top).values()].filter(({ node }) => node.kind === kind).map(({ node }) => node.id) : [];
+  }
+
+  setFolded(id, folded) {
+    const had = document.activeElement?.closest('.row')?.dataset.id === id ? document.activeElement.className.split(' ')[0] : null;
+    if (folded) this.folded.add(id);
+    else this.folded.delete(id);
+    this.saveFolded();
+    this.renderLists();
+    if (had) document.querySelector(`.row[data-id="${id}"] .${had}`)?.focus();
+  }
+
+  foldAll(kind, folded) {
+    for (const id of this.idsOf(kind)) {
+      if (folded) this.folded.add(id);
+      else this.folded.delete(id);
+    }
+    this.saveFolded();
+    this.renderLists();
+  }
+
+  // Opens whatever is folded around something, so it can be seen, and draws the lists.
+  reveal(id) {
+    let changed = false;
+    for (const holder of holdersOf(this.outline, id)) changed = this.folded.delete(holder) || changed;
+    if (changed) this.saveFolded();
+    this.renderLists();
+  }
+
+  foldTools(kind) {
+    const what = kind === 'series' ? 'series' : 'parts';
+    const button = (folded, name, label) => el('button', { type: 'button', class: 'fold-tool', title: label, 'aria-label': label, onclick: () => this.foldAll(kind, folded), dataset: { fold: `${kind}-${folded ? 'all' : 'none'}` } }, icon(name));
+    return el('span', { class: 'fold-all', hidden: true }, button(true, 'foldall', `Collapse all ${what}`), button(false, 'unfoldall', `Expand all ${what}`));
+  }
+
+  // The menu for a row: from a right-click, the Menu key or Shift+F10. A field being typed in keeps the usual menu.
+  rowMenu(event, node) {
+    if (event?.target.closest('input')) return;
+    event?.preventDefault();
+    event?.stopPropagation();
+    const row = document.querySelector(`.row[data-id="${node.id}"]`);
+    const main = row?.querySelector('.row-main');
+    if (!main) return;
+    const box = main.getBoundingClientRect();
+    const pointed = event && (event.clientX || event.clientY);
+    openMenu({ items: this.menuFor(node), at: pointed ? { x: event.clientX, y: event.clientY } : { x: box.left + 24, y: box.bottom }, label: `Actions for ${node.title}`, returnTo: main });
+  }
+
+  // The menu for the empty part of a list.
+  listMenu(event, list) {
+    if (event.target.closest('input, .row, .splitter')) return;
+    event.preventDefault();
+    const kind = list === 'books' ? 'series' : 'part';
+    const none = this.idsOf(kind).length === 0;
+    const what = list === 'books' ? 'series' : 'parts';
+    openMenu({
+      at: { x: event.clientX, y: event.clientY },
+      label: list === 'books' ? 'Actions for the list of books' : 'Actions for the list of chapters',
+      items: [
+        ...(list === 'books'
+          ? [{ label: 'Add a book', run: () => this.addBook(this.outline.id) }, { label: 'Add a series', run: () => this.addSeries() }]
+          : [{ label: 'Add a chapter', run: () => this.addChapter(), disabled: !this.bookId }, { label: 'Add a part', run: () => this.addPart(), disabled: !this.bookId }]),
+        'separator',
+        { label: `Collapse all ${what}`, run: () => this.foldAll(kind, true), disabled: none },
+        { label: `Expand all ${what}`, run: () => this.foldAll(kind, false), disabled: none },
+      ],
+    });
+  }
+
+  menuFor(node) {
+    const parent = indexTree(this.outline).get(node.id)?.parent;
+    const step = (by, label) => {
+      const to = resolveStep(this.outline, node.id, by);
+      return { label, disabled: !to, run: () => this.applyMove(node.id, to) };
+    };
+    // A list of places to move to. One with nowhere to go says so by being off.
+    const moveTo = (label, places) => (places.length
+      ? { label, items: places.map((place) => ({ label: place.title, run: () => this.moveInto(node.id, place.id) })) }
+      : { label, disabled: true });
+    const rename = { label: 'Rename', run: () => this.startRenameOf(node.id) };
+    const trash = { label: 'Move to Trash', run: () => this.removeRow(node) };
+    const folded = this.folded.has(node.id);
+    const fold = { label: folded ? 'Expand' : 'Collapse', run: () => this.setFolded(node.id, !folded) };
+    const moving = [step(-1, 'Move up'), step(1, 'Move down')];
+    const duplicate = { label: 'Duplicate', run: () => this.duplicate(node) };
+    const exportIt = { label: 'Export…', run: () => this.showExport({ target: node.id }) };
+
+    if (node.kind === 'series') {
+      return [rename, { label: 'Add a book', run: () => this.addBook(node.id) }, fold, 'separator', ...moving, 'separator', trash];
+    }
+    if (node.kind === 'part') {
+      return [{ label: 'Add a chapter', run: () => this.addChapter(node.id) }, rename, fold, 'separator', ...moving, 'separator', trash];
+    }
+    if (node.kind === 'book') {
+      const series = [...indexTree(this.outline).values()].map((entry) => entry.node).filter((one) => one.kind === 'series' && one.id !== parent?.id);
+      const places = parent?.kind === 'series' ? [...series, { id: this.outline.id, title: 'Not in a series' }] : series;
+      return [
+        { label: 'Open', run: () => this.openBook(node.id) }, rename, { label: 'Book details…', run: () => this.showDetails(node.id) }, 'separator',
+        moveTo('Move to a series…', places), ...moving, 'separator', duplicate, exportIt, 'separator', trash,
+      ];
+    }
+    const own = this.bookOf(node.id)?.id;
+    return [
+      { label: 'Open', run: () => this.openChapter(node.id, { focus: true }) }, { label: 'Open beside', run: () => this.openBeside(node.id) }, rename, duplicate, 'separator',
+      ...moving, moveTo('Move to another book…', booksOf(this.outline).filter((book) => book.id !== own)), exportIt, 'separator', trash,
+    ];
+  }
+
+  async moveInto(id, parentId) {
+    await this.applyMove(id, { parentId, beforeId: null });
+    this.reveal(id);
+    document.querySelector(`.row[data-id="${id}"] .row-main`)?.focus();
+  }
+
+  duplicate(node) {
+    return this.attempt(async () => {
+      await this.flush();
+      const made = await this.api.duplicateItem(node.id);
+      this.outline = made.outline;
+      this.reveal(made.id);
+      document.querySelector(`.row[data-id="${made.id}"] .row-main`)?.focus();
+      const left = made.filesLeft ? ` The ${made.filesLeft === 1 ? 'file kept with it wasn’t' : `${made.filesLeft} files kept with it weren’t`} copied.` : '';
+      this.showInfo(`Made “${findNode(this.outline, made.id)?.title}”.${left}`);
+    });
+  }
+
+  commentOnSelection() {
+    if (this.mode === 'write') this.activePage.comments.start();
+  }
+
   // Live updates from the page, without rebuilding the lists under the author's hands.
 
   setWords(id, count) {
@@ -798,13 +980,13 @@ export class WritingRoom {
     });
   }
 
-  async addBook() {
+  async addBook(into = null) {
     const current = this.bookId && indexTree(this.outline).get(this.bookId);
-    const parentId = current?.parent?.id ?? this.outline.id;
+    const parentId = into ?? current?.parent?.id ?? this.outline.id;
     const book = await this.add('book', parentId, 'New book');
     if (!book) return;
     const chapter = await this.add('chapter', book.id, 'Chapter 1');
-    this.renderLists();
+    this.reveal(book.id);
     if (chapter) await this.openChapter(chapter.id);
     this.startRenameOf(book.id);
   }
@@ -816,17 +998,17 @@ export class WritingRoom {
     this.startRenameOf(series.id);
   }
 
-  async addChapter() {
+  async addChapter(into = null) {
     if (!this.bookId) {
       this.showMessage('Add a book first.');
       return;
     }
     const book = findNode(this.outline, this.bookId);
     const open = this.chapterId && indexTree(this.outline).get(this.chapterId);
-    const parentId = open?.parent?.kind === 'part' ? open.parent.id : this.bookId;
+    const parentId = into ?? (open?.parent?.kind === 'part' ? open.parent.id : this.bookId);
     const chapter = await this.add('chapter', parentId, `Chapter ${chaptersOf(book).length + 1}`);
     if (!chapter) return;
-    this.renderLists();
+    this.reveal(chapter.id);
     await this.openChapter(chapter.id, { focus: true });
   }
 
@@ -837,7 +1019,7 @@ export class WritingRoom {
     }
     const part = await this.add('part', this.bookId, 'New part');
     if (!part) return;
-    this.renderLists();
+    this.reveal(part.id);
     this.startRenameOf(part.id);
   }
 
@@ -923,6 +1105,17 @@ export class WritingRoom {
 
   onRowKey(event, node, title) {
     if (event.target.classList.contains('rename')) return;
+    if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+      event.preventDefault();
+      this.rowMenu(null, node);
+      return;
+    }
+    // Left folds a series or part away and right opens it, as in a tree.
+    if (FOLDS.has(node.kind) && !event.altKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault();
+      this.setFolded(node.id, event.key === 'ArrowLeft');
+      return;
+    }
     if (event.key === 'F2') {
       event.preventDefault();
       this.startRename(node.id, title);

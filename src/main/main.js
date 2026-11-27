@@ -12,6 +12,7 @@ const { LINKS, detailsText } = require('../shared/family');
 const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
+const { contextTemplate } = require('./context-menu');
 const { buildMenu } = require('./menu');
 const { sizeFrom, windowBounds } = require('./window-size');
 const { ITEMS, resolveKeys } = require('../shared/shortcuts');
@@ -170,26 +171,18 @@ function requestFlush(window) {
   });
 }
 
-function spellingMenu(window, params) {
-  const fixes = params.dictionarySuggestions.map((word) => ({
-    label: word,
-    click: () => window.webContents.replaceMisspelling(word),
-  }));
-  const word = params.misspelledWord;
-  const add = word
-    ? [{ label: `Add “${word}” to Dictionary`, click: () => window.webContents.session.addWordToSpellCheckerDictionary(word) }]
-    : [];
-  const template = [
-    ...fixes,
-    ...add,
-    ...(fixes.length || word ? [{ type: 'separator' }] : []),
-    { role: 'cut', enabled: params.editFlags.canCut },
-    { role: 'copy', enabled: params.editFlags.canCopy },
-    { role: 'paste', enabled: params.editFlags.canPaste },
-    { type: 'separator' },
-    { role: 'selectAll' },
-  ];
-  Menu.buildFromTemplate(template).popup({ window });
+async function textMenu(window, params) {
+  // The writing page is the only place with comments and find and replace.
+  const onPage = params.isEditable
+    && await window.webContents.executeJavaScript("Boolean(document.activeElement?.closest('.pane .ProseMirror'))").catch(() => false);
+  if (window.isDestroyed()) return;
+  const template = contextTemplate(params, {
+    onPage,
+    replace: (word) => window.webContents.replaceMisspelling(word),
+    learn: (word) => window.webContents.session.addWordToSpellCheckerDictionary(word),
+    send: (command) => window.webContents.send('menu:command', command),
+  });
+  if (template.length) Menu.buildFromTemplate(template).popup({ window });
 }
 
 // A test can ask for a smaller window, such as the 1024 by 768 screen of a hosted Windows computer, with RTST_WINDOW_SIZE=1024x768.
@@ -225,7 +218,7 @@ function createWindow({ show = true } = {}) {
   window.on('closed', () => {
     if (window === mainWindow) BrowserWindow.getAllWindows().forEach((other) => other.close());
   });
-  window.webContents.on('context-menu', (_event, params) => spellingMenu(window, params));
+  window.webContents.on('context-menu', (_event, params) => textMenu(window, params));
   // The saved work is safe in the database, so a crashed window just starts again.
   window.webContents.on('render-process-gone', (_event, details) => {
     if (details.reason !== 'clean-exit' && !window.isDestroyed()) window.webContents.reload();

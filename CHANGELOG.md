@@ -17,6 +17,20 @@ Files you bring in. This will be 3.11.
   another section or book, one at a time or many at once. A picture can become the book's cover, and the cover it replaces is kept.
   Writing can become a chapter or a record, and the file then waits in the Trash for 30 days. None of this writes an unencrypted copy of
   a file anywhere. Only *Save a copy* writes one out, where you choose.
+- **The two lists can be resized.** Drag the line beside a list, or move to it with Tab and use the arrow keys. Enter or a double click
+  goes back to the usual width. The widths are remembered on this computer, and in a smaller window the lists give way so the page keeps
+  its room.
+- **Series and parts fold away.** Each has an arrow, the left and right arrow keys do the same, and each list has *Collapse all* and
+  *Expand all*. What's folded is remembered, and opening a project doesn't unfold it. A folded series or part shows when what's open is
+  inside it, and a search in the chapter filter looks inside folded parts. A series now looks like a heading, with its books indented.
+- **A right-click menu on every series, book, part and chapter,** which the Menu key and Shift+F10 open too. It offers what fits the
+  row: open, rename, add, collapse, move up or down, move to another series or book, duplicate, export and *Move to Trash*, which has an
+  Undo. The empty part of each list has a short menu for adding.
+- **Duplicate** a chapter or a whole book. The copy comes straight after, with its writing, comments, goals, book details and cover.
+  Files kept with a book and earlier versions aren't copied, and the app says when files were left.
+- **On the writing page,** a right-click still offers cut, copy, paste, select all and spelling fixes, and now *Comment on the Selected
+  Words* and *Find and Replace*. A right-click where there’s nothing to type in and nothing selected no longer shows a menu of
+  greyed-out commands.
 
 ### Fixed
 - **The app works in a small window and on a small screen.** In a narrow window the title in the top bar ran into the word counts and the

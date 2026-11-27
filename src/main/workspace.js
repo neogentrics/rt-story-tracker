@@ -274,6 +274,40 @@ class Workspace {
     return this.outline();
   }
 
+  // A copy of a book or a chapter, put straight after it. The writing, parts, goals and comments are copied, and a book's details and
+  // cover. Its files and earlier versions aren't, and the number of files left behind is given back, so the window can say so.
+  duplicate(id) {
+    const item = this.need(id);
+    if (item.kind !== 'book' && item.kind !== 'chapter') throw new Error('Only a book or a chapter can be duplicated.');
+    if (item.trashedAt) throw new Error('That’s in the Trash. Bring it back first.');
+    const project = this.open();
+    let copy;
+    let filesLeft = 0;
+    project.db.transaction(() => {
+      const copyOf = (source, parentId, title) => {
+        const made = project.addItem({ kind: source.kind, parentId, title });
+        const children = project.listChildren(source.id).filter((child) => !child.trashedAt);
+        // A comment marks words in the writing by its id, so each copy of a comment takes its id's place in the copied writing.
+        let body = source.body;
+        for (const comment of children.filter((child) => child.kind === 'comment')) {
+          const twin = project.addItem({ kind: 'comment', parentId: made.id, title: comment.title });
+          body = body.replaceAll(comment.id, twin.id);
+        }
+        project.putItem({ id: made.id, body, details: source.details, goal: source.goal });
+        const cover = project.cover(source.id);
+        if (cover) project.setCover(made.id, cover);
+        filesLeft += children.filter((child) => child.kind === 'attachment').length;
+        for (const child of children) if (child.kind === 'part' || child.kind === 'chapter') copyOf(child, made.id, child.title);
+        return made;
+      };
+      copy = copyOf(item, item.parentId, cleanTitle(`${item.title} (copy)`, 'Copy'));
+      const siblings = project.listChildren(item.parentId).filter((sibling) => sibling.id !== copy.id);
+      const next = siblings[siblings.findIndex((sibling) => sibling.id === item.id) + 1];
+      project.moveItem(copy.id, { parentId: item.parentId, beforeId: next?.id ?? null });
+    })();
+    return { id: copy.id, filesLeft, outline: this.outline() };
+  }
+
   trashItem(id) {
     const item = this.need(id);
     if (item.kind === 'project' || item.kind === 'comment') throw new Error("That can't go to the Trash here.");

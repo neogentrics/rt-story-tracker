@@ -300,6 +300,8 @@ function sources() {
     await window.waitForSelector('.find-bar:not([hidden])');
     await clean('Find', null);
     await window.keyboard.press('Escape');
+    // The page takes the focus back on the next frame. A command pressed before then can lose the focus, and its Enter, to the page.
+    await window.waitForFunction(() => document.activeElement?.closest('.ProseMirror'));
     await press('lookup-button');
     await window.waitForSelector('#lookup-panel:not([hidden])');
     await clean('the look-up panel', null);
