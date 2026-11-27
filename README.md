@@ -108,8 +108,8 @@ open the app from *System Settings → Privacy & Security*.
 | **Comments** | Notes on a selection, kept out of the book and its word count |
 | **Split view** | Two chapters side by side |
 | **Import** | Word, Markdown, plain text, RTF, HTML, EPUB, OpenDocument, PDF text, Scrivener and Pages, split into chapters, with word counts compared. Your original file is never changed |
-| **Find my files** | Point it at a folder. It sorts everything into series, books, chapters, versions and attachments, asks what it can't tell, and accounts for every file. Your originals are never touched |
-| **Attachments** | Pictures, audio, PDFs and anything else, kept with a book and encrypted like the rest of the project |
+| **Find my files** | Point it at a folder. It sorts everything into series, books, chapters and versions, files the rest as covers, art, audio, video, notes or finished copies, asks what it can't tell, and accounts for every file. Your originals are never touched |
+| **Files** | Pictures, audio, notes and anything else, kept with a book by section and encrypted like the rest of the project. Look at them, move them, use a picture as the cover, or make writing into a chapter or a record |
 | **AI clean-up** | Finds chat text, stray symbols and odd headings in AI-made files, shows you each one, and only changes what you agree to |
 | **Export** | A chapter, book, series or whole project as Word, PDF, EPUB, Markdown, HTML, OpenDocument, RTF, plain text or XML |
 | **Store-ready EPUB** | Cover, contents, metadata and series details, passing the official EPUB validator |

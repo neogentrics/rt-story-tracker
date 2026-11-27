@@ -83,12 +83,12 @@ test('File stays short, as the Reader’s does: the project’s own commands are
   const file = menuFor().template.find((menu) => menu.label === 'File').submenu;
   const project = file.find((item) => item.label === 'This Project').submenu;
   assert.deepEqual(REAL(project).map((item) => item.label), [
-    'Import…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
+    'Import…', 'Find My Files…', 'Files…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
     'Documents Sent Here…', 'Open Chapter in RT Markdown Reader', 'Open Book in RT Markdown Reader', 'Publish Chapter with RT Markdown Reader…',
     'Password and Lock…', 'Lock Project',
   ]);
   const top = labels(file);
-  for (const moved of ['Import…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…', 'Trash', 'Password and Lock…', 'Lock Project']) {
+  for (const moved of ['Import…', 'Find My Files…', 'Files…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…', 'Trash', 'Password and Lock…', 'Lock Project']) {
     assert.equal(top.includes(moved), false, `${moved} is in This Project, not File`);
   }
   assert.deepEqual(top.filter((label) => label !== '-'), ['New Chapter', 'New Book', 'Open…', 'Save a Copy…', 'This Project', 'Export…', 'Print…', 'Library', 'Exit'], 'Export and Print are at the top level, as in the Reader');

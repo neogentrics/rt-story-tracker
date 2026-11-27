@@ -1563,21 +1563,148 @@ mark,
   color: var(--sheet-ink-soft);
 }
 
-/* Attachments */
+/* The Files view: sections on the left, the files in the middle, and one file on the right when it's looked at. Only the list and the
+   side panel scroll. */
+
+.dialog.files-window {
+  width: min(1100px, calc(100vw - 3rem));
+  height: min(720px, calc(100vh - 3rem));
+  padding: 0;
+  overflow: hidden;
+}
+
+.files-window[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.files-head,
+.files-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.2rem;
+}
+
+.files-head {
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.dialog .files-head h2 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.files-tools,
+.files-foot-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.files-foot {
+  flex-wrap: nowrap;
+  border-top: 1px solid var(--panel-edge);
+}
+
+.files-status {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.files-foot-buttons {
+  flex: none;
+}
+
+.files-body {
+  display: flex;
+  min-height: 0;
+}
+
+.files-nav {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+  width: 11.5rem;
+  padding: 0.7rem 0.6rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--panel-edge);
+}
+
+.files-nav button {
+  display: flex;
+  flex: none;
+  gap: 0.6rem;
+  justify-content: space-between;
+  padding: 0.4rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+
+.files-nav button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  font-weight: 700;
+}
+
+.files-nav button.empty,
+.files-count {
+  color: var(--sheet-ink-soft);
+}
+
+.files-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.files-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.7rem;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.dialog .files-bulk .check,
+.files-bulk .quiet-note {
+  margin: 0;
+}
+
+.files-bulk #files-selected {
+  margin-right: auto;
+}
+
+.files-bulk select {
+  max-width: 11rem;
+}
 
 .attachment-list {
-  max-height: 55vh;
-  overflow: auto;
-  margin: 0.6rem 0;
-  padding: 0;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0.9rem 0.6rem;
+  overflow-y: auto;
   list-style: none;
 }
 
-.attachment-row {
+/* Where there isn't room for everything on one line, the controls go under the name. */
+.attachment-row,
+.cover-row {
   display: flex;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
   align-items: center;
-  padding: 0.35rem 0;
+  padding: 0.4rem 0;
   border-bottom: 1px solid var(--panel-edge);
 }
 
@@ -1592,18 +1719,76 @@ mark,
 
 .attachment-name {
   display: grid;
-  flex: 1;
+  flex: 1 1 9rem;
   min-width: 0;
 }
 
 .attachment-name span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .attachment-name small {
   color: var(--sheet-ink-soft);
+  overflow-wrap: anywhere;
+}
+
+/* A little smaller than the window's other controls, so that on a usual window each file is one line and many show at once. */
+.attachment-row select,
+.attachment-row button {
+  flex: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.attachment-row .file-section {
+  width: 8.8rem;
+}
+
+.attachment-row .file-more {
+  width: 5.6rem;
+}
+
+.file-side {
+  flex: none;
+  width: min(22rem, 40%);
+  padding: 0.7rem 1rem;
+  overflow-y: auto;
+  border-left: 1px solid var(--panel-edge);
+}
+
+.file-side-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.dialog .file-side-head h3 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.file-side .field {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.file-picture {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.file-sound {
+  width: 100%;
+}
+
+.file-text {
+  margin: 0;
+  font: 0.9rem/1.5 var(--ui-font);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* Trash */

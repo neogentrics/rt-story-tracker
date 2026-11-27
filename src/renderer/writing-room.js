@@ -4,7 +4,7 @@ import { el, formatCount, words } from './dom.js';
 import { openDetails } from './details-dialog.js';
 import { openExport } from './export-dialog.js';
 import { openHistory } from './history.js';
-import { openAttachments } from './attachments-dialog.js';
+import { openFiles } from './files-dialog.js';
 import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
 import { icon } from './icons.js';
@@ -110,7 +110,7 @@ export class WritingRoom {
             iconButton('find-button write-only', 'search', 'Find and replace', () => this.find()),
             iconButton('import-button', 'import', 'Import', () => this.showImport()),
             iconButton('export-button', 'export', 'Export', () => this.showExport()),
-            iconButton('attachments-button', 'attach', 'Attachments', () => this.showAttachments()),
+            iconButton('attachments-button', 'attach', 'Files', () => this.showAttachments()),
             iconButton('history-button write-only', 'history', 'Earlier versions of this chapter', () => this.showHistory()),
             iconButton('goals-button write-only', 'goal', 'Goals', () => this.openGoals(this.activePage.chapterId)),
             iconButton('focus-button write-only', 'focus', 'Focus mode', () => this.toggleFocus()),
@@ -459,11 +459,17 @@ export class WritingRoom {
 
   showAttachments() {
     return this.attempt(() =>
-      openAttachments({
+      openFiles({
         api: this.api,
         id: this.bookId ?? this.outline.id,
+        projectId: this.outline.id,
         title: this.bookId ? findNode(this.outline, this.bookId)?.title : this.outline.title,
         onError: (text) => this.showMessage(text),
+        onBefore: () => this.flush(),
+        onOutline: (outline) => {
+          this.outline = outline;
+          this.renderLists();
+        },
       }));
   }
 

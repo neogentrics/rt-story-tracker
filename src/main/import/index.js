@@ -29,8 +29,8 @@ function bookTitle(resolved, mode) {
 const summary = (section) => ({ type: section.type, title: section.title, words: section.blocks ? wordsIn(section.blocks) : 0 });
 
 // Reads a file and takes off what isn't the writing: front matter, and a title styled as one.
-async function readPrepared(file) {
-  const source = await readFormat(file);
+async function readPrepared(file, data = null) {
+  const source = await readFormat(file, data);
   if (source.text !== undefined) {
     if (!source.plain) {
       const { body, title, details } = splitFrontMatter(source.text);
@@ -47,9 +47,9 @@ async function readPrepared(file) {
   return source;
 }
 
-// For a folder import: the file as it is, with nothing cleaned up, because nobody is there to agree to it.
-async function readSource(file) {
-  return resolve(await readPrepared(file), []);
+// For a folder import: the file as it is, with nothing cleaned up, because nobody is there to agree to it. `data` reads it from memory.
+async function readSource(file, data = null) {
+  return resolve(await readPrepared(file, data), []);
 }
 
 // Writing that came as text, from another app and not from a file.
@@ -94,7 +94,7 @@ class Importer {
     const lost = kept ? 0 : resolved.context?.pictures ?? 0;
     const notes = [...(resolved.notes ?? [])];
     if (kept) notes.push(`${kept} ${kept === 1 ? 'picture' : 'pictures'} will be kept with the book as attachments.`);
-    if (lost) notes.push(`${lost} ${lost === 1 ? 'picture stays' : 'pictures stay'} in the original file. Add them under Attachments if you want them here.`);
+    if (lost) notes.push(`${lost} ${lost === 1 ? 'picture stays' : 'pictures stay'} in the original file. Add them under Files if you want them here.`);
     const importedWords = sections.reduce((sum, section) => sum + (section.blocks ? wordsIn(section.blocks) : 0), 0);
     const titleWords = sections.reduce((sum, section) => sum + (section.named ? 0 : countWords(section.title)), source.bookTitleWords ?? 0);
     return {

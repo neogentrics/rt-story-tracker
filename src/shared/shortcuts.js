@@ -42,7 +42,7 @@ const GROUPS = [
       { id: 'lock', command: 'lock', does: 'Lock the project', keys: 'CmdOrCtrl+L' },
       { id: 'security', command: 'security', does: 'Password and lock', keys: '' },
       { id: 'findFiles', command: 'find-files', does: 'Find my files', keys: '' },
-      { id: 'attachments', command: 'attachments', does: 'Attachments', keys: '' },
+      { id: 'attachments', command: 'attachments', does: 'Files', keys: '' },
       { id: 'details', command: 'details', does: 'Book details', keys: '' },
       { id: 'history', command: 'history', does: 'Earlier versions of this chapter', keys: '' },
       { id: 'inbox', command: 'inbox', does: 'Documents sent here', keys: '' },

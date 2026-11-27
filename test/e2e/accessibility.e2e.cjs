@@ -153,7 +153,7 @@ function audit() {
   for (const [command, selector, name] of [
     ['trash', '#trash-dialog, dialog[open]', 'the Trash'],
     ['export-book', 'dialog[open]', 'Export'],
-    ['attachments', 'dialog[open]', 'Attachments'],
+    ['attachments', '#attachments[open]', 'Files'],
     ['details', 'dialog[open]', 'Book Details'],
     ['history', 'dialog[open]', 'Earlier versions'],
     ['security', 'dialog[open]', 'Password and Lock'],

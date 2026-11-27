@@ -1,5 +1,5 @@
 import { SECTIONS, sectionLabel } from '../shared/sections.js';
-import { sizeOf } from './attachments-dialog.js';
+import { sizeOf } from './files-dialog.js';
 import { el, formatCount } from './dom.js';
 import { icon } from './icons.js';
 

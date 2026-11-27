@@ -12,6 +12,11 @@ Files you bring in. This will be 3.11.
   *Finished copies* (PDFs, e-books and what's in Print or E-book folders) or *Other files*, which is only for a type it doesn't know.
   The preview groups each book's files that way with a count, and any file can be moved to another section before you bring it in.
   Files brought in by an earlier version are sorted the same way, and nothing stored changes.
+- **A Files view**, in place of Attachments (*File, This Project, Files*). It shows a book's files, or the whole project's, by section
+  with a count for each, and has a search. A picture can be looked at, a sound played and a document read. Any file can be moved to
+  another section or book, one at a time or many at once. A picture can become the book's cover, and the cover it replaces is kept.
+  Writing can become a chapter or a record, and the file then waits in the Trash for 30 days. None of this writes an unencrypted copy of
+  a file anywhere. Only *Save a copy* writes one out, where you choose.
 
 ### Changed
 - **Questions start on a likely answer.** Find my files no longer starts on *attachments*. Writing it can't place starts on *Notes*,

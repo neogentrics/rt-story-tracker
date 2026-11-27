@@ -8,6 +8,7 @@ const { checkExport, exportEverything, exportFile, safeName } = require('./expor
 const { FolderImport } = require('./folder');
 const { IMPORT_EXTENSIONS, Importer } = require('./import');
 const { RecordImporter } = require('./records-import');
+const { Files } = require('./files');
 
 const MAX_COVER = 50 * 1024 * 1024;
 const importer = new Importer();
@@ -424,6 +425,20 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
   handle('records:importPreview', (typeId) => recordImporter.preview(typeId ? workspace().records.typeItem(typeId) : null));
   handle('records:importRun', busy((input) => recordImporter.run(workspace().records, input)));
   handle('attachments:list', (id) => workspace().listAttachments(id));
+  // The Files view. Ids arrive as a list, so many can be changed in one go.
+  const idsOf = (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0 || ids.length > 100000) throw new Error('Choose some files first.');
+    return ids.map(String);
+  };
+  const files = () => new Files(workspace());
+  handle('files:list', (id) => files().list(id));
+  handle('files:preview', (id) => files().preview(id));
+  handle('files:section', busy(({ ids, section }) => files().setSection(idsOf(ids), section)));
+  handle('files:move', busy(({ ids, parentId }) => files().move(idsOf(ids), parentId)));
+  handle('files:trash', busy((ids) => files().trash(idsOf(ids))));
+  handle('files:cover', busy((id) => files().useAsCover(id)));
+  handle('files:chapter', busy(({ id, bookId }) => files().makeChapter(id, bookId)));
+  handle('files:record', busy(({ id, typeId }) => files().makeRecord(id, typeId)));
   handle('attachments:add', busy((parentId) => addAttachments(workspace, window, parentId)));
   handle('attachments:preview', (id) => workspace().previewAttachment(id));
   handle('attachments:save', busy(unlocked((id) => saveAttachment(workspace, window, id))));
