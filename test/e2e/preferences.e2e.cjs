@@ -110,7 +110,8 @@ const openSection = async (window, id) => {
 };
 
 (async () => {
-  const longFolder = path.join(work, 'a-folder-with-a-very-long-name-indeed'.repeat(3), 'Backups-of-every-project-kept-for-a-long-time'.repeat(2));
+  // Far wider than the section, and still short enough for a whole path on Windows.
+  const longFolder = path.join(work, 'a-folder-with-a-very-long-name-indeed'.repeat(2), 'Backups-of-every-project-kept-for-a-long-time');
   fs.mkdirSync(longFolder, { recursive: true });
 
   for (const size of ['1024x768', '900x560']) {
@@ -156,8 +157,12 @@ const openSection = async (window, id) => {
   let { app, window, errors } = await launch('1280x820', 'work');
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  // A test machine's screen can be smaller than the window asked for, so the size expected is worked out from the window there is:
+  // 900 by 640, or less by a margin of three letters where the window is smaller than that.
   const wide = await window.locator('#preferences').boundingBox();
-  assert.deepEqual([Math.round(wide.width), Math.round(wide.height)], [900, 640]);
+  const [across, down, letter] = await window.evaluate(() => [innerWidth, innerHeight, parseFloat(getComputedStyle(document.documentElement).fontSize)]);
+  const expected = [Math.min(900, across - 3 * letter), Math.min(640, down - 3 * letter)];
+  assert.ok(Math.abs(wide.width - expected[0]) <= 1 && Math.abs(wide.height - expected[1]) <= 1, `Preferences is ${wide.width} by ${wide.height}, expected ${expected.join(' by ')} in a ${across} by ${down} window`);
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(900, 560));
   await window.waitForFunction(() => document.querySelector('#preferences').getBoundingClientRect().width < 900);
   assert.deepEqual(await window.evaluate(problems), []);

@@ -134,10 +134,18 @@ const profile = path.join(work, 'profile');
   await window.click('#apps-refresh'); // The site hadn't published the file, and that answer is kept for a day: Refresh asks again.
   await window.waitForSelector('.app-row[data-app="rt-press"] .app-update');
   assert.match(await window.innerText('.app-row[data-app="rt-press"] .app-update'), /Update available: you have 1\.0\.0, the latest is 1\.2\.0/);
-  assert.deepEqual(await window.locator('.app-row[data-app="rt-press"] button').allTextContents(), ['Open', 'Download'], 'this copy is not an AppImage or an installer, so it is downloaded, and it can still be opened');
-  await window.click('[aria-label="Download RT Press"]');
-  await window.waitForFunction(() => true);
-  assert.equal((await app.evaluate(() => globalThis.opened)).at(-1), 'https://recontowers.com/apps/rt-press/');
+  // On Windows every app counts as one that updates itself (an installer and a portable copy can't be told apart), so the button opens
+  // it. On a Mac, and on Linux for anything but an AppImage, it's downloaded, and it can still be opened.
+  const buttons = await window.locator('.app-row[data-app="rt-press"] button').allTextContents();
+  if (process.platform === 'win32') {
+    assert.deepEqual(buttons, ['Open to update']);
+    assert.equal(await window.locator('[aria-label="Open to update: RT Press"]').count(), 1);
+  } else {
+    assert.deepEqual(buttons, ['Open', 'Download'], 'this copy is not an AppImage or an installer, so it is downloaded, and it can still be opened');
+    await window.click('[aria-label="Download RT Press"]');
+    for (let tries = 0; tries < 100 && !(await app.evaluate(() => globalThis.opened.length)); tries += 1) await new Promise((resolve) => { setTimeout(resolve, 50); });
+    assert.equal((await app.evaluate(() => globalThis.opened)).at(-1), 'https://recontowers.com/apps/rt-press/');
+  }
   assert.ok(sent.length >= 1, 'the file was asked for when the panel opened');
   for (const request of sent) {
     assert.equal(request.url, '/versions.json', 'no query string and nothing added to the address');
