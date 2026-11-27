@@ -3,12 +3,11 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
-
-### 3.10 (being built, after 3.9)
+## [3.10.0] - 2026-11-27
 
 Versions of a record, for authors who need to say what a record said as of each book.
 
+### Added
 - **Keep versions**, a switch on a kind of record, off by default. A record can be **frozen for a book**: a copy of it as it is,
   tied to the book you choose, numbered Revision 1, 2 and so on, with what changed since the last one filled in for you.
 - **A frozen version can never be changed or unfrozen.** Freezing asks once and names the book. A mistake in a frozen version is
@@ -21,10 +20,10 @@ Versions of a record, for authors who need to say what a record said as of each 
 - Export everything writes the printable part of each record, and each frozen version as its own file. The author-only part is
   never in it. It stays in your project and its backups.
 
-### 3.9
+## [3.9.0] - 2026-11-27
 
-Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used
-to be 3.8, described in [docs/design/the-suite.md](docs/design/the-suite.md).
+Records, where the story bible lives, and the apps finding each other. It includes the suite half that used to be 3.8,
+described in [docs/design/the-suite.md](docs/design/the-suite.md).
 
 ### Added
 - **Records.** A new **Records** side beside **Write**, at the top of every project. Make your own kinds of record, such as
@@ -59,6 +58,21 @@ to be 3.8, described in [docs/design/the-suite.md](docs/design/the-suite.md).
 - Exports remove the link behind an `@` name, as they do comments, so a name is just words in the file.
 - Every project gets a table for links the first time it's opened. Nothing is lost or changed, and a project from an
   earlier version opens as it did.
+
+## [3.7.2] - 2026-11-27
+
+### Changed
+- **Preferences is wide enough to read.** On a normal window the sections sit in two columns instead of one narrow strip you scroll.
+- **A Preferences button on the library screen**, so themes and fonts are easy to find without opening a project.
+
+### Fixed
+- **Find my files skipped every OneDrive file on Windows.** OneDrive files are Windows reparse points even when they are
+  downloaded and kept on the device, and Windows reports every reparse point as a link. Find my files skips links, so it found
+  almost nothing in a OneDrive folder. It now asks the file itself, and still skips real links. Reported by Tavie, who tested it
+  on Windows 11.
+- **A full copy in a Print folder is no longer a second manuscript.** A file like *Book FULL.docx* in a book's `Print` folder
+  made Find my files ask how the book is organized. It is now treated as a finished copy and kept as an attachment, and it is
+  only the manuscript if nothing else is.
 
 ## [3.7.1] - 2026-11-06
 

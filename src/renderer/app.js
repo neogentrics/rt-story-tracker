@@ -130,6 +130,7 @@ async function showHome() {
   renderHome(root, {
     projects,
     waiting,
+    onPreferences: () => openPreferences(api),
     onOpen: (id) => run(async () => enterRoom(await api.openProject(id))),
     onUnlock: (project) => run(() => showLock(project)),
     onCreate: (title) => run(async () => enterRoom(await api.createProject(title))),

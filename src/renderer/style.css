@@ -1108,6 +1108,25 @@ mark,
   width: min(58rem, calc(100vw - 2rem));
 }
 
+/* Preferences has six sections, which made a tall narrow column. On a normal window they sit in two columns. */
+#preferences {
+  width: min(58rem, calc(100vw - 2rem));
+}
+
+@media (min-width: 860px) {
+  #preferences[open] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    column-gap: 2.4rem;
+  }
+
+  #preferences[open] > h2,
+  #preferences[open] > .dialog-actions {
+    grid-column: 1 / -1;
+  }
+}
+
 .dialog::backdrop {
   background: rgb(0 0 0 / 40%);
 }

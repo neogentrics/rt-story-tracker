@@ -1,0 +1,46 @@
+name: Feature or idea
+description: Something you'd like it to do, or a way it could work better
+title: "[Idea] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome, big or small. Please check the [roadmap](https://github.com/neogentrics/rt-story-tracker/blob/master/ROADMAP.md) first, since it may already be planned. This page is public, so please don't paste your writing or private details.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like it to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What are you trying to get done?
+      description: The situation behind the idea helps more than the idea does.
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do it today?
+      description: A workaround, another program, or nothing at all.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where would it go?
+      options:
+        - Writing
+        - Books, chapters and the library
+        - Records, timeline and lore
+        - Import or Find my files
+        - Export or print
+        - Backups and versions
+        - Password lock
+        - Working with other Recon Towers apps
+        - Look and settings
+        - Something else
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Help → About RT Story Tracker
+      placeholder: "3.7.1"
