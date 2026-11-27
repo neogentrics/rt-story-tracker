@@ -219,7 +219,7 @@ there is no 3.8. The plan, the owner's four decisions (all as recommended) and w
 | ✅ 🙋 Apps panel | M | The same panel in every app: which Recon Towers apps are on this computer, which are running, and which are linked. It offers to link one or open one. Finding an app never links it. |
 | ✅ 🙋 What it's doing | S | A linked app can ask for a short status, such as what's open. A locked project says nothing about itself, and no writing is ever in the answer. |
 | ✅ 🙋 Asking for facts | M | A linked app can ask for what this one owns: word counts, draft status, dictionary pronunciations. This app can ask RT Author Desk for a book's published facts. |
-| ✅ 🙋 Publish through RT Markdown Reader | S | A bonus when RT Markdown Reader is installed too: this app hands it the chapter over App Link, to send to WordPress, Ghost, Discord or a wiki. Today that's the only way to publish from this app. Publishing to WordPress, Ghost and Discord by itself is planned for [v3.25](#v325--publish-from-this-app). Never a locked project. |
+| ✅ 🙋 Publish through RT Markdown Reader | S | A bonus when RT Markdown Reader is installed too: this app hands it the chapter over App Link, to send to WordPress, Ghost, Discord or a wiki. Today that's the only way to publish from this app. Publishing to blogs and wikis by itself is planned for [v3.25](#v325--publish-from-this-app). Never a locked project. |
 | Automations | M | Webhooks and n8n can start an export or a backup, or add a note to a project. Off until you turn it on, and locked projects stay out. **Not in 3.9, as decided:** it opens a listener on this computer, so it gets its own design first. |
 
 **Test:** install each app on a clean computer, in either order, and each finds the other. Uninstall one and it goes from
@@ -488,16 +488,16 @@ of the writing changes until you accept a change. Turn a rule off and its flags 
 
 ## v3.25 — Publish from this app
 
-🙋 Publishing won't need a second app. The owner decided on 27 November 2026 that it's built into this one too
-([decision 32](docs/decisions.md)). It's to come from the [shared code module](#ongoing--polish--distribution), which isn't created yet
-and waits for the owner's go. Nothing is being built yet.
+🙋 Publishing to blogs and wikis won't need a second app. The owner decided on 27 November 2026 that it joins the
+[shared code module](#ongoing--polish--distribution) ([decision 32](docs/decisions.md)). **It depends on that module,** which isn't
+created yet and waits for the owner's go. Nothing is being built yet.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋🛡️ Publish to WordPress, Ghost and Discord | L | Publish a chapter or post to WordPress, Ghost and Discord from inside this app, with no other app needed. The sign-ins it uses are kept inside the Lock. RT Markdown Reader can still do it over App Link. |
+| 🙋🛡️ Publish to blogs and wikis | L | Publish a chapter or a post to blogs, such as WordPress and Ghost, and to wikis, from inside this app, with no other app needed. It comes from the shared code module. The sign-ins it uses are kept inside the Lock. RT Markdown Reader can still do it over App Link. |
 
-**Test:** with RT Markdown Reader not installed, publish a chapter to a WordPress site and a Ghost site, and post to Discord. Nothing is
-sent until you choose to send it, and no sign-in can be read outside the Lock.
+**Test:** with RT Markdown Reader not installed, publish a chapter to a blog and to a wiki. Nothing is sent until you choose to send it,
+and no sign-in can be read outside the Lock.
 
 ## v4.0 — The companion
 
@@ -533,7 +533,7 @@ these devices sync with it.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋 Shared code module | L | **Not created yet. Waiting for the owner's go: nothing moves into it until then.** One private repository, like the one for themes, for the code more than one app needs: read aloud, dictation, your own AI service, citations, document formats, publishing and the other overlaps. Each app that needs a piece takes it in, so it works with only that app installed. Hand-offs between apps over App Link stay a bonus. [Decision 31](docs/decisions.md). |
+| 🙋 Shared code module | L | **Not created yet. Waiting for the owner's go: nothing moves into it until then.** One private repository, like the one for themes, for the code more than one app needs: read aloud, dictation, your own AI service, citations, document formats, publishing to blogs and wikis, and the other overlaps. Each app that needs a piece takes it in, so it works with only that app installed. Hand-offs between apps over App Link stay a bonus. [Decision 31](docs/decisions.md). |
 | Code signing | S | Windows and Mac, as for RT Markdown Reader. |
 | Tutorial & Help Center | M | Built in [v3.23](#v323--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
 | Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. Started in 3.10: one test opens every main screen and checks every control has a name and the main flows work from the keyboard. |
