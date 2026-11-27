@@ -26,10 +26,20 @@ async function walk(root, onFile, shouldStop) {
     }
     for (const entry of listed) {
       const child = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isSymbolicLink()) continue;
-      if (entry.isDirectory()) {
+      // Windows lists every reparse point as a link, and OneDrive's files are reparse points even when they're downloaded and
+      // pinned. So a "link" is asked about again, and only skipped if the file itself says it is one.
+      let kind = entry;
+      if (entry.isSymbolicLink()) {
+        try {
+          kind = await fs.promises.lstat(path.join(root, child));
+        } catch {
+          continue;
+        }
+        if (kind.isSymbolicLink()) continue;
+      }
+      if (kind.isDirectory()) {
         queue.push(child);
-      } else if (entry.isFile()) {
+      } else if (kind.isFile()) {
         try {
           const { size, mtimeMs } = await fs.promises.stat(path.join(root, child));
           entries.push({ rel: child, size, mtime: Math.round(mtimeMs) });
