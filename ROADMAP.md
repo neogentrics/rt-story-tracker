@@ -269,7 +269,7 @@ another app, and check that the panel says the same in words.
 ## v3.11 — Files you bring in
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
-attachments. Issues 37 to 40, and 42 to 47.
+attachments. Issues 37 to 40, 42 to 47, and 49.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -284,6 +284,7 @@ attachments. Issues 37 to 40, and 42 to 47.
 | 🙋 A readable apps window | S | The Recon Towers apps window is as wide and readable as Preferences, with larger text and buttons and every app shown, with no scrolling box inside it. |
 | 🙋 A Look choice | S | *Look* takes the place of the Glass tick box: **Solid**, **Metallic** or **Glass**, in Preferences under Appearance, directly below the theme, as in RT Markdown Reader, and in the View menu. Anyone who had Glass ticked keeps Glass, everyone else keeps Solid, and Aero is always Glass. |
 | 🙋 Metallic look | S | A brushed-metal finish on the app's toolbar, columns, windows and Find bar, copied from RT Markdown Reader's 3.13, on top of any theme. The page you write on stays flat, and High Contrast, forced colours, increased contrast and printing are left alone. A test measures the contrast of text in every theme. |
+| 🙋🛡️ App Link: what this app does with each kind | S | An **App Link capability change**. When another Recon Towers app asks what this one is, the answer now also lists `kinds`: the kinds of document it does something special with, so a sender can offer an action for one kind only where it will mean something. Here that is `research` alone, for web clips. Any other kind still arrives as a plain document. `kinds` never decides whether two apps link: the App Link version does. |
 
 **Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read. Try each look in light, dark and High Contrast. Open the app at 640, 800, 1000 and 1280 wide, at 1024 by 600, and on a 1280 by 720 screen scaled to 125 and 150 percent: nothing in the top bar overlaps or is cut off, and every command can be reached. Make each list wider and narrower, fold a series and a part, restart, and find them as you left them. Do every right-click action with the mouse and again from the keyboard.
 
