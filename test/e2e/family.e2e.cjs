@@ -59,12 +59,17 @@ const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-family-'));
   await window.waitForSelector('#apps-dialog[open]');
   await window.click('#apps-close');
 
-  // The Help menu is the Reader's.
-  assert.deepEqual(await labels('Help'), ['Help Center', 'Keyboard Shortcuts', '-', 'Check for Updates…', '-', `About RT Story Tracker ${version}`]);
+  // The Help menu is the Reader's. On a Mac, About is where a Mac keeps it, in the app's own menu, and Help doesn't repeat it.
+  const isMac = process.platform === 'darwin';
+  const aboutLabel = `About RT Story Tracker ${version}`;
+  const aboutItem = [isMac ? 'RT Story Tracker' : 'Help', aboutLabel];
+  const help = ['Help Center', 'Keyboard Shortcuts', '-', 'Check for Updates…'];
+  assert.deepEqual(await labels('Help'), isMac ? help : [...help, '-', aboutLabel]);
+  if (isMac) assert.equal((await labels('RT Story Tracker'))[0], aboutLabel, 'About, with the version, opens the app menu');
   assert.equal((await labels('Edit')).includes('Find Next'), true);
 
   // About, in the window.
-  await menu(['Help', `About RT Story Tracker ${version}`]);
+  await menu(aboutItem);
   await window.waitForSelector('#about-dialog[open]');
   assert.equal(await window.innerText('#about-title'), 'RT Story Tracker');
   assert.equal(await window.innerText('#about-version'), `Version ${version}`);
@@ -119,7 +124,7 @@ const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-family-'));
   await window.click('#start-project');
   await window.waitForSelector('.ProseMirror');
   assert.equal(await window.locator('.room-header .apps-button').isVisible(), true);
-  await menu(['Help', `About RT Story Tracker ${version}`]);
+  await menu(aboutItem);
   await window.waitForSelector('#about-dialog[open]');
   await window.click('#about-done');
   assert.deepEqual(errors, []);
