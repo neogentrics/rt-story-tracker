@@ -35,9 +35,9 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
 | [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1), then [3.7.2](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.2)) |
-| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
-| [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
-| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions and clips built and tested, not released |
+| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | ✅ Released with [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0), [built there](docs/design/the-suite.md) |
+| [v3.9](#v39--records-with-the-suite) | Records, with the suite | ✅ Released ([3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0)) |
+| [v3.10](#v310--versions-of-a-record) | Versions of a record | ✅ Released ([3.10.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.10.0)) |
 | [v3.11](#v311--files-you-bring-in) | Files you bring in | Planned |
 | [v3.12](#v312--read-aloud) | Read aloud | Planned |
 | [v3.13](#v313--connect-claude) | Connect Claude | Planned |
@@ -199,10 +199,9 @@ app's own tests and against RT Markdown Reader 3.10 from source.
 
 ## v3.8 — The Recon Towers suite
 
-> [!NOTE]
-> **Folded into 3.9 on 18 November 2026,** at the owner's request: the suite and Records ship as one release, 3.9, and
-> there is no 3.8. The plan, the owner's four decisions (all as recommended) and what was built are in
-> [the suite design](docs/design/the-suite.md). The table below is the original plan and says what became of each row.
+**Released with [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0). Folded into 3.9 on 18 November 2026,** at the owner's request: the suite and Records ship as one release, 3.9, and
+there is no 3.8. The plan, the owner's four decisions (all as recommended) and what was built are in
+[the suite design](docs/design/the-suite.md). The table below is the original plan and says what became of each row.
 
 🙋 The apps know each other when they're installed, not only when they're running. Built to
 [the suite's rules](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md), not a second set.
@@ -219,11 +218,11 @@ app's own tests and against RT Markdown Reader 3.10 from source.
 **Test:** install each app on a clean computer, in either order, and each finds the other. Uninstall one and it goes from
 the list. Status from a locked project says nothing.
 
-## v3.9 — Records
+## v3.9 — Records, with the suite
 
 🙋 Where the story bible begins: characters, and anything else an author wants to track. [How it's built](docs/design/records.md).
 
-🚧 **Built and tested on the VM, not released.** The suite half of this release (v3.8 above) is built too.
+✅ **Released as [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0).** The suite half of this release (v3.8 above) came out with it.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -245,7 +244,7 @@ on his own computer, and finding a character faster than in Notion.
 
 🙋 What a record said as of each book, for authors who need it. Off in the simple templates. [How it's built](docs/design/records.md#versions).
 
-🚧 **Versions and web clips are built and tested on the VM. Not released.** The choices behind versions are decision 28 and behind
+✅ **Released as [3.10.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.10.0).** The choices behind versions are decision 28 and behind
 clips decision 29, in [decisions](docs/decisions.md). Clips are in this release so that Recon Browser 1.3 has somewhere to send them.
 
 | Feature | Size | Details |

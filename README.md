@@ -125,9 +125,8 @@ open the app from *System Settings → Privacy & Security*.
 | **Works offline** | No account, no server, and your writing never leaves your computer |
 | **Updates itself** | On Windows and the Linux AppImage. Mac and the `.deb` tell you when a new version is out |
 
-Coming next: Records, then versions of a record and web clips from Recon Browser (3.9 and 3.10, built and
-not released yet). After those, sorting the files you bring in (3.11), read aloud (3.12), Connect Claude
-(3.13), then a timeline and places, lore, ideas and research. See the [roadmap](ROADMAP.md).
+Coming next: sorting the files you bring in (3.11), read aloud (3.12), Connect Claude (3.13), then a
+timeline and places, lore, ideas and research. See the [roadmap](ROADMAP.md).
 
 ## How your writing is kept
 

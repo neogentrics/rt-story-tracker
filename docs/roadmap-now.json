@@ -1,12 +1,8 @@
 {
   "now": {
-    "title": "3.7.2 is out, 3.9 and 3.10 are built",
-    "note": "3.7.2 fixes a bug that hid OneDrive files from Find my files, and a Print folder wrongly counted as a second manuscript, and it widens Preferences and puts a Preferences button on the library screen. It’s released. 3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
+    "title": "3.10 is out. 3.11, Files you bring in, is being built",
+    "note": "3.9 (Records with the suite) and 3.10 (versions of a record, web clips from Recon Browser, and a look like the rest of the family) are released. 3.11 sorts the files you bring in, from your own test of Find my files.",
     "items": [
-      {
-        "title": "3.7.2: patch",
-        "text": "Find my files now sees OneDrive files on Windows. A full copy in a Print folder is a finished copy, not a second manuscript. Preferences opens wide, in two columns, and the library screen has a Preferences button so the themes can be found. Released."
-      },
       {
         "title": "Records",
         "text": "Characters, places, weapons or your own kinds, with links both ways, @ in a chapter, saved views, numbering and bringing records in from files."
@@ -41,17 +37,17 @@
       },
       {
         "title": "Released before this",
-        "text": "3.7.2 is the latest release. Before it, 3.7.1 brought the new name, and 3.7.0 RT Markdown Reader on this computer."
+        "text": "3.10.0 is the latest release. Before it came 3.9.0, and 3.7.2, which let Find my files see OneDrive files on Windows."
       },
       {
         "title": "Next, from your own testing",
-        "text": "Find my files sorting by type with a files view and audio and art sections (3.11), read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. The menus, Help and About now follow RT Markdown Reader’s layout, in the 3.10 work that isn’t released yet."
+        "text": "Now: Find my files sorting by type, with a files view and audio, art and cover sections (3.11). Then read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes."
       }
     ]
   },
   "waiting": {
     "title": "A test and {decisions} decisions",
-    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below. 3.9 and 3.10 are built and wait for your go-ahead to release."
+    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below. None of them hold up 3.11."
   },
   "questions": [
     {
@@ -60,7 +56,7 @@
     },
     {
       "q": "Where are the themes?",
-      "a": "In 3.7.1, under File, then Preferences (Ctrl+,), or the gear at the top right once a project is open. 3.7.2 adds a Preferences button on the library screen. From 3.10 they’re in Preferences under Appearance, which is also at the end of the Edit menu."
+      "a": "In Preferences, under Appearance. Preferences is the button at the top of the library, and it’s at the end of the Edit menu (Ctrl+,). On a Mac it’s in the app’s own menu."
     },
     {
       "q": "What happens to pictures in an imported file?",
