@@ -8,7 +8,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { APP_ID, APP_NAME, AppLink, LinkError, MIN_PROTOCOL, PROTOCOL, sharedFolder, validId } = require('./app-link');
 const { exportFile, safeName } = require('./export');
-const { launchInstalled, readInstalled, writeInstalled } = require('./installed');
+const { fromInstaller, launchInstalled, readInstalled, writeInstalled } = require('./installed');
 const { writeFileSafely } = require('./storage/keys');
 const { SUITE_APPS, UPDATE, appById, isNewer, linkability, stateOf, updateButton, updateLine } = require('../shared/suite-apps');
 
@@ -167,7 +167,7 @@ class Linking {
       item.canLink = item.state === 'found' && fit.ok;
       // A nudge, and only a nudge: it never takes away a button that would otherwise be there.
       const newest = latest[item.id]?.version;
-      item.update = item.version && newest && isNewer(newest, item.version) ? { have: item.version, latest: newest, line: updateLine({ have: item.version, latest: newest }), action: updateButton({ platform: this.platform, launch: launches.get(item.id), running: item.running }) } : null;
+      item.update = item.version && newest && isNewer(newest, item.version) ? { have: item.version, latest: newest, line: updateLine({ have: item.version, latest: newest }), action: updateButton({ platform: this.platform, launch: launches.get(item.id), installer: this.platform === 'win32' && fromInstaller(launches.get(item.id)), running: item.running }) } : null;
     }
     await Promise.all(list.filter((item) => item.linked && item.running && this.server).map(async (item) => {
       try {

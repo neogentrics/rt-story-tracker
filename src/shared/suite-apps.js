@@ -83,9 +83,10 @@ function isNewer(latest, have) {
 const updateLine = ({ have, latest }) => `you have ${have}, the latest is ${latest}`;
 
 // Which button goes with an update: an app that updates itself (the Windows installer and the Linux AppImage) is opened, and the rest
-// are downloaded. Another app's launch path is how this is told from here.
-function updateButton({ platform, launch = '', running = false }) {
-  const selfUpdates = platform === 'win32' || (platform === 'linux' && /\.AppImage$/i.test(launch));
+// (Mac, .deb, portable) are downloaded. `installer` says a Windows copy was put there by the installer, which the app calling this
+// finds out from the files. When that isn't known, it's the download, which works for any copy.
+function updateButton({ platform, launch = '', running = false, installer = false }) {
+  const selfUpdates = (platform === 'win32' && installer) || (platform === 'linux' && /\.AppImage$/i.test(launch));
   if (!selfUpdates) return 'download';
   return running ? '' : 'open';
 }

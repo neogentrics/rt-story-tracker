@@ -10,7 +10,7 @@ const net = require('node:net');
 const { AppLink, call, endpointFor } = require('../src/main/app-link');
 const { Versions } = require('../src/main/versions');
 const { Inbox } = require('../src/main/inbox');
-const { launchInstalled, launchPathFor, readInstalled, removeInstalled, writeInstalled } = require('../src/main/installed');
+const { fromInstaller, launchInstalled, launchPathFor, readInstalled, removeInstalled, writeInstalled } = require('../src/main/installed');
 const { Linking } = require('../src/main/linking');
 const { Library } = require('../src/main/storage/library');
 const { Workspace } = require('../src/main/workspace');
@@ -456,11 +456,27 @@ test('the wording is the same in every app, and a version is only ever "newer" w
 });
 
 test('which button an update gets: Open for an app that updates itself, Download for the rest', () => {
-  assert.equal(updateButton({ platform: 'win32', launch: 'C:/Programs/RT Press.exe' }), 'open');
+  assert.equal(updateButton({ platform: 'win32', launch: 'C:/Programs/RT Press.exe', installer: true }), 'open', 'the installed Windows copy updates itself');
+  assert.equal(updateButton({ platform: 'win32', launch: 'D:/Tools/RTPress-1.0.0-Portable.exe' }), 'download', 'a portable copy can’t');
+  assert.equal(updateButton({ platform: 'win32' }), 'download', 'nor is it taken for granted when where it runs from isn’t known');
   assert.equal(updateButton({ platform: 'linux', launch: '/home/a/RTPress.AppImage' }), 'open');
   assert.equal(updateButton({ platform: 'linux', launch: '/usr/bin/rt-press' }), 'download');
   assert.equal(updateButton({ platform: 'darwin', launch: '/Applications/RT Press.app' }), 'download');
-  assert.equal(updateButton({ platform: 'win32', launch: 'C:/x.exe', running: true }), '', 'an app that’s open updates itself, so there is nothing to press');
+  assert.equal(updateButton({ platform: 'win32', launch: 'C:/x.exe', installer: true, running: true }), '', 'an app that’s open updates itself, so there is nothing to press');
+  assert.equal(updateButton({ platform: 'win32', launch: 'C:/x.exe', running: true }), 'download', 'but an open portable copy still needs the download');
+});
+
+test('a Windows copy counts as installed only with the installer’s uninstaller beside it', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-kind-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const launch = program(dir, 'RT Press');
+  assert.equal(fromInstaller(launch), false, 'a program on its own, as a portable or unpacked copy is');
+  fs.writeFileSync(path.join(dir, 'Uninstall.txt'), '');
+  fs.writeFileSync(path.join(dir, 'unins-notes.exe'), '');
+  assert.equal(fromInstaller(launch), false, 'something that only looks a bit like it');
+  fs.writeFileSync(path.join(dir, 'Uninstall RT Press.exe'), '');
+  assert.equal(fromInstaller(launch), true);
+  for (const odd of ['', undefined, path.join(dir, 'gone', 'RT Press.exe')]) assert.equal(fromInstaller(odd), false);
 });
 
 test('only the protocol and the kinds of document decide whether two apps link, never the version number', () => {
@@ -486,19 +502,28 @@ test('a newer version shows the nudge, with the right button, and never blocks a
   });
   const space = setUp(t, { versions, platform: 'win32' });
   await space.linking.apply();
-  writeInstalled(space.folder, { id: 'rt-press', name: 'RT Press', version: '1.0.0', launch: program(dir, 'rt-press') });
+  // RT Press as the Windows installer leaves it, with its uninstaller beside it.
+  const installed = path.join(dir, 'installed-press');
+  fs.mkdirSync(installed);
+  fs.writeFileSync(path.join(installed, 'Uninstall RT Press.exe'), '');
+  writeInstalled(space.folder, { id: 'rt-press', name: 'RT Press', version: '1.0.0', launch: program(installed, 'rt-press') });
   writeInstalled(space.folder, { id: 'rt-audio-studio', name: 'RT Audio Studio', version: '1.0.0', launch: program(dir, 'rt-audio-studio') });
   await space.peer();
   const find = async (id) => (await space.linking.status()).apps.find((app) => app.id === id);
 
   const reader = await find('rt-markdown-reader');
   assert.deepEqual([reader.version, reader.update.have, reader.update.latest, reader.update.line], ['3.11.0', '3.11.0', '3.12.0', 'you have 3.11.0, the latest is 3.12.0']);
-  assert.equal(reader.update.action, '', 'it’s open, so it updates itself');
+  assert.equal(reader.update.action, 'download', 'it’s open and nothing says how it was installed, so the download is offered, which suits any copy');
   assert.equal(reader.canLink, true, 'and the nudge doesn’t stop the link');
   const press = await find('rt-press');
   assert.deepEqual([press.update.line, press.update.action, press.needsUpdate], ['you have 1.0.0, the latest is 1.2.0', 'open', '']);
   assert.equal((await find('rt-audio-studio')).update, null, 'the same version is no nudge');
   assert.equal((await find('rt-author-desk')).update, null, 'and an app that isn’t installed has nothing to update');
+
+  // The same app as a portable copy has no uninstaller beside it.
+  fs.rmSync(path.join(installed, 'Uninstall RT Press.exe'));
+  assert.equal((await find('rt-press')).update.action, 'download');
+  fs.writeFileSync(path.join(installed, 'Uninstall RT Press.exe'), '');
 
   space.linking.platform = 'darwin';
   assert.equal((await find('rt-press')).update.action, 'download');

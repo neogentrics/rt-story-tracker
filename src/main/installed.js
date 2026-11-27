@@ -18,6 +18,17 @@ const validId = (id) => typeof id === 'string' && /^[a-z0-9][a-z0-9-]{0,63}$/.te
 const clean = (text, fallback = '') => (typeof text === 'string' ? text.replace(/[\u0000-\u001f\u007f-\u009f‎‏‪-‮⁦-⁩]/g, '').trim().slice(0, 80) : '') || fallback;
 const isMacBundle = (file) => /\.app$/i.test(file);
 
+// Whether a Windows copy was put there by the installer, the only kind on Windows that can update itself. The installer leaves
+// "Uninstall <name>.exe" beside the program. A portable copy has none. Only the names in that one folder are looked at.
+function fromInstaller(launch, list = fs.readdirSync) {
+  if (!launch) return false;
+  try {
+    return list(path.dirname(launch)).some((name) => /^Uninstall .+\.exe$/i.test(name));
+  } catch {
+    return false;
+  }
+}
+
 // The thing to start: on a Mac the .app that holds the running program, elsewhere the program itself. An AppImage is
 // started through the AppImage, not the program unpacked inside it.
 function launchPathFor({ execPath, appImage, platform = process.platform }) {
@@ -106,4 +117,4 @@ function launchInstalled(entry, { platform = process.platform, start = spawn } =
   start(command, args, { detached: true, stdio: 'ignore', shell: false }).unref();
 }
 
-module.exports = { SUITE_IDS, clean, launchInstalled, launchPathFor, readInstalled, removeInstalled, startable, validId, writeInstalled };
+module.exports = { SUITE_IDS, clean, fromInstaller, launchInstalled, launchPathFor, readInstalled, removeInstalled, startable, validId, writeInstalled };

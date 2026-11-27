@@ -258,9 +258,11 @@ listed, not hidden, and the panel says which of the two needs the update. Two ap
 but only when both list some, so an app that only sends, such as Recon Browser, still links. Nothing else blocks.
 
 **The nudge.** An app with a newer release shows **Update available** with both numbers: "you have 3.7.1, the latest is 3.9.0". The
-button is **Open to update** for an app that updates itself (the Windows installer, and a Linux AppImage, which is told by the start
-path in the installed file) and **Download** for the rest. An app that is already open has no button, since it updates itself. It
-never takes away a Link or Open button.
+button is **Open to update** for an app that updates itself (the Windows installer and the Linux AppImage) and **Download** for the
+rest (Mac, `.deb`, portable). Both are told from the start path in the installed file: an AppImage by its name, and a Windows installer
+copy by the installer's *Uninstall … .exe* beside the program, which a portable copy doesn't have. When that can't be told, as for a
+running app that left no installed file, the button is **Download**, which works for any copy. A self-updating app that is already open
+has no button, since it updates itself. The nudge never takes away a Link or Open button.
 
 **Where "latest" comes from.** One small file on our own site, `https://recontowers.com/apps/versions.json`, not GitHub. The address is
 in one place, `VERSIONS_URL` in `src/main/versions.js`, so it can change. The rules:
@@ -280,8 +282,8 @@ updates*, *Open to update* and *Download*. `isNewer`, `linkability` and `updateB
 app can copy them.
 
 **Not tested.** Nothing has been tried against the real file, because the site doesn't publish it yet. A protocol other than 1 has only
-been tried against a stand-in app. Whether an installed Windows app is a self-updating installer or a portable copy can't be told
-from here, so on Windows every app is offered *Open to update*; a portable copy will be offered it too.
+been tried against a stand-in app. Telling a Windows installer copy by its uninstaller follows the installer's own template, and is
+tested with stand-in files, not with a real installed app and a real portable one on Windows.
 
 ## Looking like the same family
 
