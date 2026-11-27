@@ -8,6 +8,7 @@ import { openAttachments } from './attachments-dialog.js';
 import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
 import { icon } from './icons.js';
+import { createAppsButton } from './apps-panel.js';
 import { openInbox } from './inbox-dialog.js';
 import { LookupPanel } from './lookup-panel.js';
 import { Page } from './page.js';
@@ -76,6 +77,8 @@ export class WritingRoom {
       onError: (text) => this.showMessage(text),
       onOpenChapter: (id) => this.openChapterFromRecords(id),
     });
+    // The apps icon: a dot that only summarises, with the same words as its name. The panel it opens carries the words.
+    this.apps = createAppsButton(api);
     this.writeButton = el('button', { id: 'mode-write', class: 'mode-tab active', 'aria-pressed': 'true', onclick: () => this.showMode('write') }, 'Write');
     this.recordsButton = el('button', { id: 'mode-records', class: 'mode-tab', 'aria-pressed': 'false', onclick: () => this.showMode('records') }, 'Records');
     this.recordsRoot = el('div', { class: 'records-room', hidden: true });
@@ -113,6 +116,7 @@ export class WritingRoom {
             iconButton('focus-button write-only', 'focus', 'Focus mode', () => this.toggleFocus()),
             iconButton('trash-button', 'trash', 'Trash', () => this.showTrash()),
             iconButton('security-button', 'lock', 'Password and lock', () => onSecurity()),
+            this.apps.button,
             iconButton('prefs-button', 'settings', 'Preferences', () => onPreferences()),
           ),
         ),
@@ -191,6 +195,7 @@ export class WritingRoom {
 
   leave() {
     document.removeEventListener('keydown', this.keys);
+    this.apps.destroy();
     this.records?.destroy();
     document.querySelectorAll('.mention-pop, .record-picker').forEach((node) => node.remove());
   }
@@ -305,6 +310,14 @@ export class WritingRoom {
 
   find({ replacing = false } = {}) {
     if (this.activePage.chapterId) this.activePage.findBar.open({ replacing });
+  }
+
+  // F3 and Shift+F3: the next or previous match, opening Find first if it isn't open.
+  findStep(direction) {
+    const bar = this.activePage.chapterId ? this.activePage.findBar : null;
+    if (!bar) return;
+    if (bar.root.hidden) bar.open({});
+    else bar.step(direction);
   }
 
   async afterReplace(outline) {
@@ -459,7 +472,7 @@ export class WritingRoom {
     return this.attempt(async () => {
       if (document.querySelector('#inbox[open]')) return;
       if (document.querySelector('dialog[open]')) {
-        if ((await this.api.inboxList()).length) this.showInfo('A document was sent here. It’s waiting under File, Documents Sent Here.');
+        if ((await this.api.inboxList()).length) this.showInfo('A document was sent here. It’s waiting under File, This Project, Documents Sent Here.');
         return;
       }
       await this.flush();

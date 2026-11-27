@@ -198,8 +198,35 @@ textarea {
 
 /* The library */
 
-.home {
+.library {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.library-bar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.1rem;
+  padding: 0.35rem 0.7rem;
+  background: linear-gradient(100deg, var(--bar-start), var(--bar-end));
+  color: var(--on-bar);
+  border-bottom: 1px solid rgb(255 255 255 / 14%);
+}
+
+.library-bar-name {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-weight: 600;
+}
+
+.home {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   display: grid;
   place-items: center;
@@ -1106,25 +1133,6 @@ mark,
 
 .dialog.wide {
   width: min(58rem, calc(100vw - 2rem));
-}
-
-/* Preferences has six sections, which made a tall narrow column. On a normal window they sit in two columns. */
-#preferences {
-  width: min(58rem, calc(100vw - 2rem));
-}
-
-@media (min-width: 860px) {
-  #preferences[open] {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-content: start;
-    column-gap: 2.4rem;
-  }
-
-  #preferences[open] > h2,
-  #preferences[open] > .dialog-actions {
-    grid-column: 1 / -1;
-  }
 }
 
 .dialog::backdrop {
@@ -2683,7 +2691,173 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
   font-size: 0.9rem;
 }
 
-/* The Apps panel in Preferences */
+/* About and Help */
+
+.about-dialog {
+  width: min(34rem, 92vw);
+}
+
+.about-top {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.about-top h2 {
+  margin: 0;
+}
+
+.about-version,
+.about-tech,
+.about-legal {
+  margin: 0.2rem 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.about-links {
+  margin: 0.8rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-links li {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.about-links span {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.help-dialog {
+  width: min(44rem, 94vw);
+}
+
+.help-body {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 0.4rem 0.2rem;
+}
+
+.help-topic h3,
+.shortcut-group h3 {
+  margin: 1rem 0 0.3rem;
+}
+
+.shortcut-group dl {
+  display: grid;
+  align-items: center;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1.2rem;
+  margin: 0;
+}
+
+.shortcut-group dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem 0.8rem;
+  margin: 0;
+}
+
+.shortcut-actions {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.shortcut-none,
+.shortcut-listening {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.shortcut-listening {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.shortcut-note,
+.shortcut-message {
+  margin: 0.3rem 0;
+}
+
+.shortcut-message {
+  min-height: 1.4em;
+  font-weight: 600;
+}
+
+kbd {
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 5px;
+  font: 0.85rem var(--ui-font);
+}
+
+/* The Apps panel, in Preferences and from the toolbar */
+
+.apps-button {
+  position: relative;
+}
+
+/* A dot that only summarises: the panel and the button's name say it in words. Green is filled, amber is filled with a ring,
+   grey is a ring, and off is a dashed ring, so the four differ by shape too. */
+.apps-dot {
+  position: absolute;
+  right: 0.2rem;
+  bottom: 0.2rem;
+  width: 0.62rem;
+  height: 0.62rem;
+  border: 2px solid var(--on-bar);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.apps-dot[data-dot='green'] {
+  border-color: #2fbf71;
+  background: #2fbf71;
+}
+
+.apps-dot[data-dot='amber'] {
+  border-color: #ffb020;
+  background: #ffb020;
+  box-shadow: 0 0 0 1.5px var(--on-bar);
+}
+
+.apps-dot[data-dot='grey'] {
+  opacity: 0.7;
+}
+
+.apps-dot[data-dot='off'] {
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.apps-off {
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+}
+
+.app-info .app-about {
+  display: block;
+}
+
+.app-info .app-update,
+.app-info .app-needs {
+  display: block;
+  font-weight: 600;
+}
+
 
 .app-row {
   align-items: flex-start;
@@ -2700,6 +2874,164 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 .app-buttons {
   display: flex;
   gap: 0.4rem;
+}
+
+.about-x {
+  float: right;
+}
+
+/* Preferences: sections listed on the left, the chosen one on the right. It's sized to the app window, and only the right side scrolls. */
+
+.dialog.prefs-window {
+  width: min(900px, calc(100vw - 3rem));
+  height: min(640px, calc(100vh - 3rem));
+  padding: 0;
+  overflow: hidden;
+}
+
+.prefs-window[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.prefs-head,
+.prefs-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.4rem;
+}
+
+.prefs-head {
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.dialog .prefs-head h2 {
+  margin: 0;
+}
+
+.prefs-foot {
+  border-top: 1px solid var(--panel-edge);
+}
+
+.prefs-body {
+  display: grid;
+  grid-template-columns: 11.5rem minmax(0, 1fr);
+  min-height: 0;
+}
+
+.prefs-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.8rem 0.6rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--panel-edge);
+}
+
+.prefs-nav [role="tab"] {
+  flex: none;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sheet-ink-soft);
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.prefs-nav [role="tab"]:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.prefs-nav [role="tab"][aria-selected="true"] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--sheet-ink);
+  font-weight: 700;
+}
+
+.prefs-panes {
+  min-width: 0;
+  overflow: auto;
+  padding: 0.9rem 1.6rem 1.4rem;
+}
+
+.prefs-pane {
+  max-width: 40rem;
+  min-width: 0;
+}
+
+.dialog .prefs-pane h3 {
+  margin: 0 0 0.9rem;
+  color: var(--sheet-ink);
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.prefs-pane h4 {
+  margin: 1.2rem 0 0.4rem;
+  font-size: 0.92rem;
+}
+
+.prefs-pane h3 + h4 {
+  margin-top: 0;
+}
+
+.prefs-pane .field {
+  grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+  margin-bottom: 0.7rem;
+}
+
+.prefs-pane .check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.92rem;
+}
+
+.prefs-pane .check input {
+  flex: none;
+  margin-top: 0.2rem;
+}
+
+.prefs-pane .quiet-note {
+  margin: 0.2rem 0 0.8rem;
+  line-height: 1.45;
+}
+
+.prefs-pane .word-form {
+  flex-wrap: wrap;
+}
+
+/* The whole folder name shows, on as many lines as it needs. */
+.prefs-pane .backup-folder {
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* A very long word wraps, and its Remove button stays beside it. */
+.prefs-pane .word-row > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.prefs-pane .word-row > button {
+  flex: none;
+}
+
+/* The section scrolls, so its lists don't need to scroll inside it. */
+.prefs-pane .word-list {
+  max-height: none;
+}
+
+.prefs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
 /* Versions, canon lock and the author-only part */

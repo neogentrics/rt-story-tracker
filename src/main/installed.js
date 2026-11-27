@@ -10,13 +10,24 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROTOCOL = 1;
-const SUITE_IDS = ['rt-markdown-reader', 'rt-story-tracker', 'rt-author-desk', 'rt-press', 'rt-audio-studio'];
+const { SUITE_IDS } = require('../shared/suite-apps');
 const FOLDER = 'installed';
 const MAX_PATH = 1024;
 
 const validId = (id) => typeof id === 'string' && /^[a-z0-9][a-z0-9-]{0,63}$/.test(id);
 const clean = (text, fallback = '') => (typeof text === 'string' ? text.replace(/[\u0000-\u001f\u007f-\u009f‎‏‪-‮⁦-⁩]/g, '').trim().slice(0, 80) : '') || fallback;
 const isMacBundle = (file) => /\.app$/i.test(file);
+
+// Whether a Windows copy was put there by the installer, the only kind on Windows that can update itself. The installer leaves
+// "Uninstall <name>.exe" beside the program. A portable copy has none. Only the names in that one folder are looked at.
+function fromInstaller(launch, list = fs.readdirSync) {
+  if (!launch) return false;
+  try {
+    return list(path.dirname(launch)).some((name) => /^Uninstall .+\.exe$/i.test(name));
+  } catch {
+    return false;
+  }
+}
 
 // The thing to start: on a Mac the .app that holds the running program, elsewhere the program itself. An AppImage is
 // started through the AppImage, not the program unpacked inside it.
@@ -85,13 +96,15 @@ function readInstalled(shared, { platform = process.platform, exists = fs.exists
     } catch {
       continue;
     }
-    if (info?.protocol !== PROTOCOL || !validId(info.id) || `${info.id}.json` !== name) continue;
+    // A newer protocol is still listed, so the panel can say it needs an update to link.
+    if (!Number.isInteger(info?.protocol) || info.protocol < 1 || info.protocol > 1000 || !validId(info.id) || `${info.id}.json` !== name) continue;
     if (typeof info.launch !== 'string' || !path.isAbsolute(info.launch) || info.launch.length > MAX_PATH) continue;
     if (!exists(info.launch)) {
       fs.rmSync(file, { force: true });
       continue;
     }
-    found.push({ id: info.id, name: clean(info.name, info.id), version: clean(String(info.version ?? '')), launch: info.launch, known: SUITE_IDS.includes(info.id) });
+    const minProtocol = Number.isInteger(info.minProtocol) && info.minProtocol >= 1 && info.minProtocol <= 1000 ? info.minProtocol : 1;
+    found.push({ id: info.id, name: clean(info.name, info.id), version: clean(String(info.version ?? '')), launch: info.launch, protocol: info.protocol, minProtocol, known: SUITE_IDS.includes(info.id) });
   }
   return found;
 }
@@ -104,4 +117,4 @@ function launchInstalled(entry, { platform = process.platform, start = spawn } =
   start(command, args, { detached: true, stdio: 'ignore', shell: false }).unref();
 }
 
-module.exports = { SUITE_IDS, clean, launchInstalled, launchPathFor, readInstalled, removeInstalled, startable, validId, writeInstalled };
+module.exports = { SUITE_IDS, clean, fromInstaller, launchInstalled, launchPathFor, readInstalled, removeInstalled, startable, validId, writeInstalled };

@@ -1,3 +1,4 @@
+import { createAppsButton } from './apps-panel.js';
 import { el, words } from './dom.js';
 import { icon } from './icons.js';
 
@@ -29,7 +30,7 @@ function projectRow(project, { onOpen, onUnlock, onRemoveSample, onTrashProject 
   );
 }
 
-export function renderHome(root, { projects, waiting = [], onPreferences, onOpen, onUnlock, onCreate, onSample, onRemoveSample, onOpenFile, onFindFiles, onTrashProject, onShowTrash }) {
+export function renderHome(root, { api, onPreferences, projects, waiting = [], onOpen, onUnlock, onCreate, onSample, onRemoveSample, onOpenFile, onFindFiles, onTrashProject, onShowTrash }) {
   const first = projects.length === 0;
   const hasSample = projects.some((project) => project.sample);
   const title = el('input', {
@@ -52,7 +53,25 @@ export function renderHome(root, { projects, waiting = [], onPreferences, onOpen
     el('button', { id: 'start-project', class: 'primary', type: 'submit' }, icon('plus'), 'Start a project'),
   );
 
+  // A bar across the top, like the one in the writing room and in RT Markdown Reader: the apps icon, and Preferences, where the
+  // themes and fonts are, so they can be found before any project is open.
+  const bar = el(
+    'header',
+    { class: 'library-bar' },
+    el('div', { class: 'library-bar-name' }, el('img', { src: 'icon.png', alt: '', width: '22', height: '22' }), 'RT Story Tracker'),
+    el(
+      'div',
+      { class: 'bar-side bar-right' },
+      createAppsButton(api).button,
+      el('button', { id: 'library-prefs', class: 'bar-primary', onclick: onPreferences }, icon('settings'), 'Preferences'),
+    ),
+  );
+
   root.replaceChildren(
+    el(
+      'div',
+      { class: 'library' },
+      bar,
     el(
       'main',
       { class: 'home' },
@@ -76,10 +95,9 @@ export function renderHome(root, { projects, waiting = [], onPreferences, onOpen
           el('button', { id: 'find-files', class: 'link', onclick: onFindFiles }, icon('folder'), 'Find my files'),
           el('button', { id: 'open-file', class: 'link', onclick: onOpenFile }, icon('open'), 'Open a project file'),
           el('button', { id: 'open-trash', class: 'link', onclick: onShowTrash }, icon('trash'), 'Trash'),
-          // Themes and fonts live in Preferences, so it has to be findable from here and not only under File.
-          el('button', { id: 'open-prefs', class: 'link', onclick: onPreferences }, icon('settings'), 'Preferences'),
         ),
       ),
+    ),
     ),
   );
   root.querySelector('#try-sample')?.addEventListener('click', onSample);

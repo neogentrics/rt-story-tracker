@@ -5,7 +5,8 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
 
 ## [3.10.0] - 2026-11-27
 
-Versions of a record, for authors who need to say what a record said as of each book.
+Versions of a record, for authors who need to say what a record said as of each book. Web clips from Recon Browser. And an app that
+looks and works like the rest of the Recon Towers family, with shortcuts you can change.
 
 ### Added
 - **Keep versions**, a switch on a kind of record, off by default. A record can be **frozen for a book**: a copy of it as it is,
@@ -19,6 +20,44 @@ Versions of a record, for authors who need to say what a record said as of each 
 - **Canon lock** on a record: it can be read, and changes only after you've said yes.
 - Export everything writes the printable part of each record, and each frozen version as its own file. The author-only part is
   never in it. It stays in your project and its backups.
+- **Web clips from Recon Browser.** Recon Browser can send a highlighted passage, with its source, over App Link as a document of
+  kind research. It waits in the inbox, and nothing is filed by itself. You choose where it goes, and it starts on a book called
+  Research, made if it isn't there. It goes in as one chapter with its source at the top. A locked project holds it in memory
+  until you unlock it. A picture in a clip is never fetched, and shows as a reference in words. Recon Browser now shows in the
+  Apps panel when it's installed or running.
+- **An apps icon on the toolbar,** with a dot: green when an app is linked, amber when apps are found and none is, grey when none is
+  found, and a dashed ring when App Link is off. It opens the Apps panel, which now lists every Recon Towers app with one state in
+  words (Linked, Found not linked, Installed not running, Not installed) and one button (Open, Link or Get it). Finding an app
+  never links it, and nothing is checked on a timer: it looks when the window opens, when the panel opens and on Refresh.
+- **The Apps panel says when an app has an update, and when two apps can't link.** *Update available* shows both numbers, with *Open to
+  update* for an app that updates itself and *Download* for the rest, and it never stops a link. Whether two apps link depends on
+  their App Link version and the kinds of document they accept, never on the app's version, so a normal release never breaks a link.
+  If a security fix ever raises the minimum, the older app shows *Needs an update to link*. The latest versions come from one small
+  file on the Recon Towers site, read when the panel opens or the app starts and kept for a day. The request carries nothing about
+  you. If the file can't be reached it says *Couldn't check for updates* and carries on.
+- **Your own keyboard shortcuts.** In *Help, Keyboard Shortcuts*, choose *Change* beside a command and press the keys you want. Commands
+  that had no key, such as Trash or Attachments, can be given one. A key another command has is refused, and so is one that would get in
+  the way of typing or that copying, pasting, undoing, bold, italic, underline, zoom or full screen use. Escape leaves a command as it
+  was, *Reset* puts one back and *Reset all to the standard keys* puts back every one. Your keys are kept on this computer.
+
+### Changed
+- **Looks like the rest of the family.** A Help menu like RT Markdown Reader's: Help Center (F1), Keyboard Shortcuts, Check for Updates
+  and About with the version in its name. About is now a window in the app with links to the website, this release's notes, where to
+  report a problem and the source code, an engine line, the license and the open-source notices, and *Copy Version Details* for a bug
+  report. The library has a bar across the top with an apps icon and a **Preferences** button, so the themes and fonts can be found
+  before a project is open. That button takes the place of the one 3.7.2 added at the foot of the library. Find Next (F3) and Find
+  Previous (Shift+F3) are in the Edit menu, and File ends with Exit on Windows and Linux. The Reader's Tutorial and Find a Command
+  aren't here yet.
+- **Matches the suite's look and feel.** The menus are laid out like RT Markdown Reader's. File is shorter: the commands for the project
+  are in *File, This Project*, with *Export* and *Print* beside it. *Preferences* is at the end of the Edit menu (on a Mac, in the app
+  menu), and the zoom commands are in *View, Zoom*. Every command keeps its key. About has a close button at the top right.
+  Words follow RT Markdown Reader's: *Open…*, *Exit*, and an update that is *ready to install* with
+  *Restart to update*; once one is ready, Help says *Restart to Update*. A new test opens the main screens and dialogs and checks that
+  every control has a name and that the main flows work from the keyboard. There's no Tutorial item in Help yet.
+- **A new Preferences window.** 3.7.2 set Preferences out in two columns. It's now a window sized to the app, like RT Markdown Reader's,
+  with General, Appearance, Editing, Backups, Password lock, Linked Apps and Shortcuts listed on the left, *Help Center* bottom left and
+  *Done* bottom right. The arrow keys move through the list. Shortcuts can be changed there as well as from Help. General is new: you can
+  turn off reopening your last project, which was always on, and it has *Check for Updates…* and a link to the releases page.
 
 ## [3.9.0] - 2026-11-27
 

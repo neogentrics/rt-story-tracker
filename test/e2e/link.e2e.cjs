@@ -61,12 +61,13 @@ const answerYes = (app) => app.evaluate(({ dialog }) => { dialog.showMessageBox 
   fs.writeFileSync(path.join(shared, 'installed', 'rt-press.json'), JSON.stringify({ protocol: 1, id: 'rt-press', name: 'RT Press', version: '1.0.0', launch: process.execPath }));
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.click('#prefs-tab-apps');
   await window.waitForSelector('.app-row[data-app="rt-press"] [aria-label="Open RT Press"]');
   assert.equal(await window.locator('.app-row[data-app="rt-press"] [aria-label^="Link"]').count(), 0, 'finding an app never links it, and it can’t be linked while it isn’t running');
   await window.check('#pref-link');
   await window.waitForSelector('[aria-label="Link RT Markdown Reader"]');
   assert.ok(fs.existsSync(path.join(shared, 'rt-story-tracker.json')));
-  assert.match(await window.textContent('.app-row[data-app="rt-markdown-reader"]'), /running/);
+  assert.match(await window.textContent('.app-row[data-app="rt-markdown-reader"]'), /Found, not linked/);
   await window.click('[aria-label="Link RT Markdown Reader"]');
   await window.waitForSelector('[aria-label="Remove the link to RT Markdown Reader"]');
   await window.click('#pref-close');

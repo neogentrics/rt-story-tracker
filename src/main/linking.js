@@ -6,10 +6,11 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { APP_ID, APP_NAME, AppLink, LinkError, sharedFolder, validId } = require('./app-link');
+const { APP_ID, APP_NAME, AppLink, LinkError, MIN_PROTOCOL, PROTOCOL, sharedFolder, validId } = require('./app-link');
 const { exportFile, safeName } = require('./export');
-const { launchInstalled, readInstalled, writeInstalled } = require('./installed');
+const { fromInstaller, launchInstalled, readInstalled, writeInstalled } = require('./installed');
 const { writeFileSafely } = require('./storage/keys');
+const { SUITE_APPS, UPDATE, appById, isNewer, linkability, stateOf, updateButton, updateLine } = require('../shared/suite-apps');
 
 const READER_ID = 'rt-markdown-reader';
 const LINKS_FILE = 'app-links.bin';
@@ -39,9 +40,11 @@ const nodesOf = (node, kind) => (node.kind === kind ? [node] : node.children.fla
 
 class Linking {
   // launchPath is where this app starts from, for the installed list, and is null when it isn't an installed copy.
-  // startApp starts another installed app.
-  constructor({ workspace, settings, vault, inbox, root, home, dataDir, version, ask, places = readerPlaces, launch = launchReader, launchPath = null, startApp = launchInstalled, tempDir = os.tmpdir() }) {
-    Object.assign(this, { workspace, settings, vault, inbox, root, home, dataDir, version, ask, places, launch, launchPath, startApp, tempDir });
+  // startApp starts another installed app, and openPage opens a web page for the person.
+  constructor({ workspace, settings, vault, inbox, root, home, dataDir, version, ask, places = readerPlaces, launch = launchReader, launchPath = null, startApp = launchInstalled, openPage = () => {}, versions = null, platform = process.platform, tempDir = os.tmpdir() }) {
+    Object.assign(this, { workspace, settings, vault, inbox, root, home, dataDir, version, ask, places, launch, launchPath, startApp, openPage, platform, tempDir });
+    // Where the latest versions come from (a Versions, made by the app). Without one nothing is asked and no nudge is shown.
+    this.versions = versions ?? { answer: null, check: async () => ({ state: 'unavailable', apps: {} }) };
     this.file = path.join(root, LINKS_FILE);
     // Links made under this app's old App Link id can't work, so they go, and the app offers to link again.
     fs.rmSync(path.join(root, OLD_LINKS_FILE), { force: true });
@@ -124,26 +127,48 @@ class Linking {
     }
   }
 
-  // What the person sees: every suite app installed here or running or linked, whether it's linked, and a line about what
-  // a linked app that's running is doing. Finding an app never links it.
-  async apps() {
+  // What the person sees: every app in the suite, whether it's on this computer, running or linked, and a line about what a
+  // linked app that's running is doing. An app that isn't there is still listed, so it can be got. Something else that left an
+  // installed file is listed too, with no button to start it. Finding an app never links it, and nothing here is asked on a
+  // timer: it's looked at when the person asks.
+  async apps({ latest = {} } = {}) {
     const rows = new Map();
     const row = (id, name) => {
-      if (!rows.has(id)) rows.set(id, { id, name, version: '', installed: false, running: false, linked: false, known: false, canOpen: false, line: '' });
+      if (!rows.has(id)) rows.set(id, { id, name, about: '', version: '', installed: false, running: false, linked: false, known: false, canOpen: false, line: '' });
       return rows.get(id);
     };
+    for (const app of SUITE_APPS) {
+      if (app.id !== APP_ID) Object.assign(row(app.id, app.name), { about: app.about, known: true });
+    }
+    const launches = new Map();
     for (const item of readInstalled(this.sharedFolder())) {
-      if (item.id !== APP_ID) Object.assign(row(item.id, item.name), { installed: true, version: item.version, known: item.known });
+      if (item.id === APP_ID) continue;
+      launches.set(item.id, item.launch);
+      Object.assign(row(item.id, item.name), { installed: true, version: item.version, known: item.known, protocol: item.protocol, minProtocol: item.minProtocol });
     }
     const running = this.server ? await this.server.found() : [];
-    for (const item of running) row(item.id, item.name).running = true;
+    for (const item of running) {
+      // What a running app says about itself is newer than the file it left, so it wins.
+      Object.assign(row(item.id, item.name), { running: true, version: item.version || rows.get(item.id)?.version || '', protocol: item.protocol, minProtocol: item.minProtocol, accepts: item.accepts });
+    }
     for (const [id, link] of Object.entries(this.load())) {
       const found = row(id, link.name);
       found.linked = true;
-      found.name = link.name || found.name;
+      if (!found.known) found.name = link.name || found.name;
     }
     const list = [...rows.values()];
-    for (const item of list) item.canOpen = item.installed && item.known && !item.running;
+    for (const item of list) {
+      item.canOpen = item.installed && item.known && !item.running;
+      item.state = stateOf(item);
+      item.canGet = item.known && !item.installed && !item.running;
+      // Whether it can be linked at all. Only the protocol and the kinds of document decide: never its version number.
+      const fit = item.protocol ? linkability({ mine: { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, accepts: ['markdown', 'text'] }, theirs: item }) : { ok: true };
+      item.needsUpdate = fit.ok ? '' : fit.who;
+      item.canLink = item.state === 'found' && fit.ok;
+      // A nudge, and only a nudge: it never takes away a button that would otherwise be there.
+      const newest = latest[item.id]?.version;
+      item.update = item.version && newest && isNewer(newest, item.version) ? { have: item.version, latest: newest, line: updateLine({ have: item.version, latest: newest }), action: updateButton({ platform: this.platform, launch: launches.get(item.id), installer: this.platform === 'win32' && fromInstaller(launches.get(item.id)), running: item.running }) } : null;
+    }
     await Promise.all(list.filter((item) => item.linked && item.running && this.server).map(async (item) => {
       try {
         item.line = (await this.server.statusOf(item.id)).line;
@@ -151,11 +176,33 @@ class Linking {
         // It didn't say, which is no reason to hide it.
       }
     }));
-    return list.sort((a, b) => a.name.localeCompare(b.name));
+    const place = (item) => (item.known ? SUITE_APPS.findIndex((app) => app.id === item.id) : SUITE_APPS.length);
+    return list.sort((a, b) => place(a) - place(b) || a.name.localeCompare(b.name));
   }
 
-  async status() {
-    return { on: this.settings.values.appLink, safe: this.vault.available(), apps: await this.apps() };
+  // "Get it": opens the app's page on the store. The address comes from the shared list by id, never from the window.
+  getApp(id) {
+    const app = appById(id);
+    if (!app || app.id === APP_ID || !/^https:\/\//.test(app.page)) throw new Error('That app isn’t known.');
+    // An app that's newer than this one's list may have a page of its own, which the site's file gives. Only ever an https page on the site.
+    this.openPage(this.versions.answer?.apps?.[id]?.url || app.page);
+  }
+
+  // `refresh` is the person pressing Refresh, which asks the site again. Otherwise the answer from the last day is used.
+  async status({ refresh = false } = {}) {
+    let updates = { state: 'unavailable', apps: {} };
+    try {
+      updates = await this.versions.check({ force: refresh === true });
+    } catch {
+      updates = { state: 'unreachable', apps: {} };
+    }
+    return { on: this.settings.values.appLink, safe: this.vault.available(), apps: await this.apps({ latest: updates.apps }), updates: updates.state };
+  }
+
+  // Looked at when the app starts, if App Link is on. The panel looks when it opens.
+  checkVersions() {
+    if (!this.settings.values.appLink) return Promise.resolve();
+    return this.versions.check().catch(() => {});
   }
 
   async openApp(id) {

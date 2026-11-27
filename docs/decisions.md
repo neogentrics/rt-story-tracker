@@ -148,10 +148,10 @@ Sales & Royalties under Business Ops, which he's kept apart from the stories.
 | Thing | Home | What this app does |
 |---|---|---|
 | Marketing, launches, royalties, accounts | RT Author Desk | Nothing. It's off this roadmap's Later list. |
-| Published editions, formats, dates, store links | RT Author Desk | v3.13's catalog shows them, read over App Link |
+| Published editions, formats, dates, store links | RT Author Desk | v3.16's catalog shows them, read over App Link |
 | Writing status, word counts, what's left | This app | Keeps them, and Author Desk shows them |
 
-It's what he already set up: stories and business apart. Until Author Desk exists, v3.13's catalog lets him type the
+It's what he already set up: stories and business apart. Until Author Desk exists, v3.16's catalog lets him type the
 published facts in, and they move across when it arrives.
 
 ### 19. Recovery defaults (before v3.6)
@@ -165,7 +165,7 @@ published facts in, and they move across when it arrives.
 ✅ **Built in 3.6 as recommended.** The warning turned out not to be needed: the password and the recovery key can only be
 replaced, never removed, so a locked project always has at least two.
 
-### 20. How Notion ends (before v3.15)
+### 20. How Notion ends (before v3.18)
 
 | Choice | In short |
 |---|---|
@@ -176,7 +176,7 @@ replaced, never removed, so a locked project always has at least two.
 Claude sessions today read and update Notion constantly, and other work depends on that, so the change has to be planned.
 Those habits are written in his Claude memory, and need changing at the switch.
 
-*Recommendation:* **One area at a time,** starting when v3.14 is out.
+*Recommendation:* **One area at a time,** starting when v3.17 is out.
 
 ### 21. Licence (before v3.0)
 
@@ -191,8 +191,8 @@ The repo has no licence. RT Markdown Reader is proprietary, with public source.
 ✅ **Chosen 6 November 2026: The suite first.**
 
 Comparing this roadmap with RT Markdown Reader added four releases. The suite became v3.8, because Author Desk, RT Press and
-RT Audio Studio are being planned to it. Records and what follows moved up by one, to v3.9 to v3.17. Pictures and tables,
-read aloud and dictation, and finding your way around are v3.18 to v3.20.
+RT Audio Studio are being planned to it. Records and what follows moved up by one, to v3.9 to v3.20. Pictures and tables,
+read aloud and dictation, and finding your way around are v3.21 to v3.23.
 
 ### 25. Which app keeps which export
 
@@ -253,6 +253,45 @@ Calls made while building it, which are the owner's to overrule:
 - **The first version has no "changes since".** Later ones list what changed, in print fields for print and in author-only
   fields for the author only.
 
+### 29. Web clips from Recon Browser (3.10)
+
+✅ **Chosen 18 November 2026,** from the owner through the orchestrating session. Recon Browser 1.3 sends research here, and
+this is the receiving end.
+
+| Question | Chosen |
+|---|---|
+| How does a clip get here? | Over App Link, the way every other document does, as `open_document` with `kind: "research"`, on a key the owner approves once. **No `rtstory://` protocol and no second inbox folder:** any web page can fire an operating system link, a command line can't carry a whole article, and a shared folder has no key. |
+| How does the source travel? | As front matter in the Markdown: `source_url`, `source_title`, `source_author`, `source_date`, `accessed`, `category`, `tags`, and a `Source:` line at the end, so any app can read a clip. |
+| Does Recon Browser show in the Apps panel? | Yes. `recon-browser` is a known suite id, so it's listed when installed or running and can be started from the installed list. |
+| Where does a clip land, until Research records exist (3.12)? | **One chapter in a book called Research,** made if it's missing, with the front matter kept as the first lines of the chapter. The owner can pick another book. In 3.12 a clip becomes a Research record, with the source as its citation. |
+
+The rules that came with it, which are built and tested: nothing is stored without the owner's choice in the inbox window; a
+locked project holds the clip in memory, never in a file; the Markdown goes through the same reader as any sent document; **a
+picture is never fetched on arrival or when the clip is added,** because that would tell the site it was read; at most 20 wait
+and each is at most 8 MB.
+
+Calls made while building it, which are the owner's to overrule:
+
+- **A picture stays as words.** `![A weir](https://…)` goes into the chapter as `[Image: A weir (https://…)]`, so the
+  reference survives and nothing is requested. Fetching a picture, as an attachment and only with the owner's yes, isn't built.
+- **The front matter is checked, not copied.** Only the seven known keys are kept, controlled characters are removed, a
+  web address must be `http` or `https` with no password in it, dates must be real-looking, and a category must be one of
+  Recon Browser's six. Anything else is dropped. Front matter that never closes is ignored and its lines stay in the text.
+- **The source lines are words in the chapter, so they count toward the book's word total.** A Research book with many clips
+  will show more words than the owner wrote. A way to keep a book out of the totals is a later job.
+- **A clip with no source still works.** The window shows no source line, and the chapter has none at the top.
+
+### 30. Connect Claude gets its own release
+
+✅ **Chosen by the owner, November 2026.** Connecting Claude Desktop and Claude Code to your projects no longer waits for the Claude and
+AI release. It's **v3.13**, after *Files you bring in* (3.11) and *Read aloud* (3.12), and ahead of *Timeline and places* (3.14).
+
+- **With the connection:** your choice of access (Off to begin with, Read only, Suggest, or Read and write), and the record of every
+  change Claude makes, which can be undone. A locked project is never reachable. It follows RT Markdown Reader's connector.
+- **Still later, together, in Claude and AI (3.17):** AI assist, your choice of AI, and signing in with Claude Code instead of a key.
+- It was first planned as 3.11. It moved to 3.13 when the owner's own test of *Find my files* put sorting brought-in files first, and a
+  tester's wish moved *Read aloud* up.
+
 ## The order, and where to start
 
 ### 22. Build order
@@ -264,7 +303,7 @@ The roadmap puts writing first, because that's his main reason for the app.
 | Choice | In short |
 |---|---|
 | **Writing first, as written** | v3.0 to v3.7 make it a real writing app; records and Notion come after. |
-| **Records sooner** | Move v3.9 to v3.13 ahead of v3.4 to v3.7. Reaches Notion's replacement sooner, while importing and the lock wait. |
+| **Records sooner** | Move v3.9 to v3.16 ahead of v3.4 to v3.7. Reaches Notion's replacement sooner, while importing and the lock wait. |
 | **RT Markdown Reader link sooner** | Move v3.7 up to right after v3.3. It's small, and RT Markdown Reader is ready for it first. |
 
 *Recommendation:* **Writing first, as written.** Moving the link up is also fine, as it doesn't disturb anything else.

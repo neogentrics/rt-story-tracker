@@ -36,11 +36,13 @@ const launch = () =>
   assert.match(await window.textContent('.project-row'), /From the test/);
 
   // Themes and fonts are in Preferences, and the library screen has a button for it.
-  await window.click('#open-prefs');
+  await window.click('#library-prefs');
   await window.waitForSelector('#preferences[open]');
   const box = await window.locator('#preferences').boundingBox();
   assert.ok(box.width >= 600, `Preferences is wide enough to read, not ${box.width}px`);
+  await window.click('#prefs-tab-appearance');
   assert.ok(await window.isVisible('#pref-theme'), 'the theme choice is there');
+  assert.equal(await window.getByRole('button', { name: 'Preferences', exact: true }).count(), 1, 'one Preferences button on the library screen');
   await app.close();
 
   fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5 });

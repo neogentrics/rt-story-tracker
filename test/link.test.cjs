@@ -89,7 +89,7 @@ test('App Link stays off until it’s turned on, and leaves nothing behind when 
   const info = JSON.parse(fs.readFileSync(path.join(space.folder, 'rt-story-tracker.json'), 'utf8'));
   assert.deepEqual([info.protocol, info.id, info.name, info.version], [1, 'rt-story-tracker', 'RT Story Tracker', '3.7.0']);
   assert.equal(validEndpoint(info.endpoint), true);
-  assert.deepEqual(await call(info.endpoint, 'hello', {}), { protocol: 1, app: 'rt-story-tracker', name: 'RT Story Tracker', version: '3.7.0', accepts: ['markdown', 'text'] });
+  assert.deepEqual(await call(info.endpoint, 'hello', {}), { protocol: 1, minProtocol: 1, app: 'rt-story-tracker', name: 'RT Story Tracker', version: '3.7.0', accepts: ['markdown', 'text'] });
   await space.linking.setOn(false);
   assert.equal(fs.existsSync(path.join(space.folder, 'rt-story-tracker.json')), false);
   assert.equal(space.settings.values.appLink, false);

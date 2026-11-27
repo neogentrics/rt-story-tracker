@@ -285,10 +285,11 @@ function registerSecurity({ security, workspace, window }) {
 }
 
 function registerLinking({ linking, inbox, workspace }) {
-  handle('link:status', () => linking().status());
+  handle('link:status', (options) => linking().status(options));
   handle('link:set', (on) => linking().setOn(on));
   handle('link:pair', (id) => linking().pair(id));
   handle('link:open', (id) => linking().openApp(id));
+  handle('link:get', (id) => linking().getApp(id));
   handle('activity:set', (input) => workspace().setActivity(input ?? {}));
   handle('link:unlink', (id) => linking().unlink(id));
   handle('link:openInReader', busyWhile(workspace, (input) => linking().openInReader(input)));
@@ -297,7 +298,7 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('inbox:drop', (id) => inbox().drop(id));
 }
 
-function registerIpc({ status, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
+function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
   const busy = (work) => busyWhile(workspace, work);
   const unlocked = (work) => (...args) => {
     security().needExportPass();
@@ -307,6 +308,11 @@ function registerIpc({ status, workspace, updater, settings, backups, security, 
   registerLinking({ linking, inbox, workspace });
   sweepTemporaryFiles();
   handle('app:status', status);
+  handle('update:ask', () => checkForUpdates());
+  handle('shortcuts:pause', (paused) => menuKeys.pause(paused === true));
+  handle('app:about', () => aboutApp.info());
+  handle('app:openLink', (id) => aboutApp.open(id));
+  handle('app:copyDetails', () => aboutApp.copy());
   handle('library:list', () => workspace().listProjects());
   handle('library:removeSample', (id) => workspace().removeSample(id));
   handle('project:create', (title) => workspace().createProject(title));
@@ -358,7 +364,9 @@ function registerIpc({ status, workspace, updater, settings, backups, security, 
   handle('find:undo', () => workspace().undoReplace());
   handle('settings:get', () => settings().values);
   handle('settings:save', (changes) => {
+    const before = JSON.stringify(settings().values.shortcuts);
     const saved = settings().save(changes);
+    if (JSON.stringify(saved.shortcuts) !== before) menuKeys.changed();
     session.defaultSession.setSpellCheckerEnabled(saved.spellcheck);
     return saved;
   });

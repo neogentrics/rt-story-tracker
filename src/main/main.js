@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, Menu, powerMonitor, safeStorage, session, shell } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, safeStorage, session, shell } = require('electron');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -7,10 +7,13 @@ const { Backups } = require('./backups');
 const { exportFile } = require('./export');
 const { Importer } = require('./import');
 const { Inbox, isWritingFile } = require('./inbox');
+const { Versions } = require('./versions');
+const { LINKS, detailsText } = require('../shared/family');
 const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
 const { buildMenu } = require('./menu');
+const { ITEMS, resolveKeys } = require('../shared/shortcuts');
 const { Security } = require('./security');
 const { runSelfTest, writeInWindow } = require('./self-test');
 const { Settings } = require('./settings');
@@ -39,7 +42,23 @@ let mainWindow = null;
 let flushCount = 0;
 let quitting = false;
 
-const updater = new Updater((status) => mainWindow?.webContents.send('update:status', status));
+// Once an update is ready the Help menu says so, as RT Markdown Reader's does, so the menu is built again.
+const updater = new Updater((status) => {
+  mainWindow?.webContents.send('update:status', status);
+  readyVersion = status.state === 'ready' ? status.version : null;
+  rebuildMenu();
+});
+let menuHooks = null;
+let readyVersion = null;
+// While the Keyboard Shortcuts page is listening for a new key, the menu keys are off, so pressing one reaches the page and doesn't run.
+let keysPaused = false;
+
+// The menu is built again when an update is ready, when the author changes a shortcut, and when the page starts and stops listening.
+function rebuildMenu() {
+  if (!menuHooks) return;
+  const keys = resolveKeys(keysPaused ? { ...Object.fromEntries(ITEMS.map((item) => [item.id, ''])) } : settings?.values.shortcuts, process.platform);
+  Menu.setApplicationMenu(buildMenu({ ...menuHooks, keys, updateReady: readyVersion }));
+}
 
 // The system's own encrypted storage. On Linux with no keyring Electron falls back to a fixed password, which is no
 // protection at all, so that counts as having none.
@@ -109,6 +128,10 @@ function openLibrary() {
       dataDir: app.getPath('userData'),
       version: app.getVersion(),
       ask: askToLink,
+      openPage: (page) => shell.openExternal(page),
+      // Only what the site's one small file says, kept for a day in this file.
+      // A test can point it at a server on this computer, and nothing else can: the address is the site's.
+      versions: new Versions({ file: path.join(root, 'versions-cache.json'), ...(/^http:\/\/127\.0\.0\.1:\d+\//.test(process.env.RTST_VERSIONS_URL ?? '') ? { url: process.env.RTST_VERSIONS_URL } : {}) }),
       // Only an installed copy says it's installed. Running from the source isn't.
       launchPath: process.env.RTST_INSTALLED_LAUNCH || (app.isPackaged ? launchPathFor({ execPath: process.execPath, appImage: process.env.APPIMAGE }) : null),
     });
@@ -175,6 +198,11 @@ function windowSize() {
 }
 
 function createWindow({ show = true } = {}) {
+  // A window that closed while it was listening for a new shortcut can't give the menu its keys back, so a new one does.
+  if (keysPaused) {
+    keysPaused = false;
+    rebuildMenu();
+  }
   const window = new BrowserWindow({
     ...windowSize(),
     minWidth: 900,
@@ -324,26 +352,40 @@ async function selfTest() {
   app.exit(report.ok ? 0 : 1);
 }
 
+// What the About window shows. Nothing about the person or the project is in it, so it can be copied into a bug report as it is.
+function aboutInfo() {
+  const system = { win32: 'Windows', darwin: 'macOS' }[process.platform] ?? 'Linux';
+  return {
+    version: app.getVersion(),
+    year: new Date().getFullYear(),
+    portable: Boolean(process.env.PORTABLE_EXECUTABLE_DIR),
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+    node: process.versions.node,
+    os: `${system} ${os.release()} (${process.arch})`,
+  };
+}
+
+// The About window is in the page, like RT Markdown Reader's. With no window open, a short version in a message box.
 function showAbout() {
-  dialog.showMessageBox(mainWindow, {
-    type: 'none',
-    title: 'About RT Story Tracker',
-    message: 'RT Story Tracker',
-    detail: `Version ${app.getVersion()}\nA place to write a book and keep everything around it.\nBuilt by the Recon Towers Dev Department.`,
-  });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('menu:command', 'about');
+    return;
+  }
+  dialog.showMessageBox({ type: 'none', title: 'About RT Story Tracker', message: 'RT Story Tracker', detail: `Version ${app.getVersion()}\n${LINKS.website()}` });
 }
 
 async function checkForUpdatesFromMenu() {
   const result = await updater.check();
   const messages = {
-    current: `You have the latest version, ${app.getVersion()}.`,
-    downloading: `Version ${result.version} is downloading. You'll be asked to restart when it's ready.`,
-    ready: `Version ${result.version} is ready. Use Restart to update at the top of the window.`,
-    available: `Version ${result.version} is available. Use Download at the top of the window.`,
-    off: 'Updates are off in this copy of the app.',
-    error: `Couldn't check for updates: ${result.message}`,
+    current: { message: 'You’re up to date', detail: `RT Story Tracker ${app.getVersion()} is the latest version.` },
+    downloading: { message: `Version ${result.version} is downloading`, detail: 'You’ll be asked to restart when it’s ready.' },
+    ready: { message: `Version ${result.version} is ready to install`, detail: 'Choose Help, then Restart to Update, or press Restart to update at the top of the window.' },
+    available: { message: `Version ${result.version} is available`, detail: 'This copy can’t update itself. Choose Download at the top of the window.' },
+    off: { message: 'Updates are off in this copy of the app', detail: '' },
+    error: { type: 'warning', message: 'Couldn’t check for updates', detail: result.message ? `${result.message}` : 'Check your internet connection and try again.' },
   };
-  dialog.showMessageBox(mainWindow, { type: 'info', message: messages[result.state] ?? messages.current });
+  dialog.showMessageBox(mainWindow, { type: 'info', title: 'Check for Updates', buttons: ['OK'], ...(messages[result.state] ?? messages.current) });
 }
 
 if (!app.requestSingleInstanceLock()) {
@@ -372,6 +414,28 @@ if (!app.requestSingleInstanceLock()) {
     openLibrary();
     registerIpc({
       status,
+      checkForUpdates: checkForUpdatesFromMenu,
+      menuKeys: {
+        // A shortcut was changed: the menu is built again with it.
+        changed: () => rebuildMenu(),
+        pause: (paused) => {
+          keysPaused = paused === true;
+          rebuildMenu();
+        },
+      },
+      aboutApp: {
+        info: aboutInfo,
+        // The window names a link, never an address: the addresses are the shared file's.
+        open: (id) => {
+          if (!Object.hasOwn(LINKS, id)) throw new Error('That link isn’t known.');
+          shell.openExternal(LINKS[id](app.getVersion()));
+        },
+        copy: () => {
+          const text = detailsText(aboutInfo());
+          clipboard.writeText(text);
+          return text;
+        },
+      },
       workspace: () => {
         if (!workspace) throw new Error(libraryError ?? 'The library has not opened.');
         return workspace;
@@ -392,13 +456,13 @@ if (!app.requestSingleInstanceLock()) {
         return file;
       },
     });
-    Menu.setApplicationMenu(
-      buildMenu({
-        send: (command) => mainWindow?.webContents.send('menu:command', command),
-        checkForUpdates: checkForUpdatesFromMenu,
-        about: showAbout,
-      }),
-    );
+    menuHooks = {
+      send: (command) => mainWindow?.webContents.send('menu:command', command),
+      checkForUpdates: checkForUpdatesFromMenu,
+      about: showAbout,
+      version: app.getVersion(),
+    };
+    rebuildMenu();
     mainWindow = createWindow({ show: !selfTestFile });
     // A locked project shouldn't stay open behind a locked screen or a sleeping laptop.
     for (const event of ['lock-screen', 'suspend']) powerMonitor.on(event, () => mainWindow?.webContents.send('menu:command', 'auto-lock'));
@@ -408,6 +472,7 @@ if (!app.requestSingleInstanceLock()) {
       updater.start();
       backups?.start();
       linking?.apply().catch(() => {});
+      linking?.checkVersions();
       const given = process.argv.slice(1).find(isWritingFile);
       if (given) takeWritingFile(given);
     }

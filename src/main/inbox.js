@@ -5,7 +5,9 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { LinkError, cleanName, documentName } = require('./app-link');
+const { RESEARCH, readClip, researchBook, sourceBlocks, sourceLine } = require('./clips');
 const { sectionsOf, sourceFromText } = require('./import');
+const { markdownToBlocks } = require('./import/formats');
 const { splitOptions, wordsIn } = require('./import/split');
 
 const MAX_WAITING = 20;
@@ -38,10 +40,12 @@ class Inbox {
   }
 
   // A document from a linked app, or a file the author chose to open here.
-  take({ from, name, text, path: file, attachments }) {
+  take({ from, name, text, path: file, attachments, kind }) {
     if (this.waiting.length >= MAX_WAITING) throw new LinkError('busy', 'Too many documents are waiting. Deal with those first.');
     const document = file ? this.read(file) : { name: documentName(name), text };
-    this.waiting.push({ id: crypto.randomUUID(), from: cleanName(from, 'Another app'), ...document, pictures: usablePictures(attachments) });
+    // A web clip is a document of kind research. Any other kind is just a document, as it was before kinds.
+    const clip = kind === 'research' ? readClip(document.text) : null;
+    this.waiting.push({ id: crypto.randomUUID(), from: cleanName(from, 'Another app'), ...document, clip, pictures: usablePictures(attachments) });
     this.onChange({ arrived: true });
   }
 
@@ -61,6 +65,7 @@ class Inbox {
   }
 
   source(document) {
+    if (document.clip) return { ...markdownToBlocks(document.clip.body), title: document.clip.title || titleOf(document.name) };
     return sourceFromText(document.text, { plain: isPlain(document.name), title: titleOf(document.name) });
   }
 
@@ -71,10 +76,11 @@ class Inbox {
       return {
         id: document.id,
         from: document.from,
-        name: document.name,
+        name: document.clip ? source.title : document.name,
         words: wordsIn(source.blocks),
         pictures: document.pictures.length,
-        options: splitOptions(source.blocks),
+        clip: document.clip ? { line: sourceLine(document.clip.source), category: document.clip.source.category ?? '' } : null,
+        options: document.clip ? [{ mode: 'none', label: 'Keep it as one chapter' }] : splitOptions(source.blocks),
       };
     });
   }
@@ -82,6 +88,7 @@ class Inbox {
   // One step, so a failure leaves the document waiting and the project as it was.
   async add(workspace, { id, bookId, mode }) {
     const document = this.need(id);
+    if (document.clip) return this.addClip(workspace, document, bookId);
     const source = this.source(document);
     const known = splitOptions(source.blocks).some((option) => option.mode === mode);
     const sections = sectionsOf(source, known ? mode : null, titleOf(document.name));
@@ -93,6 +100,24 @@ class Inbox {
       }
     }
     this.drop(id);
+    return { bookId: made.bookId, first: made.first, chapters: made.chapters, outline: workspace.outline() };
+  }
+
+  // A clip is one chapter, in the book the author chose or in Research, which is made if it isn't there. The source goes at the
+  // top of the chapter as lines of words, then the clip's own words. Nothing is fetched: a picture is only a reference.
+  async addClip(workspace, document, bookId) {
+    const source = this.source(document);
+    const title = source.title || titleOf(document.name);
+    const blocks = [...sourceBlocks(document.clip.source), ...source.blocks];
+    const into = bookId || researchBook(workspace);
+    const target = into ? { kind: 'book', id: into } : { title: RESEARCH };
+    const made = workspace.importSections({ target, title: RESEARCH, sections: [{ type: 'chapter', title, named: true, blocks }] });
+    for (const picture of document.pictures) {
+      if (fs.existsSync(picture.path) && fs.statSync(picture.path).size <= MAX_PICTURE) {
+        await workspace.open().addAttachment(made.bookId, { name: picture.name, source: picture.path, type: picture.type, from: document.from });
+      }
+    }
+    this.drop(document.id);
     return { bookId: made.bookId, first: made.first, chapters: made.chapters, outline: workspace.outline() };
   }
 

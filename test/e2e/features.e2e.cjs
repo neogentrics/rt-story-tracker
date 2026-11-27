@@ -46,6 +46,7 @@ async function typeOnPage(window, text) {
   // Preferences: a theme, a font and a size take effect at once and survive a restart.
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.click('#prefs-tab-appearance');
   await window.selectOption('#pref-theme', 'plum');
   await window.selectOption('#pref-page-font', 'literata');
   await window.waitForFunction(() => document.documentElement.dataset.theme === 'plum');
@@ -69,6 +70,7 @@ async function typeOnPage(window, text) {
   await window.waitForFunction(() => document.documentElement.dataset.theme === 'plum');
 
   // Your own words.
+  await window.click('#prefs-tab-editing');
   await window.fill('#new-word', 'Xeolar');
   await window.keyboard.press('Enter');
   await window.waitForSelector('#dictionary-words >> text=Xeolar');
@@ -139,6 +141,7 @@ async function typeOnPage(window, text) {
   // A theme with dark panels and a light page: a comment card is a piece of page, so it takes the page's text colour.
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.click('#prefs-tab-appearance');
   await window.selectOption('#pref-theme', 'blue');
   await window.click('#pref-close');
   await window.waitForFunction(() => document.documentElement.dataset.theme === 'blue');
@@ -146,6 +149,7 @@ async function typeOnPage(window, text) {
   assert.equal(await window.$eval('.row-title', (node) => getComputedStyle(node).color), 'rgb(234, 242, 251)');
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.click('#prefs-tab-appearance');
   await window.selectOption('#pref-theme', 'plum');
   await window.click('#pref-close');
   await window.waitForFunction(() => document.documentElement.dataset.theme === 'plum');
