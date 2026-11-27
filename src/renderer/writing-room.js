@@ -472,7 +472,7 @@ export class WritingRoom {
     return this.attempt(async () => {
       if (document.querySelector('#inbox[open]')) return;
       if (document.querySelector('dialog[open]')) {
-        if ((await this.api.inboxList()).length) this.showInfo('A document was sent here. It’s waiting under File, Documents Sent Here.');
+        if ((await this.api.inboxList()).length) this.showInfo('A document was sent here. It’s waiting under File, This Project, Documents Sent Here.');
         return;
       }
       await this.flush();

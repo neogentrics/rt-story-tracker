@@ -166,7 +166,7 @@ export async function openPreferences(api, { section = 'general' } = {}) {
       body: () => [
         field('Lock a project that has a password', select('pref-lock-after', LOCK_AFTER, String(settings.lockAfter), (value) => change('lockAfter', Number(value)))),
         note('Counts time away from this app. A project with a password also locks when you close it, and when this computer locks or sleeps.'),
-        note('To set or change a project’s password, open the project and choose File, then Password and Lock.'),
+        note('To set or change a project’s password, open the project and choose File, then This Project, then Password and Lock.'),
       ],
     },
     { id: 'apps', label: 'Linked Apps', body: () => [apps.node], shown: () => apps.load() },

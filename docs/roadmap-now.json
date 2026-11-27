@@ -45,7 +45,7 @@
       },
       {
         "title": "Next, from your own testing",
-        "text": "Find my files sorting by type with a files view and audio and art sections (3.11), read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. The Help menu and About are being made to match RT Markdown Reader before the next release."
+        "text": "Find my files sorting by type with a files view and audio and art sections (3.11), read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. The menus, Help and About now follow RT Markdown Reader’s layout, in the 3.10 work that isn’t released yet."
       }
     ]
   },
@@ -60,7 +60,7 @@
     },
     {
       "q": "Where are the themes?",
-      "a": "Under File, then Preferences (Ctrl+,), or the gear at the top right once a project is open. The next release also puts a Preferences button on the library screen, so they are easy to find."
+      "a": "In 3.7.1, under File, then Preferences (Ctrl+,), or the gear at the top right once a project is open. 3.7.2 adds a Preferences button on the library screen. From 3.10 they’re in Preferences under Appearance, which is also at the end of the Edit menu."
     },
     {
       "q": "What happens to pictures in an imported file?",

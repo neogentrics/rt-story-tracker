@@ -2876,6 +2876,10 @@ kbd {
   gap: 0.4rem;
 }
 
+.about-x {
+  float: right;
+}
+
 /* Preferences: sections listed on the left, the chosen one on the right. It's sized to the app window, and only the right side scrolls. */
 
 .dialog.prefs-window {

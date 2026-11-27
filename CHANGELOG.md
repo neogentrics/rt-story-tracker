@@ -46,8 +46,10 @@ Versions of a record, for authors who need to say what a record said as of each 
   before a project is open. Find Next (F3) and Find Previous (Shift+F3) are in the Edit menu, and File ends with Exit on Windows and
   Linux. The Reader's Tutorial and Find a Command aren't here yet.
 
-- **Matches the suite's look and feel.** File is shorter: Import, Export, Print and the other commands for the project are in *File, This
-  Project*, with the same keys. Words follow RT Markdown Reader's: *Open…*, *Exit*, and an update that is *ready to install* with
+- **Matches the suite's look and feel.** The menus are laid out like RT Markdown Reader's. File is shorter: the commands for the project
+  are in *File, This Project*, with *Export* and *Print* beside it. *Preferences* is at the end of the Edit menu (on a Mac, in the app
+  menu), and the zoom commands are in *View, Zoom*. Every command keeps its key. About has a close button at the top right.
+  Words follow RT Markdown Reader's: *Open…*, *Exit*, and an update that is *ready to install* with
   *Restart to update*; once one is ready, Help says *Restart to Update*. A new test opens the main screens and dialogs and checks that
   every control has a name and that the main flows work from the keyboard. There's no Tutorial item in Help yet.
 

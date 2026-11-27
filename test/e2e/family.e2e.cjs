@@ -127,7 +127,12 @@ const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-family-'));
   assert.equal(await window.locator('.room-header .apps-button').isVisible(), true);
   await menu(aboutItem);
   await window.waitForSelector('#about-dialog[open]');
-  await window.click('#about-done');
+  // The close button at the top right, as in the Reader.
+  const about = await window.locator('#about-dialog').boundingBox();
+  const closeBox = await window.locator('#about-x').boundingBox();
+  assert.ok(closeBox.x + closeBox.width > about.x + about.width - 60 && closeBox.y < about.y + 60, 'it’s at the top right');
+  await window.click('#about-x');
+  await window.waitForSelector('#about-dialog', { state: 'detached' });
   assert.deepEqual(errors, []);
   await app.close();
   console.log('family e2e passed');

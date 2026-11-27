@@ -83,17 +83,19 @@ test('File stays short, as the Reader’s does: the project’s own commands are
   const file = menuFor().template.find((menu) => menu.label === 'File').submenu;
   const project = file.find((item) => item.label === 'This Project').submenu;
   assert.deepEqual(REAL(project).map((item) => item.label), [
-    'Import…', 'Export…', 'Print…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Earlier Versions of This Chapter…',
+    'Import…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
     'Documents Sent Here…', 'Open Chapter in RT Markdown Reader', 'Open Book in RT Markdown Reader', 'Publish Chapter with RT Markdown Reader…',
+    'Password and Lock…', 'Lock Project',
   ]);
   const top = labels(file);
-  for (const moved of ['Import…', 'Export…', 'Print…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…']) {
+  for (const moved of ['Import…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…', 'Trash', 'Password and Lock…', 'Lock Project']) {
     assert.equal(top.includes(moved), false, `${moved} is in This Project, not File`);
   }
-  assert.deepEqual(top.filter((label) => label !== '-'), ['New Chapter', 'New Book', 'Open…', 'Save a Copy…', 'This Project', 'Trash', 'Password and Lock…', 'Lock Project', 'Library', 'Preferences…', 'Exit']);
+  assert.deepEqual(top.filter((label) => label !== '-'), ['New Chapter', 'New Book', 'Open…', 'Save a Copy…', 'This Project', 'Export…', 'Print…', 'Library', 'Exit'], 'Export and Print are at the top level, as in the Reader');
   // They still work, with the keys they had.
   const again = menuFor();
-  const keyed = again.template.find((menu) => menu.label === 'File').submenu.find((item) => item.label === 'This Project').submenu;
+  const topAgain = again.template.find((menu) => menu.label === 'File').submenu;
+  const keyed = [...topAgain, ...topAgain.find((item) => item.label === 'This Project').submenu];
   assert.deepEqual(['Import…', 'Export…', 'Print…'].map((name) => keyed.find((item) => item.label === name).accelerator), ['CmdOrCtrl+Shift+I', 'CmdOrCtrl+E', 'CmdOrCtrl+P']);
   keyed.find((item) => item.label === 'Import…').click();
   keyed.find((item) => item.label === 'Print…').click();
@@ -109,6 +111,17 @@ test('the words are the Reader’s where it has them: Open…, Exit, Check for U
   const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'app.js'), 'utf8');
   for (const words of ['is ready to install.', 'Restart to update', 'is available.', 'Download']) assert.ok(app.includes(words), words);
   assert.equal(/is out\./.test(app), false);
+});
+
+test('Preferences ends the Edit menu, as in the Reader, and on a Mac it’s in the app menu; View keeps zoom in a submenu', () => {
+  const { template } = menuFor();
+  const menu = (name, from = template) => from.find((one) => one.label === name).submenu;
+  assert.deepEqual(labels(menu('Edit')).slice(-2), ['-', 'Preferences…']);
+  assert.equal(labels(menu('File')).includes('Preferences…'), false);
+  const mac = menuFor({ platform: 'darwin' }).template;
+  assert.equal(labels(menu('Edit', mac)).includes('Preferences…'), false);
+  assert.equal(labels(menu('RT Story Tracker', mac)).includes('Preferences…'), true);
+  assert.deepEqual(menu('View').find((item) => item.label === 'Zoom').submenu.map((item) => item.role), ['zoomIn', 'zoomOut', 'resetZoom']);
 });
 
 test('File ends with Exit where there is no app menu, Edit has Find Next and Previous, and the others keep their items', () => {

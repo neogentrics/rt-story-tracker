@@ -17,6 +17,7 @@ export async function openAbout(api) {
   const dialog = el(
     'dialog',
     { id: 'about-dialog', class: 'dialog about-dialog', 'aria-labelledby': 'about-title' },
+    el('button', { id: 'about-x', class: 'quiet about-x', type: 'button', 'aria-label': 'Close', onclick: () => dialog.close() }, icon('close')),
     el('div', { class: 'about-top' },
       el('img', { class: 'about-logo', src: 'icon.png', alt: '', width: '64', height: '64' }),
       el('div', {}, el('h2', { id: 'about-title' }, APP_NAME), el('p', { id: 'about-version', class: 'about-version' }, versionWords(info)))),

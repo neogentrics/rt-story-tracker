@@ -252,7 +252,7 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
     body.replaceChildren(
       el('p', { id: 'report-total' }, finished
         ? `All ${files(report.total)} accounted for.`
-        : `${formatCount(report.accounted)} of ${files(report.total)} done. Choose Find My Files in the File menu to pick up where this stopped.`),
+        : `${formatCount(report.accounted)} of ${files(report.total)} done. Choose File, then This Project, then Find My Files to pick up where this stopped.`),
       el('div', { id: 'report-groups', class: 'report-groups' }, report.groups.map((group) => el(
         'details',
         {},
