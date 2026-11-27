@@ -60,13 +60,13 @@ async function typeOnPage(window, text) {
   assert.ok(loaded, 'the carried font loads');
 
   // Glass goes with any theme, and High Contrast stays solid.
-  await window.check('#pref-glass');
+  await window.selectOption('#pref-surface', 'glass');
   await window.waitForFunction(() => document.documentElement.dataset.surface === 'glass');
   await window.selectOption('#pref-theme', 'contrast');
   await window.waitForFunction(() => document.documentElement.dataset.surface === 'solid');
   await window.selectOption('#pref-theme', 'slate');
   await window.waitForFunction(() => document.documentElement.dataset.surface === 'glass');
-  await window.uncheck('#pref-glass');
+  await window.selectOption('#pref-surface', 'solid');
   await window.selectOption('#pref-theme', 'plum');
   await window.waitForFunction(() => document.documentElement.dataset.theme === 'plum');
 

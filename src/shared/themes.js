@@ -10,13 +10,13 @@ const DARK_ALERT = { danger: '#ffb4ab', dangerBg: '#4a1c18' };
 
 const THEMES = {
   light: {
-    label: 'Light', tone: 'light', ...LIGHT_ALERT,
+    label: 'Paper', tone: 'light', ...LIGHT_ALERT,
     barStart: '#2b2350', barEnd: '#15566a', onBar: '#f4f1fb', accent: '#5b3fd6', onAccent: '#ffffff',
     desk: '#e7e3ee', deskStops: ['#cfc6ee', '#e7e3ee', '#bfe2da'], panel: '#f6f4fa', panelEnd: '#ebe7f4', edge: '#d9d3e6',
     ink: '#221f2b', inkSoft: '#57516a', sheet: '#ffffff',
   },
   dark: {
-    label: 'Dark', tone: 'dark', ...DARK_ALERT,
+    label: 'Night', tone: 'dark', ...DARK_ALERT,
     barStart: '#1d1838', barEnd: '#0f4152', onBar: '#f4f1fb', accent: '#a896ff', onAccent: '#17132b',
     desk: '#15131c', deskStops: ['#12172c', '#1b2550', '#0f4444'], panel: '#1f1c29', panelEnd: '#262236', edge: '#363046',
     ink: '#ece9f4', inkSoft: '#a9a3b8', sheet: '#26232f',
@@ -140,7 +140,7 @@ const DEFAULT_SETTINGS = {
   textSize: 18,
   pageWidth: 46,
   spellcheck: true,
-  glass: false,
+  surface: 'solid',
   backupFolder: '',
   backupEvery: 'off',
   backupKeep: 10,
@@ -149,6 +149,18 @@ const DEFAULT_SETTINGS = {
   shortcuts: {},
   reopenLast: true,
 };
+
+// A finish for the app's own panels, on top of any theme. The names and the setting, `surface`, are RT Markdown Reader's.
+const LOOKS = { solid: { label: 'Solid' }, metallic: { label: 'Metallic' }, glass: { label: 'Glass' } };
+
+// The look a theme is really drawn with. Aero is always Glass and High Contrast always Solid, whatever was chosen. The choice is kept,
+// and comes back with another theme.
+function surfaceFor(themeName, chosen) {
+  const theme = THEMES[themeName] ?? THEMES.light;
+  if (theme.glass) return 'glass';
+  if (theme.flat) return 'solid';
+  return Object.hasOwn(LOOKS, chosen) ? chosen : DEFAULT_SETTINGS.surface;
+}
 
 const LIMITS = { textSize: [14, 28], pageWidth: [32, 64], backupKeep: [1, 100] };
 const LOCK_AFTER = { 0: { label: 'Never' }, 5: { label: 'After 5 minutes' }, 15: { label: 'After 15 minutes' }, 30: { label: 'After 30 minutes' }, 60: { label: 'After an hour' } };
@@ -170,7 +182,8 @@ function cleanSettings(input) {
     textSize: within('textSize'),
     pageWidth: within('pageWidth'),
     spellcheck: source.spellcheck !== false,
-    glass: source.glass === true,
+    // Up to 3.10 there was only a Glass tick box, kept as `glass`. Ticked is now the Glass look, and anything else Solid.
+    surface: Object.hasOwn(LOOKS, source.surface) ? source.surface : source.glass === true ? 'glass' : DEFAULT_SETTINGS.surface,
     backupFolder: typeof source.backupFolder === 'string' ? source.backupFolder : '',
     backupEvery: known(source.backupEvery, BACKUP_EVERY, 'backupEvery'),
     backupKeep: Math.round(within('backupKeep')),
@@ -181,4 +194,4 @@ function cleanSettings(input) {
   };
 }
 
-module.exports = { BACKUP_EVERY, DEFAULT_SETTINGS, LIMITS, LOCK_AFTER, PAGE_FONTS, THEMES, UI_FONTS, cleanSettings };
+module.exports = { BACKUP_EVERY, DEFAULT_SETTINGS, LIMITS, LOCK_AFTER, LOOKS, PAGE_FONTS, THEMES, UI_FONTS, cleanSettings, surfaceFor };

@@ -193,12 +193,15 @@ test('every shortcut the Shortcuts page lists is one the menu has, with its key 
     const walk = (items) => {
       for (const item of items) {
         if (item.submenu) walk(item.submenu);
-        else if (item.click && !item.role) found.push(item);
+        // A choice among several, such as the Look, is a setting rather than a command, and has no shortcut.
+        else if (item.click && !item.role && item.type !== 'radio') found.push(item);
       }
     };
     walk(template.flatMap((menu) => menu.submenu));
     for (const item of ITEMS) {
       const hit = found.filter((entry) => {
+        // Not every item sends something, such as the looks, so what the one before sent mustn't count.
+        sent.length = 0;
         entry.click();
         return sent.at(-1) === item.command;
       });

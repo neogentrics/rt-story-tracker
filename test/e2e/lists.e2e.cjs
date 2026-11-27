@@ -10,9 +10,10 @@ const path = require('node:path');
 const root = path.join(__dirname, '..', '..');
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-lists-'));
 
-const resize = async (app, window, width, height = 800) => {
-  await app.evaluate(({ BrowserWindow }, size) => BrowserWindow.getAllWindows()[0].setContentSize(...size), [width, height]);
-  await window.waitForFunction((wanted) => Math.abs(window.innerWidth - wanted) <= 2, width);
+// The size the page is laid out at, which doesn't depend on how big the test computer's screen is.
+const resize = async (window, width, height = 800) => {
+  await window.setViewportSize({ width, height });
+  await window.waitForFunction((wanted) => window.innerWidth === wanted, width);
   await settle(window);
 };
 
@@ -89,7 +90,7 @@ const pickFromText = (app, label) => app.evaluate((_electron, name) => global.te
 
 (async () => {
   let { app, window, errors } = await launch();
-  await resize(app, window, 1200);
+  await resize(window, 1200);
   await window.fill('#new-title', 'First Book');
   await window.click('#start-project');
   await window.waitForSelector('.ProseMirror');
@@ -204,7 +205,7 @@ const pickFromText = (app, label) => app.evaluate((_electron, name) => global.te
   const openTitle = await window.inputValue('#chapter-title');
   await app.close();
   ({ app, window, errors } = await launch());
-  await resize(app, window, 1200);
+  await resize(window, 1200);
   await window.waitForSelector('.ProseMirror');
   await wait(window, '#book-list', ['The Saga']);
   assert.equal(await window.inputValue('#chapter-title'), openTitle);
@@ -216,23 +217,23 @@ const pickFromText = (app, label) => app.evaluate((_electron, name) => global.te
   await window.keyboard.press('End');
   const widest = (await widths(window)).slice(0, 2);
   for (const width of [1000, 800]) {
-    await resize(app, window, width);
+    await resize(window, width);
     await window.waitForFunction(() => document.querySelector('.page-column').getBoundingClientRect().width >= 318, null, { timeout: 5000 }).catch(() => null);
     sizes = await widths(window);
     assert.ok(sizes[2] >= 318 && sizes[0] >= 130 && sizes[1] >= 130 && sizes[0] + sizes[1] + sizes[2] <= width + 2, `at ${width}: ${sizes}`);
   }
   // Very small, the two lists share a column and only one line is needed.
-  await resize(app, window, 660, 500);
+  await resize(window, 660, 500);
   await window.waitForFunction(() => document.querySelector('.columns > .column:nth-child(2)').classList.contains('shares-column'));
   assert.equal(await splitter(window, 'chapters').isVisible(), false);
   assert.equal(await splitter(window, 'books').isVisible(), true);
   sizes = await widths(window);
   assert.ok(sizes[0] === sizes[1] && sizes[2] >= 318, `sharing a column: ${sizes}`);
-  await resize(app, window, 1200);
+  await resize(window, 1200);
   await window.waitForFunction((wanted) => Math.abs(document.querySelector('.columns > .column').getBoundingClientRect().width - wanted) <= 1, widest[0]);
   assert.deepEqual((await widths(window)).slice(0, 2), widest, 'a small window doesn’t change what was chosen');
   // With the look-up panel open in a wide window, the page and the panel both keep their room.
-  await resize(app, window, 1500);
+  await resize(window, 1500);
   await splitter(window, 'books').focus();
   await window.keyboard.press('End');
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('menu:command', 'lookup'));
@@ -244,7 +245,7 @@ const pickFromText = (app, label) => app.evaluate((_electron, name) => global.te
   await window.waitForSelector('.lookup-pane', { state: 'hidden' });
   await splitter(window, 'books').focus();
   await window.keyboard.press('Enter');
-  await resize(app, window, 1200);
+  await resize(window, 1200);
 
   await window.click('[aria-label="Expand all series"]');
   await wait(window, '#book-list', ['The Saga', '  First Book', '  Second Book']);
@@ -430,13 +431,13 @@ const pickFromText = (app, label) => app.evaluate((_electron, name) => global.te
   await wait(window, '#chapter-list', ['Chapter 1', 'Chapter 2']);
 
   // A menu opened at the very bottom of a short window stays inside it.
-  await resize(app, window, 700, 420);
+  await resize(window, 700, 420);
   await rightClick(window, chapter(window, 'Chapter 2'));
   const box = await window.locator('.popup-menu').boundingBox();
   assert.ok(box.x >= 0 && box.y >= 0 && box.x + box.width <= 700 && box.y + box.height <= 420, `inside the window: ${JSON.stringify(box)}`);
   await window.locator('.popup-menu [role="menuitem"]').last().scrollIntoViewIfNeeded();
   await window.keyboard.press('Escape');
-  await resize(app, window, 1200);
+  await resize(window, 1200);
 
   // Text keeps the system's menu: a field being renamed has cut, copy and paste, and the writing page adds comments and find.
   await fromMenu(window, chapter(window, 'Chapter 2'), 'Rename');

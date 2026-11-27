@@ -3,7 +3,7 @@ import { applyLook } from './look.js';
 import { openAbout } from './about-dialog.js';
 import { openHelp } from './help-dialog.js';
 import { stopShortcutCapture } from './shortcuts-editor.js';
-import { openPreferences } from './prefs.js';
+import { openPreferences, settingsChanged } from './prefs.js';
 import { renderFailure, renderHome } from './home.js';
 import { renderLock } from './lock-screen.js';
 import { askNewPassword, openSecurity } from './security-dialog.js';
@@ -269,6 +269,12 @@ function onMenu(command) {
   if (command === 'new-chapter') room?.newChapterFromMenu();
   if (command === 'new-book') room?.newBookFromMenu();
   if (command === 'preferences') openPreferences(api);
+  if (command === 'settings-changed') {
+    api.settings().then((saved) => {
+      applyLook(saved);
+      settingsChanged(saved);
+    });
+  }
   if (command === 'find') room?.find();
   if (command === 'replace') room?.find({ replacing: true });
   if (command === 'context-comment') room?.commentOnSelection();

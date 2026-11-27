@@ -1,4 +1,5 @@
 @import './fonts.css';
+@import './metallic.css';
 
 /* These colours are only for the first moment. src/shared/themes.js holds the themes, and look.js sets them. */
 :root {
@@ -24,12 +25,39 @@
   --danger: #b3261e;
   --on-danger-bg: #fbe9e7;
 
+  /* What the chosen button on the top bar is tinted with: the opposite of the bar's text, black under light words and white under dark
+     ones, so the tint never takes contrast from them. */
+  --bar-tint: oklch(from var(--on-bar) clamp(0, calc((0.6 - l) * 1000), 1) 0 0 / 0.24);
   --hover: color-mix(in srgb, currentcolor 9%, transparent);
   --selected: color-mix(in srgb, currentcolor 14%, transparent);
   --text-size: 18px;
   --page-width: 46rem;
   --radius: 10px;
   --soft-shadow: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 28px rgb(0 0 0 / 10%);
+}
+
+/* The names the Recon Towers apps share for their colours, as RT Markdown Reader's docs/app-theming.md lists them, so a part copied
+   from another app finds them. Each is one of this app's own colours under the shared name, in every theme. --desk, --accent and
+   --on-accent already have their shared names. The ones this app has no colour for aren't made up: ROADMAP.md lists them. */
+:root {
+  --chrome: var(--panel);
+  --chrome-border: var(--panel-edge);
+  --page: var(--sheet);
+  --page-shadow: var(--soft-shadow);
+  --desk-fill: var(--desk-image), var(--desk);
+  --toolbar-fill: linear-gradient(100deg, var(--bar-start), var(--bar-end));
+  --sidebar-fill: linear-gradient(180deg, var(--panel), var(--panel-end));
+  --text: var(--ink);
+  --text-soft: var(--ink-soft);
+  --muted: var(--ink-soft);
+  --heading: var(--ink);
+  --link: var(--accent);
+  --rule: var(--panel-edge);
+  --rule-strong: var(--panel-edge);
+  --btn-hover: var(--hover);
+  --sel: var(--selected);
+  --inverse-bg: var(--ink);
+  --inverse-fg: var(--sheet);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -121,6 +149,13 @@ button:disabled {
   opacity: 0.55;
 }
 
+/* The words in an empty box are there to be read, so they're the quiet text colour rather than faded. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-soft);
+  opacity: 1;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
@@ -174,6 +209,31 @@ textarea {
   color: var(--sheet-ink);
   --ink: var(--sheet-ink);
   --ink-soft: var(--sheet-ink-soft);
+}
+
+/* Wherever the text colour changes, the shared names for it follow. */
+.column:not(.page-column),
+.toolbar,
+.find-bar,
+.page-footer,
+.comments,
+.comment-card,
+.column input,
+.toolbar input,
+.find-bar input,
+.find-bar select,
+.comments textarea,
+.popup-menu,
+.record-browser,
+.record-page,
+.records-empty,
+.record-picker,
+.lookup-pane {
+  --text: var(--ink);
+  --text-soft: var(--ink-soft);
+  --muted: var(--ink-soft);
+  --heading: var(--ink);
+  --inverse-bg: var(--ink);
 }
 
 /* The update message */
@@ -394,7 +454,7 @@ textarea {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.78rem;
-  opacity: 0.8;
+  opacity: 0.92;
 }
 
 .bar-title .rename {
@@ -416,8 +476,8 @@ textarea {
 
 .bar-primary {
   margin-left: 0.2rem;
-  border-color: transparent;
-  background: color-mix(in srgb, currentcolor 16%, transparent);
+  border-color: color-mix(in srgb, currentcolor 28%, transparent);
+  background: var(--bar-tint);
   font-weight: 600;
 }
 
@@ -632,6 +692,11 @@ textarea {
 .row.selected {
   background: var(--selected);
   font-weight: 600;
+}
+
+/* On the chosen row's shading the quiet colour is too faint for small figures. */
+.row.selected .row-words {
+  color: var(--ink);
 }
 
 .row.selected::before {
@@ -2236,7 +2301,8 @@ mark,
 
 /* Glass: the panels and page are frosted over colour. Aero always has it, and it's an option for the other themes. */
 
-@media (prefers-reduced-transparency: no-preference) {
+/* A look is also left off where the system uses its own colours, where more contrast was asked for, and in printing. */
+@media screen and (forced-colors: none) and (prefers-contrast: no-preference) and (prefers-reduced-transparency: no-preference) {
   html[data-surface='glass'] body {
     background: var(--desk-image), var(--desk);
   }
@@ -2352,7 +2418,7 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 }
 
 .mode-tab.active {
-  background: color-mix(in srgb, var(--on-bar) 24%, transparent);
+  background: var(--bar-tint);
   font-weight: 700;
 }
 

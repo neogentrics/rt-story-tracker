@@ -366,9 +366,11 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
   handle('find:undo', () => workspace().undoReplace());
   handle('settings:get', () => settings().values);
   handle('settings:save', (changes) => {
-    const before = JSON.stringify(settings().values.shortcuts);
+    const menuShows = ({ shortcuts, theme, surface }) => JSON.stringify([shortcuts, theme, surface]);
+    const before = menuShows(settings().values);
     const saved = settings().save(changes);
-    if (JSON.stringify(saved.shortcuts) !== before) menuKeys.changed();
+    // The menu shows the shortcuts and which look is ticked, so it's built again when either changes.
+    if (menuShows(saved) !== before) menuKeys.changed();
     session.defaultSession.setSpellCheckerEnabled(saved.spellcheck);
     return saved;
   });

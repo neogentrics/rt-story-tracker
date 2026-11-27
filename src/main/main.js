@@ -59,7 +59,15 @@ let keysPaused = false;
 function rebuildMenu() {
   if (!menuHooks) return;
   const keys = resolveKeys(keysPaused ? { ...Object.fromEntries(ITEMS.map((item) => [item.id, ''])) } : settings?.values.shortcuts, process.platform);
-  Menu.setApplicationMenu(buildMenu({ ...menuHooks, keys, updateReady: readyVersion }));
+  Menu.setApplicationMenu(buildMenu({ ...menuHooks, keys, updateReady: readyVersion, settings: settings?.values }));
+}
+
+// View, Look: saved here, and the window is told so it can draw it.
+function setLook(surface) {
+  if (!settings) return;
+  settings.save({ surface });
+  rebuildMenu();
+  mainWindow?.webContents.send('menu:command', 'settings-changed');
 }
 
 // The system's own encrypted storage. On Linux with no keyring Electron falls back to a fixed password, which is no
@@ -409,7 +417,7 @@ if (!app.requestSingleInstanceLock()) {
       status,
       checkForUpdates: checkForUpdatesFromMenu,
       menuKeys: {
-        // A shortcut was changed: the menu is built again with it.
+        // A shortcut or the look was changed: the menu is built again with it.
         changed: () => rebuildMenu(),
         pause: (paused) => {
           keysPaused = paused === true;
@@ -454,6 +462,7 @@ if (!app.requestSingleInstanceLock()) {
       checkForUpdates: checkForUpdatesFromMenu,
       about: showAbout,
       version: app.getVersion(),
+      setLook,
     };
     rebuildMenu();
     mainWindow = createWindow({ show: !selfTestFile });

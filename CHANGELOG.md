@@ -31,8 +31,16 @@ Files you bring in. This will be 3.11.
 - **On the writing page,** a right-click still offers cut, copy, paste, select all and spelling fixes, and now *Comment on the Selected
   Words* and *Find and Replace*. A right-click where there’s nothing to type in and nothing selected no longer shows a menu of
   greyed-out commands.
+- **A Look choice, Solid, Metallic or Glass,** in place of the Glass tick box. It's in *Preferences*, under *Appearance*, directly
+  below the theme, and under *View*, *Look*, as in RT Markdown Reader. If Glass was ticked you keep Glass, and otherwise you have Solid.
+  Aero is always Glass and High Contrast always Solid, and your choice comes back with another theme.
+- **Metallic,** a brushed-metal finish from RT Markdown Reader on the top bar, the lists, the formatting bar, the find bar, windows and
+  menus, with any theme. The page you write on stays flat.
 
 ### Fixed
+- **Text that was hard to read now meets the contrast standard in every theme:** the hint text in empty boxes, the word count beside
+  the chosen row, and, in Mist, Blue and Aero, the words on the tinted buttons in the top bar. The chosen button there, such as
+  *Write*, is now shaded away from its text instead of toward it.
 - **The app works in a small window and on a small screen.** In a narrow window the title in the top bar ran into the word counts and the
   buttons squeezed together. Now the title is shortened, then the counts, and the buttons used least move into a *More* menu that works
   from the keyboard. The lists narrow, and in a very small window books and chapters share one column. Long chapter and record titles
@@ -43,6 +51,9 @@ Files you bring in. This will be 3.11.
 - **Bringing records in fits a narrow window,** with each column of the file on its own lines, so nothing scrolls sideways.
 
 ### Changed
+- **The Light and Dark themes are now called Paper and Night,** as in the other Recon Towers apps. Nothing else about them changes.
+- **Glass is left off** when your computer uses its own colours or asks for more contrast, and in printing, as Metallic is. It was
+  already left off when your computer asks for less transparency.
 - **Questions start on a likely answer.** Find my files no longer starts on *attachments*. Writing it can't place starts on *Notes*,
   and loose files named as chapters start on one book. A cover whose name uses underscores is now found.
 - **Word counts say so.** The number beside a book, part or chapter now reads *226 words*, so it isn't taken for a number of files.
