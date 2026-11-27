@@ -34,20 +34,23 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.4](#v34--bring-it-in) | Bring it in | ✅ Released ([3.4.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.4.0)) |
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
-| [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), then [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1)) |
+| [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), then [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1)); 3.7.2 patch merged and tagged; its download isn’t published yet |
 | [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
 | [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
 | [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions and clips built and tested, not released |
-| [v3.11](#v311--timeline-and-places) | Timeline and places | Planned |
-| [v3.12](#v312--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
-| [v3.13](#v313--where-every-book-stands) | Where every book stands | Planned |
-| [v3.14](#v314--claude-and-ai) | Claude and AI | Planned |
-| [v3.15](#v315--leaving-notion) | Leaving Notion | Planned |
-| [v3.16](#v316--two-computers) | Two computers | Planned |
-| [v3.17](#v317--files-kept-in-step) | Files kept in step | Planned |
-| [v3.18](#v318--pictures-and-tables-on-the-page) | Pictures and tables on the page | Planned |
-| [v3.19](#v319--hear-it-and-say-it) | Hear it and say it | Planned |
-| [v3.20](#v320--find-your-way-around) | Find your way around | Planned |
+| [v3.11](#v311--files-you-bring-in) | Files you bring in | Planned |
+| [v3.12](#v312--read-aloud) | Read aloud | Planned |
+| [v3.13](#v313--connect-claude) | Connect Claude | Planned |
+| [v3.14](#v314--timeline-and-places) | Timeline and places | Planned |
+| [v3.15](#v315--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
+| [v3.16](#v316--where-every-book-stands) | Where every book stands | Planned |
+| [v3.17](#v317--claude-and-ai) | Claude and AI | Planned |
+| [v3.18](#v318--leaving-notion) | Leaving Notion | Planned |
+| [v3.19](#v319--two-computers) | Two computers | Planned |
+| [v3.20](#v320--files-kept-in-step) | Files kept in step | Planned |
+| [v3.21](#v321--pictures-and-tables-on-the-page) | Pictures and tables on the page | Planned |
+| [v3.22](#v322--hear-it-and-say-it) | Hear it and say it | Planned |
+| [v3.23](#v323--find-your-way-around) | Find your way around | Planned |
 | [v4.0](#v40--the-companion) | The companion | Planned |
 | [Later](#later--only-if-needed) | Only if needed | Ideas |
 | [Ongoing](#ongoing--polish--distribution) | Polish & distribution | Ongoing |
@@ -264,7 +267,44 @@ clips decision 29, in [decisions](docs/decisions.md). Clips are in this release 
 and without a link, and with a locked project. Watch the apps dot go grey, amber and green as you install, find and link
 another app, and check that the panel says the same in words.
 
-## v3.11 — Timeline and places
+## v3.11 — Files you bring in
+
+🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
+attachments. Issues 37 to 40.
+
+| Feature | Size | Details |
+|---|:-:|---|
+| 🙋 Sort by type | M | Find my files recognises what a file is and places it to match: covers, art, notes and outlines, audio, and only truly unknown files as attachments. The questions it asks default to a sensible answer, not always *Keep as attachments*. |
+| 🙋 A files view | M | After a book is brought in, a list of every file in it, with a preview and a menu to change what a file is (chapter, cover, art, record, audio, attachment) or to remove it. Files that were not sorted in the preview can be sorted later. |
+| 🙋 Audio, art and cover sections | M | A place for audio files, art and covers in each book, so they are sorted on the way in and browsed afterwards. |
+| The number means words | S | The count beside a book, part or chapter says *words*, so it is not read as a file count. |
+
+**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards.
+
+## v3.12 — Read aloud
+
+🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It matches RT Markdown Reader's read aloud, with the offline voices, so nothing leaves the computer. Issue 41.
+
+| Feature | Size | Details |
+|---|:-:|---|
+| 🙋 Read aloud | M | Hear a chapter in a natural voice, with each sentence highlighted as it is read, a choice of voice and speed, and a choice of speakers or headphones. |
+| 🙋 Same controls as RT Markdown Reader | S | Play, pause, skip a sentence, speed and voice, as in the Reader, so the two apps feel the same. |
+
+**Test:** with the computer offline, read a chapter aloud, change the voice and speed, and pause and resume.
+
+## v3.13 — Connect Claude
+
+🙋 Connect this app to Claude Desktop, Claude Code and the Claude CLI, as RT Markdown Reader already does. A plan comes first, and it follows the Reader's way of doing it. Issue 36.
+
+| Feature | Size | Details |
+|---|:-:|---|
+| 🙋🛡️ Connect Claude | L | Link Claude Desktop, Claude Code or the CLI to your stories on this computer, only with your say-so, through a connector you add in one click, with the connection shown in the Apps panel and easy to remove. Locked projects stay out. |
+| 🙋🛡️ Your choice of access | M | Per project: **Off** (the default), **Read only**, **Suggest** (you accept or reject each change), or **Read and write** (Claude edits directly). |
+| A record of changes | S | Every change Claude makes is in version history, labelled and undoable. |
+
+**Test:** connect from each of the three, read a chapter, and remove the connection. A Claude session finds a dossier and suggests an edit, which appears as a change to accept. Try each of the other access levels too.
+
+## v3.14 — Timeline and places
 
 🙋 One timeline across every series, on your own calendar.
 
@@ -277,7 +317,7 @@ another app, and check that the panel says the same in words.
 
 **Test:** load the Master Timeline and Locations, and check them against Notion.
 
-## v3.12 — Lore, ideas, research, dictionaries
+## v3.15 — Lore, ideas, research, dictionaries
 
 🙋 Everything else a story needs.
 
@@ -294,7 +334,7 @@ another app, and check that the panel says the same in words.
 
 **Test:** load the Universe Bible, Races and Research Library, and find a fact by search alone.
 
-## v3.13 — Where every book stands
+## v3.16 — Where every book stands
 
 🙋 The Book Catalog and Works in Progress, kept current by the work itself.
 
@@ -308,24 +348,21 @@ another app, and check that the panel says the same in words.
 
 **Test:** Works in Progress can be retired, because this view says the same thing on its own.
 
-## v3.14 — Claude and AI
+## v3.17 — Claude and AI
 
-🙋 Must be in the app, with settings for how far it goes. Follows RT Markdown Reader's connector and AI services. AI is an
+🙋 Must be in the app, with settings for how far it goes. Follows RT Markdown Reader's AI services. Connecting Claude Desktop and Claude
+Code to your projects came earlier, in [v3.13](#v313--connect-claude). AI is an
 add-on: it's off until you turn it on, and the app is complete without it.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋🛡️ Connect Claude | L | Claude Desktop and Claude Code can reach your projects, through a connector you add in one click. Locked projects stay out. |
-| 🙋🛡️ Your choice of access | M | Per project: **Off** (the default), **Read only**, **Suggest** (you accept or reject each change), or **Read and write** (Claude edits directly). |
-| A record of changes | S | Every change Claude makes is in version history, labelled and undoable. |
 | 🙋 AI assist (optional) | M | Proofread, rewrite, shorten, translate or summarise a selection. You see the change and accept it. |
 | 🙋 Your choice of AI | M | Claude, ChatGPT, Gemini, Mistral, OpenRouter, or a local model through Ollama or LM Studio, with a different model for each task if you like. Your own account and key, as in RT Markdown Reader. |
 | 🙋 Claude Code | S | Use a Claude Code sign-in instead of a key, and Open in Claude Code from a project. |
 
-**Test:** a Claude session finds a dossier, suggests an edit, and it appears as a change to accept, then at each other
-level. Proofread a selection with a local model, with the computer offline.
+**Test:** proofread a selection with a local model, with the computer offline.
 
-## v3.15 — Leaving Notion
+## v3.18 — Leaving Notion
 
 🙋 The goal. Everything is ready, so now it moves.
 
@@ -338,7 +375,7 @@ level. Proofread a selection with a local model, with the computer offline.
 
 **Test:** a month of story work with Notion closed, and nothing missing.
 
-## v3.16 — Two computers
+## v3.19 — Two computers
 
 🙋 Same work on a desktop and a laptop, with no account.
 
@@ -351,7 +388,7 @@ level. Proofread a selection with a local model, with the computer offline.
 
 **Test:** change different things on two computers offline, reconnect, and check both. Then change the same chapter.
 
-## v3.17 — Files kept in step
+## v3.20 — Files kept in step
 
 🙋 Optional sync of a file with RT Markdown Reader. Needs App Link version 2.
 
@@ -359,11 +396,11 @@ level. Proofread a selection with a local model, with the computer offline.
 |---|:-:|---|
 | 🙋🛡️ Linked files | M | A chapter or record tied to one Markdown file, per item. Off in locked projects. |
 | 🙋 Changes to accept | M | A change in the file shows up as something to accept or reject. |
-| RT Markdown Reader on another computer | M | Using the same pairing as v3.16. |
+| RT Markdown Reader on another computer | M | Using the same pairing as v3.19. |
 
 **Test:** edit in each app, then in both at once. Comments in StoryTracker survive an edit from the file.
 
-## v3.18 — Pictures and tables on the page
+## v3.21 — Pictures and tables on the page
 
 🙋 What RT Markdown Reader's pages can hold. Until now, pictures sit beside the writing as attachments.
 
@@ -376,20 +413,19 @@ level. Proofread a selection with a local model, with the computer offline.
 
 **Test:** a chapter with a picture and a table comes out right in Word, PDF and EPUB, and survives the KDP previewer.
 
-## v3.19 — Hear it and say it
+## v3.22 — Hear it and say it
 
-🙋 Moved up from Later. Uses RT Markdown Reader's offline voices and speech to text, with nothing to install and nothing
+🙋 Read aloud itself moved up to 3.12. This release is the rest: names said right, and dictation, using RT Markdown Reader's offline voices and speech to text, with nothing to install and nothing
 leaving the computer.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋 Read aloud | M | Hear a chapter in a natural voice, with each sentence highlighted as it's read, and a choice of speakers or headphones. |
 | 🙋 Names said right | S | Read aloud uses the dictionary's pronunciations, so an invented name is taught once. |
 | 🙋 Dictation | M | Speak and it types, with the offline Whisper model and a choice of microphone. |
 
-**Test:** with the computer offline, read a chapter aloud with an invented name said right, and dictate a page.
+**Test:** with the computer offline, hear a chapter with an invented name said right, and dictate a page.
 
-## v3.20 — Find your way around
+## v3.23 — Find your way around
 
 🙋 What a big project needs once it has hundreds of chapters and records.
 
@@ -441,7 +477,7 @@ these devices sync with it.
 | Feature | Size | Details |
 |---|:-:|---|
 | Code signing | S | Windows and Mac, as for RT Markdown Reader. |
-| Tutorial & Help Center | M | Built in [v3.20](#v320--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
+| Tutorial & Help Center | M | Built in [v3.23](#v323--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
 | Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. Started in 3.10: one test opens every main screen and checks every control has a name and the main flows work from the keyboard. |
 | Languages | L | Every word of the app's own in one table per feature, with Spanish, French and German and right-to-left layouts, as in RT Markdown Reader. Product names aren't translated. |
 | Recon Towers App Store | S | StoryTracker goes back on the App Store page when the rebuild is done. Until then it stays on The Bench. |

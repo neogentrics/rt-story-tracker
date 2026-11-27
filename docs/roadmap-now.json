@@ -1,8 +1,12 @@
 {
   "now": {
-    "title": "3.9 and 3.10 are built, with web clips",
-    "note": "3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
+    "title": "3.7.2 is merged, 3.9 and 3.10 are built",
+    "note": "3.7.2 fixes a bug that hid OneDrive files from Find my files, and a Print folder wrongly counted as a second manuscript, and it widens Preferences and puts a Preferences button on the library screen. It is merged and tagged, and its download isn’t published yet. 3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
     "items": [
+      {
+        "title": "3.7.2: patch",
+        "text": "Find my files now sees OneDrive files on Windows. A full copy in a Print folder is a finished copy, not a second manuscript. Preferences opens wide, in two columns, and the library screen has a Preferences button so the themes can be found. Merged and tagged. The download isn’t published yet."
+      },
       {
         "title": "Records",
         "text": "Characters, places, weapons or your own kinds, with links both ways, @ in a chapter, saved views, numbering and bringing records in from files."
@@ -29,7 +33,7 @@
       },
       {
         "title": "Looks like the rest of the family",
-        "text": "A Help menu like RT Markdown Reader's with a Help Center and Keyboard Shortcuts, an About window with links and copyable version details, and a bar across the top of the library with Preferences, so the themes can be found before a project is open. Any of the app's shortcuts can be changed from the Keyboard Shortcuts page. A tutorial and a find-a-command box are still to come."
+        "text": "A Help menu like RT Markdown Reader's with a Help Center and Keyboard Shortcuts, an About window with links and copyable version details, and a bar across the top of the library with Preferences, so the themes can be found before a project is open. Any of the app's shortcuts can be changed, from the Help menu or Preferences. Preferences is now a window with its sections down the side. A tutorial and a find-a-command box are still to come."
       },
       {
         "title": "Still open from earlier",
@@ -38,6 +42,10 @@
       {
         "title": "Released before this",
         "text": "3.7.1 is the latest release: the new name, and RT Markdown Reader on this computer."
+      },
+      {
+        "title": "Next, from your own testing",
+        "text": "Find my files sorting by type with a files view and audio and art sections (3.11), read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. The Help menu and About are being made to match RT Markdown Reader before the next release."
       }
     ]
   },
@@ -64,15 +72,15 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader is adding a third look, Metallic, beside Solid and Glass. This app copies it once it ships there (v3.20), along with Colour-safe and Customize Theme."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader is adding a third look, Metallic, beside Solid and Glass. This app copies it once it ships there (v3.23), along with Colour-safe and Customize Theme."
     },
     {
       "q": "Will it read text aloud?",
-      "a": "Yes, in v3.19, using RT Markdown Reader's offline voices, with the dictionary's pronunciations. You can already send a chapter to RT Markdown Reader and have it read there."
+      "a": "Yes, in v3.22, using RT Markdown Reader's offline voices, with the dictionary's pronunciations. You can already send a chapter to RT Markdown Reader and have it read there."
     },
     {
       "q": "Will the dictionary know how to say words?",
-      "a": "Yes. In v3.12 each word can carry a pronunciation guide, for invented words and words from other languages. Read aloud uses it, and so do RT Markdown Reader's voices through App Link, so a name is taught once."
+      "a": "Yes. In v3.15 each word can carry a pronunciation guide, for invented words and words from other languages. Read aloud uses it, and so do RT Markdown Reader's voices through App Link, so a name is taught once."
     },
     {
       "q": "Can more themes and fonts be downloaded?",
@@ -80,11 +88,11 @@
     },
     {
       "q": "Were these features taken from RT Markdown Reader?",
-      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.18 to v3.20, and wider v3.12 and v3.14."
+      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17."
     },
     {
       "q": "How do I hand an AI a chapter as Markdown?",
-      "a": "Markdown export arrives in v3.3, App Link sends a chapter to RT Markdown Reader in v3.7 (both apps have to be up to date), and Claude can work with the book directly in v3.14."
+      "a": "Markdown export arrives in v3.3, App Link sends a chapter to RT Markdown Reader in v3.7 (both apps have to be up to date), and Claude can work with the book directly in v3.13."
     },
     {
       "q": "Can it be tested on real stories?",
