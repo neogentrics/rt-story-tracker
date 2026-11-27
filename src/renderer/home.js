@@ -29,7 +29,7 @@ function projectRow(project, { onOpen, onUnlock, onRemoveSample, onTrashProject 
   );
 }
 
-export function renderHome(root, { projects, waiting = [], onOpen, onUnlock, onCreate, onSample, onRemoveSample, onOpenFile, onFindFiles, onTrashProject, onShowTrash }) {
+export function renderHome(root, { projects, waiting = [], onPreferences, onOpen, onUnlock, onCreate, onSample, onRemoveSample, onOpenFile, onFindFiles, onTrashProject, onShowTrash }) {
   const first = projects.length === 0;
   const hasSample = projects.some((project) => project.sample);
   const title = el('input', {
@@ -76,6 +76,8 @@ export function renderHome(root, { projects, waiting = [], onOpen, onUnlock, onC
           el('button', { id: 'find-files', class: 'link', onclick: onFindFiles }, icon('folder'), 'Find my files'),
           el('button', { id: 'open-file', class: 'link', onclick: onOpenFile }, icon('open'), 'Open a project file'),
           el('button', { id: 'open-trash', class: 'link', onclick: onShowTrash }, icon('trash'), 'Trash'),
+          // Themes and fonts live in Preferences, so it has to be findable from here and not only under File.
+          el('button', { id: 'open-prefs', class: 'link', onclick: onPreferences }, icon('settings'), 'Preferences'),
         ),
       ),
     ),

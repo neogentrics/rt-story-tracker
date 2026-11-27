@@ -5,6 +5,10 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
 
 ## [3.7.2] - 2026-11-27
 
+### Changed
+- **Preferences is wide enough to read.** On a normal window the sections sit in two columns instead of one narrow strip you scroll.
+- **A Preferences button on the library screen**, so themes and fonts are easy to find without opening a project.
+
 ### Fixed
 - **Find my files skipped every OneDrive file on Windows.** OneDrive files are Windows reparse points even when they are
   downloaded and kept on the device, and Windows reports every reparse point as a link. Find my files skips links, so it found
