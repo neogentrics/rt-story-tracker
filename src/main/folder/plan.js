@@ -2,10 +2,12 @@
 // Works out what a folder is, from a list of what's in it. The plan is rebuilt from that list and the author's edits every
 // time, so it has no state of its own, an edit can never leave it half changed, and every file always has a place.
 const crypto = require('node:crypto');
+const { SECTION_IDS } = require('../../shared/sections');
+const { sectionOf } = require('./filing');
 const signs = require('./signs');
 
 const WHOLE_NAME = /\b(manuscript|full|complete|whole|combined|compiled|master)\b/i;
-const COVER_NAME = /\bcover\b/i;
+const COVER_NAME = /\bcovers?\b/i;
 const NOT_FRONT = /\b(back|spine|wrap|full|thumb|thumbnail|mock-?up|old)\b/i;
 const COVER_TYPES = new Set(['png', 'jpg', 'jpeg']);
 
@@ -33,6 +35,8 @@ function prepare(entry) {
     version,
     draft,
     kind: signs.kindOf(extension),
+    section: sectionOf(name, entry.rel),
+    chosen: false,
     inOldFolder: folders.some((folder) => signs.OLD_FOLDER.test(signs.tidy(folder))),
     role: null,
     node: null,
@@ -55,7 +59,7 @@ function folderTree(files) {
 
 const subfolders = (folder) => [...folder.folders.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 const filesUnder = (folder) => [...folder.files, ...subfolders(folder).flatMap(filesUnder)];
-const isWriting = (file) => !file.role && file.kind === 'writing' && !isNotes(file);
+const isWriting = (file) => !file.role && !file.chosen && file.kind === 'writing' && !isNotes(file);
 const isSupport = (folder) => {
   const name = signs.folderName(folder.name);
   return signs.SUPPORT_FOLDER.test(name)
@@ -102,8 +106,13 @@ function holdsBook(folder) {
 
 class Planner {
   constructor(entries, edits) {
-    this.edits = { answers: {}, titles: {}, left: {}, roles: {}, moves: [], ...edits };
+    this.edits = { answers: {}, titles: {}, left: {}, roles: {}, sections: {}, moves: [], ...edits };
     this.files = entries.map(prepare);
+    // A section the author chose settles it: the file is kept, in that section.
+    for (const file of this.files) {
+      const section = this.edits.sections[file.id];
+      if (SECTION_IDS.has(section)) Object.assign(file, { section, chosen: true });
+    }
     this.asks = [];
     this.project = { id: 'project', kind: 'project', title: '', children: [], attachments: [] };
   }
@@ -119,7 +128,9 @@ class Planner {
     Object.assign(file, { role, node: node?.id ?? null, reason });
   }
 
-  attach(file, node, reason = '') {
+  // A section is only changed here by an answer to a question. The author's own choice for a file wins over it.
+  attach(file, node, reason = '', section = null) {
+    if (section && !file.chosen) file.section = section;
     this.place(file, 'attachment', node, reason);
     node.attachments.push(file.id);
   }
@@ -159,7 +170,7 @@ class Planner {
     };
 
     const open = files.filter((file) => !file.role);
-    for (const file of open) file.forced = this.edits.roles[file.id];
+    for (const file of open) file.forced = file.chosen ? 'attachment' : this.edits.roles[file.id];
     const writing = open.filter((file) => file.forced === 'chapter' || (file.forced !== 'attachment' && isWriting(file)));
     const named = writing.filter((file) => signs.chapterOf(file.version.rest));
 
@@ -234,12 +245,14 @@ class Planner {
       detail: 'The book has chapters, but these names don’t say where they’d go.',
       files: open.map((file) => file.rel),
       options: [
-        { value: 'attachment', label: 'Keep them with the book as attachments' },
+        { value: 'notes', label: 'They’re notes: keep them with the book’s notes' },
         { value: 'chapter', label: 'They’re chapters, after the numbered ones' },
+        { value: 'attachment', label: 'Keep them with the book as other files' },
       ],
-      value: 'attachment',
+      value: 'notes',
     });
     if (value === 'chapter') open.forEach((file, at) => this.chapter([file], book, holderOf(file), { place: 9000 + at, title: signs.tidy(file.version.rest) }));
+    if (value === 'attachment') open.forEach((file) => this.attach(file, book, '', 'other'));
   }
 
   // No chapter names at all: one manuscript in some number of versions, or several files that need explaining.
@@ -267,7 +280,7 @@ class Planner {
       options: [
         { value: 'chapters', label: 'Each file is a chapter, in name order' },
         { value: 'versions', label: 'They’re versions of one manuscript' },
-        { value: 'attachment', label: 'Keep them with the book as attachments' },
+        { value: 'attachment', label: 'They’re notes: keep them with the book’s notes' },
       ],
       value: 'chapters',
     });
@@ -282,9 +295,10 @@ class Planner {
   cover(files, book) {
     const inCovers = (file) => file.folders.some((folder) => signs.COVER_FOLDER.test(signs.tidy(folder)));
     const front = files
-      .filter((file) => !file.role && !file.forced && COVER_TYPES.has(file.extension) && (COVER_NAME.test(file.stem) || inCovers(file)) && !NOT_FRONT.test(file.stem))
+      .filter((file) => !file.role && !file.forced && COVER_TYPES.has(file.extension) && (COVER_NAME.test(signs.tidy(file.stem)) || inCovers(file)) && !NOT_FRONT.test(signs.tidy(file.stem)))
       .sort((a, b) => signs.compareVersions(a, b) || b.size - a.size)[0];
     if (front) {
+      front.section = 'cover';
       this.place(front, 'cover', book);
       book.cover = front.id;
     }
@@ -293,6 +307,8 @@ class Planner {
   // Writing with no book. The folder has no pattern, so the author says what it is.
   loose(folder, files, owner) {
     const where = folder.rel || 'the folder you chose';
+    // Names that are chapters make a book the likely answer. Otherwise they're kept as notes, which makes nothing up.
+    const chapters = files.filter((file) => signs.chapterOf(file.version.rest)).length;
     const value = this.ask({
       id: idOf('loose', folder.rel),
       type: 'loose',
@@ -300,12 +316,14 @@ class Planner {
       detail: 'They aren’t in a book.',
       files: files.map((file) => file.rel),
       options: [
-        { value: 'attachment', label: 'Keep them as attachments' },
+        { value: 'notes', label: 'They’re notes: keep them with the notes' },
+        { value: 'attachment', label: 'Keep them as other files' },
         { value: 'book', label: 'One book, made from all of them' },
         { value: 'books', label: 'One book for each file' },
       ],
-      value: 'attachment',
+      value: chapters >= 2 && chapters * 2 > files.length ? 'book' : 'notes',
     });
+    if (value === 'attachment') for (const file of files) this.attach(file, owner, '', 'other');
     if (value === 'book') this.book({ key: `loose:${folder.rel}`, title: signs.folderName(folder.name) || 'Imported book', files, parent: owner });
     if (value === 'books') {
       for (const file of files) this.book({ key: `loose:${file.rel}`, title: signs.tidy(file.version.rest) || file.stem, files: [file], parent: owner });
@@ -388,7 +406,7 @@ class Planner {
     return {
       tree: this.project,
       asks: this.asks,
-      files: this.files.map(({ id, rel, name, size, mtime, kind, extension, role, node, reason }) => ({ id, rel, name, size, mtime, kind, extension, role, node, reason })),
+      files: this.files.map(({ id, rel, name, size, mtime, kind, extension, role, node, reason, section }) => ({ id, rel, name, size, mtime, kind, extension, role, node, reason, section })),
       totals: {
         files: this.files.length,
         bytes: this.files.reduce((sum, file) => sum + file.size, 0),
@@ -401,6 +419,7 @@ class Planner {
         duplicates: count('duplicate'),
         bundled: count('bundled'),
         skipped: count('skipped'),
+        sections: this.files.filter((file) => file.role === 'attachment').reduce((totals, file) => ({ ...totals, [file.section]: (totals[file.section] ?? 0) + 1 }), {}),
       },
     };
   }

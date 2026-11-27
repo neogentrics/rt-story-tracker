@@ -4,6 +4,8 @@ const { canHold } = require('../../shared/outline');
 const { parseRecord, parseType } = require('../../shared/records');
 const { countWords, mentionsIn, plainText } = require('../../shared/text');
 const { copyDatabase, databaseInfo } = require('./database');
+const { SECTION_IDS } = require('../../shared/sections');
+const { sectionOf } = require('../folder/filing');
 
 const REMOVAL_MARKER_DAYS = 90;
 const TRASH_DAYS = 30;
@@ -391,13 +393,13 @@ class Project {
   }
 
   // `source` is a path or a Buffer. Contents already in the project aren't stored twice.
-  async addAttachment(parentId, { name, source, type = '', from = '' }) {
+  async addAttachment(parentId, { name, source, type = '', from = '', section = '' }) {
     const stored = await this.attachments.store(source);
     const known = this.db.prepare('SELECT file FROM attachment_files WHERE sha256 = ?').get(stored.sha256);
     if (known) this.attachments.remove(stored.file);
     else this.db.prepare('INSERT INTO attachment_files (sha256, file, size) VALUES (?, ?, ?)').run(stored.sha256, stored.file, stored.size);
     const item = this.addItem({ kind: 'attachment', parentId, title: name });
-    const details = { file: known?.file ?? stored.file, size: stored.size, type, from };
+    const details = { file: known?.file ?? stored.file, size: stored.size, type, from, ...(SECTION_IDS.has(section) ? { section } : {}) };
     return this.putItem({ id: item.id, details: JSON.stringify(details) });
   }
 
@@ -420,8 +422,9 @@ class Project {
                 WHERE items.kind = 'attachment' ORDER BY parent.position, items.position`)
       .all(rootId);
     return rows.map(({ id, title, details, owner, ownerId }) => {
-      const { size, type, from } = JSON.parse(details);
-      return { id, name: title, size, type, from, owner, ownerId };
+      const { size, type, from, section } = JSON.parse(details);
+      // A file saved with no section, as every file was before 3.11, is sorted by what it is each time it's listed.
+      return { id, name: title, size, type, from, owner, ownerId, section: SECTION_IDS.has(section) ? section : sectionOf(title, from) };
     });
   }
 

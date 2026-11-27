@@ -3,6 +3,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const { SECTION_IDS } = require('../../shared/sections');
 const { buildPlan } = require('./plan');
 const { FolderRun } = require('./run');
 const { scanFolder } = require('./scan');
@@ -10,7 +11,7 @@ const { scanFolder } = require('./scan');
 const OUTCOMES = {
   chapters: 'Became chapters',
   older: 'Went into a chapter’s history',
-  attachment: 'Kept as attachments',
+  attachment: 'Kept as files',
   cover: 'Became book covers',
   duplicate: 'Exact copies of another file',
   bundled: 'Part of a Scrivener project',
@@ -42,7 +43,7 @@ class FolderImport {
   async scan(workspace, root, onProgress) {
     this.stopping = false;
     const entries = await scanFolder(root, { onProgress, shouldStop: () => this.stopping });
-    this.state = { id: crypto.randomUUID(), root, entries, edits: { answers: {}, titles: {}, left: {}, roles: {}, moves: [] } };
+    this.state = { id: crypto.randomUUID(), root, entries, edits: { answers: {}, titles: {}, left: {}, roles: {}, sections: {}, moves: [] } };
     return this.view(workspace);
   }
 
@@ -55,8 +56,14 @@ class FolderImport {
     else if (change.type === 'leave') {
       if (change.left) edits.left[change.id] = true;
       else delete edits.left[change.id];
-    } else if (change.type === 'role') edits.roles[change.id] = change.role === 'chapter' ? 'chapter' : 'attachment';
-    else if (change.type === 'move') edits.moves.push({ id: String(change.id), to: String(change.to), before: change.before ?? null });
+    } else if (change.type === 'role') {
+      edits.roles[change.id] = change.role === 'chapter' ? 'chapter' : 'attachment';
+      delete (edits.sections ??= {})[change.id];
+    } else if (change.type === 'section') {
+      if (!SECTION_IDS.has(change.section)) throw new Error('That section isn’t known.');
+      (edits.sections ??= {})[change.id] = change.section;
+      delete edits.roles[change.id];
+    } else if (change.type === 'move') edits.moves.push({ id: String(change.id), to: String(change.to), before: change.before ?? null });
     else throw new Error('That change isn’t known.');
     return this.view(workspace);
   }

@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { imageSize, readSource, sectionsOf } = require('../import');
 const { documentOf, wordsIn } = require('../import/split');
+const { sectionLabel } = require('../../shared/sections');
 
 const MAX_WRITING_BYTES = 200 * 1024 * 1024;
 const pause = () => new Promise(setImmediate);
@@ -50,8 +51,8 @@ class FolderRun {
       this.record(file.id, 'missing', null, 'It was gone by the time it was reached.');
       return;
     }
-    const item = await this.project.addAttachment(parentId, { name: file.name, source: full, type: TYPES[file.extension] ?? '', from: file.rel });
-    this.record(file.id, 'attachment', item.id, note);
+    const item = await this.project.addAttachment(parentId, { name: file.name, source: full, type: TYPES[file.extension] ?? '', from: file.rel, section: file.section });
+    this.record(file.id, 'attachment', item.id, note || `Filed under ${sectionLabel(file.section)}.`);
   }
 
   itemFor(id) {
