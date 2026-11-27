@@ -1,0 +1,85 @@
+name: Bug report
+description: Something doesn't work, looks wrong, or lost your writing
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This page is public.** Please don't paste your writing, your story or character names, your project files, or your password or recovery key. Say what happened in your own words, or use made-up text that shows the same problem.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see? A screenshot helps, as long as it doesn't show your writing.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can it be made to happen again?
+      description: The steps, one per line. If it only happens sometimes, say so.
+      placeholder: |
+        1. Open a project
+        2. Choose …
+        3. Click …
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+  - type: dropdown
+    id: loss
+    attributes:
+      label: Did it lose or damage any writing?
+      description: Lost writing is the first thing we fix. If it did, stop and don't write more in that project until you've told us.
+      options:
+        - "No"
+        - "Yes, a few words"
+        - "Yes, a chapter or more"
+        - "I'm not sure"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where in the app?
+      options:
+        - Writing a chapter
+        - Books, chapters and the library
+        - Records
+        - Import or Find my files
+        - Export or print
+        - Backups, Trash or earlier versions
+        - Password lock
+        - Linked apps (RT Markdown Reader and others)
+        - Look, themes and settings
+        - Installing or updating
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: In the app, Help → About RT Story Tracker shows it.
+      placeholder: "3.7.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple silicon)
+        - macOS (Intel)
+        - Linux (AppImage)
+        - Linux (.deb)
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else?
+      description: Did it start after an update? Does it happen on every project?
