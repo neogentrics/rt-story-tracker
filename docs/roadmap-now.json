@@ -41,7 +41,7 @@
       },
       {
         "title": "Next, from your own testing",
-        "text": "Now: Find my files sorting by type, with a files view and audio, art and cover sections, noticing when files in that folder change, and a bigger apps window (3.11). Then read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes."
+        "text": "Now: Find my files sorting by type, with a files view and audio, art and cover sections, noticing when files in that folder change, a bigger apps window, and a Look choice with Metallic beside Solid and Glass (3.11). Then read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes."
       }
     ]
   },
@@ -68,7 +68,7 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader is adding a third look, Metallic, beside Solid and Glass. This app copies it once it ships there (v3.23), along with Colour-safe and Customize Theme."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader has a third look, Metallic, beside Solid and Glass. This app gets it in 3.11, with the same Look choice. Colour-safe and Customize Theme come later, in v3.23."
     },
     {
       "q": "Will it read text aloud?",

@@ -269,7 +269,7 @@ another app, and check that the panel says the same in words.
 ## v3.11 — Files you bring in
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
-attachments. Issues 37 to 40, and 42 and 43.
+attachments. Issues 37 to 40, and 42 to 44.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -279,8 +279,10 @@ attachments. Issues 37 to 40, and 42 and 43.
 | The number means words | S | The count beside a book, part or chapter says *words*, so it is not read as a file count. |
 | 🙋🛡️ Check the folder for changes | M | A book remembers the folder Find my files read it from, because files get changed there outside the app. *Check folder for changes*, and a check when the project opens, list files that changed, are new or are gone. Nothing is applied by itself: a changed file can be taken from the folder, left as it is in the app, or kept as both, a new one is sorted into a section, and a missing one is only reported. Where a chapter changed in both places both are kept, and replaced text goes into its earlier versions. A locked project reads nothing until it's unlocked. Watching the folder and editing in both places stay in [v3.20](#v320--files-kept-in-step). |
 | 🙋 A readable apps window | S | The Recon Towers apps window is as wide and readable as Preferences, with larger text and buttons and every app shown, with no scrolling box inside it. |
+| 🙋 A Look choice | S | *Look* takes the place of the Glass tick box: **Solid**, **Metallic** or **Glass**, in Preferences under Appearance, directly below the theme, as in RT Markdown Reader, and in the View menu. Anyone who had Glass ticked keeps Glass, everyone else keeps Solid, and Aero is always Glass. |
+| 🙋 Metallic look | S | A brushed-metal finish on the app's toolbar, columns, windows and Find bar, copied from RT Markdown Reader's 3.13, on top of any theme. The page you write on stays flat, and High Contrast, forced colours, increased contrast and printing are left alone. A test measures the contrast of text in every theme. |
 
-**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read.
+**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read. Try each look in light, dark and High Contrast.
 
 ## v3.12 — Read aloud
 
@@ -436,12 +438,11 @@ leaving the computer.
 | 🙋 Command palette | S | Every command, by name, from the keyboard. It opens on Ctrl+K, as in the Reader, so *Look Up a Record*, which has Ctrl+K today, becomes a command in it and takes another key, which can be changed like any other. Changing shortcuts is already in [v3.10](#v310--versions-of-a-record). |
 | 🙋 Customize Theme | M | Change a theme's colours, and share them with RT Markdown Reader. |
 | 🙋 Colour-safe | S | Colours that work for colour-blind readers, in every theme. |
-| 🙋 Metallic look | S | A third look beside Solid and Glass, copied from RT Markdown Reader's 3.13 once it ships there (built, in testing, not released). It works with every theme, together with the shared themes, Glass and Colour-safe, and the contrast test covers it. |
 | 🙋 Tutorial | M | A hands-on tour with a practice chapter, offered the first time the app opens, skippable and resumable, and replayed from Help. People who update from an older version get it too. The Help menu has no Tutorial item until this exists. |
 | 🙋 Help Center guides | M | Numbered, searchable guides kept as plain Markdown files in a `help` folder, like RT Markdown Reader's, each able to jump to the setting it explains. The Help Center in 3.10 is a short page of topics; these replace it. |
 | Adjustable toolbar | S | Hide, reorder and shrink toolbar buttons, with names beside the icons if wanted. Copied from RT Markdown Reader's when it exists, in its v3.13. |
 
-**Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme, with Glass and with Metallic.
+**Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme, with each of the three looks.
 
 ## v4.0 — The companion
 
