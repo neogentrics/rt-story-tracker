@@ -68,7 +68,7 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader has a third look, Metallic, beside Solid and Glass. This app gets it in 3.11, with the same Look choice. Colour-safe and Customize Theme come later, in v3.23."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself yet. Sharing themes across the apps is planned for later, and waits for your go-ahead. RT Markdown Reader has a third look, Metallic, beside Solid and Glass. This app gets it in 3.11, with the same Look choice. Colour-safe and Customize Theme come later, in v3.23."
     },
     {
       "q": "Will it read text aloud?",
