@@ -84,7 +84,9 @@ async function typeOnPage(window, text) {
   await window.fill('#goal-daily', '100');
   await window.fill('#goal-chapter', '50');
   await window.click('#goals-save');
-  await window.waitForFunction(() => document.querySelector('#today-words').textContent.includes('of 100 words today'));
+  // In a narrow window the count is shortened, "0/100 today", and it's whole on hover.
+  await window.waitForFunction(() => /(of 100 words|\/100) today$/.test(document.querySelector('#today-words').textContent));
+  assert.match(await window.getAttribute('.bar-words', 'title'), /of 100 words today/);
   await window.waitForFunction(() => document.querySelector('.word-count').textContent.includes('of 50 words in this chapter'));
 
   // Focus mode.
@@ -182,7 +184,7 @@ async function typeOnPage(window, text) {
   await row(window, 'Chapter 2').locator('.row-main').click();
   await titleIs(window, 'Chapter 2');
   assert.equal(await window.textContent('.ProseMirror'), 'Marit came back. From the right side.');
-  assert.match(await window.textContent('#today-words'), /of 100 words today/);
+  assert.match(await window.getAttribute('.bar-words', 'title'), /of 100 words today/);
   await app.close();
 
   fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5 });
