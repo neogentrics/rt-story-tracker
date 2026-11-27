@@ -1,7 +1,8 @@
 import { el } from './dom.js';
 import { applyLook } from './look.js';
 import { openAbout } from './about-dialog.js';
-import { openHelp, stopShortcutCapture } from './help-dialog.js';
+import { openHelp } from './help-dialog.js';
+import { stopShortcutCapture } from './shortcuts-editor.js';
 import { openPreferences } from './prefs.js';
 import { renderFailure, renderHome } from './home.js';
 import { renderLock } from './lock-screen.js';
@@ -313,7 +314,8 @@ async function start() {
   api.onInbox(() => documentsChanged());
   watchForIdle();
   await run(async () => {
-    applyLook(await api.settings());
+    const settings = await api.settings();
+    applyLook(settings);
     const status = await api.status();
     showUpdate(status.update);
     const file = await api.takeFile();
@@ -322,7 +324,7 @@ async function start() {
       await openProjectFile(file);
       return;
     }
-    const last = remember.get(LAST_PROJECT);
+    const last = settings.reopenLast ? remember.get(LAST_PROJECT) : null;
     if (last) {
       const projects = await api.listProjects();
       const project = projects.find((item) => item.id === last);

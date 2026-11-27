@@ -2753,6 +2753,7 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 
 .shortcut-group dl {
   display: grid;
+  align-items: center;
   grid-template-columns: max-content 1fr;
   gap: 0.3rem 1.2rem;
   margin: 0;
@@ -2761,7 +2762,7 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 .shortcut-group dd {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.2rem 0.8rem;
   margin: 0;
@@ -2873,6 +2874,160 @@ kbd {
 .app-buttons {
   display: flex;
   gap: 0.4rem;
+}
+
+/* Preferences: sections listed on the left, the chosen one on the right. It's sized to the app window, and only the right side scrolls. */
+
+.dialog.prefs-window {
+  width: min(900px, calc(100vw - 3rem));
+  height: min(640px, calc(100vh - 3rem));
+  padding: 0;
+  overflow: hidden;
+}
+
+.prefs-window[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.prefs-head,
+.prefs-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.4rem;
+}
+
+.prefs-head {
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.dialog .prefs-head h2 {
+  margin: 0;
+}
+
+.prefs-foot {
+  border-top: 1px solid var(--panel-edge);
+}
+
+.prefs-body {
+  display: grid;
+  grid-template-columns: 11.5rem minmax(0, 1fr);
+  min-height: 0;
+}
+
+.prefs-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.8rem 0.6rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--panel-edge);
+}
+
+.prefs-nav [role="tab"] {
+  flex: none;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sheet-ink-soft);
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.prefs-nav [role="tab"]:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.prefs-nav [role="tab"][aria-selected="true"] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--sheet-ink);
+  font-weight: 700;
+}
+
+.prefs-panes {
+  min-width: 0;
+  overflow: auto;
+  padding: 0.9rem 1.6rem 1.4rem;
+}
+
+.prefs-pane {
+  max-width: 40rem;
+  min-width: 0;
+}
+
+.dialog .prefs-pane h3 {
+  margin: 0 0 0.9rem;
+  color: var(--sheet-ink);
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.prefs-pane h4 {
+  margin: 1.2rem 0 0.4rem;
+  font-size: 0.92rem;
+}
+
+.prefs-pane h3 + h4 {
+  margin-top: 0;
+}
+
+.prefs-pane .field {
+  grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+  margin-bottom: 0.7rem;
+}
+
+.prefs-pane .check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.92rem;
+}
+
+.prefs-pane .check input {
+  flex: none;
+  margin-top: 0.2rem;
+}
+
+.prefs-pane .quiet-note {
+  margin: 0.2rem 0 0.8rem;
+  line-height: 1.45;
+}
+
+.prefs-pane .word-form {
+  flex-wrap: wrap;
+}
+
+/* The whole folder name shows, on as many lines as it needs. */
+.prefs-pane .backup-folder {
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* A very long word wraps, and its Remove button stays beside it. */
+.prefs-pane .word-row > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.prefs-pane .word-row > button {
+  flex: none;
+}
+
+/* The section scrolls, so its lists don't need to scroll inside it. */
+.prefs-pane .word-list {
+  max-height: none;
+}
+
+.prefs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
 /* Versions, canon lock and the author-only part */

@@ -344,7 +344,7 @@ The owner wants one look and feel across every app, and `docs/app-suite.md` in t
 | Help Center with guides as Markdown files in a `help` folder, searchable | **Later (v3.20).** Today it's a short page of topics in `src/shared/help-pages.js`. |
 | A tutorial, offered the first run | **Later (v3.20).** |
 | About window with four links, an engine line, copyright, license, notices and Copy details | **Done** (see *Looking like the same family* above). |
-| One Preferences window on Ctrl+comma, in sections | **Already so, not touched.** The library now has a **Preferences** button too, since the themes couldn't be found. |
+| One Preferences window on Ctrl+comma, in sections | **Done** (see *Preferences* below). The library also has a **Preferences** button. |
 | Shared themes with Glass, Follow System, fonts, and a contrast test | **Already so, not touched.** |
 | Colour-safe, and Customize Theme | **Later (v3.20).** |
 | Toolbar: icon buttons with names; an adjustable toolbar in the Reader's v3.13 | Buttons have names, and that's now tested. **The adjustable toolbar is copied from the Reader when it exists (its v3.13).** The apps icon is at the right end. |
@@ -354,6 +354,15 @@ The owner wants one look and feel across every app, and `docs/app-suite.md` in t
 | Changeable shortcuts | **Done.** In *Help, Keyboard Shortcuts* (see *Changing shortcuts* above). |
 | Command palette on Ctrl+K | **Later (v3.20).** Ctrl+K is *Look Up a Record* here today. When the palette arrives it takes Ctrl+K, and *Look Up a Record* takes another key. |
 | Wording: *Open*, *Save*, *Restart to update*, *Check for Updates…* | **Done where the Reader has a word.** See below. |
+
+**Preferences.** Laid out like the Reader's (`src/renderer/prefs-ui.js` there): a window up to 900 by 640 that follows the app window,
+with the sections on the left, the chosen one on the right, *Help Center* bottom left, and *Done* bottom right. Only the right side
+scrolls. The sections are General, Appearance, Editing, Backups, Password lock, Linked Apps and Shortcuts. They're one list in
+`src/renderer/prefs.js`, so **AI and Claude** is one more entry when it's built. Until then it isn't listed. General has the Reader's two
+things: reopening what was open (a new switch here, on to begin with, which is what the app did before) and *Check for Updates…* with
+*Releases Page*. As in the Reader, there's no switch to turn update checks off. Shortcuts is the same editor as *Help, Keyboard
+Shortcuts*, and only one of the two windows is open at a time. A test opens every section at 1024 by 768 and at 900 by 560, the
+smallest the app allows, and checks that nothing is cut off or needs sideways scrolling.
 
 **Wording, against the Reader's labels.** *Open Project File…* is now *Open…*, and *Save a Copy of This Project…* is *Save a Copy…* (the Reader
 has no Save a Copy). *Quit* is *Exit* on Windows and Linux. The update banner says *Version X is ready to install.* with *Restart to

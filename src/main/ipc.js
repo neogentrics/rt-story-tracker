@@ -298,7 +298,7 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('inbox:drop', (id) => inbox().drop(id));
 }
 
-function registerIpc({ status, aboutApp, menuKeys, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
+function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
   const busy = (work) => busyWhile(workspace, work);
   const unlocked = (work) => (...args) => {
     security().needExportPass();
@@ -308,6 +308,7 @@ function registerIpc({ status, aboutApp, menuKeys, workspace, updater, settings,
   registerLinking({ linking, inbox, workspace });
   sweepTemporaryFiles();
   handle('app:status', status);
+  handle('update:ask', () => checkForUpdates());
   handle('shortcuts:pause', (paused) => menuKeys.pause(paused === true));
   handle('app:about', () => aboutApp.info());
   handle('app:openLink', (id) => aboutApp.open(id));

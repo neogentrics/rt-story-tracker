@@ -56,6 +56,11 @@ Versions of a record, for authors who need to say what a record said as of each 
   the way of typing or that copying, pasting, undoing, bold, italic, underline, zoom or full screen use. Escape leaves a command as it
   was, *Reset* puts one back and *Reset all to the standard keys* puts back every one. Your keys are kept on this computer.
 
+- **A new Preferences window.** Preferences was one long, narrow column. It's now a window sized to the app, like RT Markdown Reader's,
+  with General, Appearance, Editing, Backups, Password lock, Linked Apps and Shortcuts listed on the left, *Help Center* bottom left and
+  *Done* bottom right. The arrow keys move through the list. Shortcuts can be changed there as well as from Help. General is new: you can
+  turn off reopening your last project, which was always on, and it has *Check for Updates…* and a link to the releases page.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used

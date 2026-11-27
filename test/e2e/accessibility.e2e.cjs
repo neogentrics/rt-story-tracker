@@ -94,8 +94,15 @@ function audit() {
   await tabTo('.prefs-button');
   await window.keyboard.press('Enter');
   await window.waitForSelector('#preferences[open]');
-  await check('Preferences');
   assert.ok(await window.evaluate(() => document.querySelector('#preferences').contains(document.activeElement)), 'focus moved into the dialog');
+  // Every section, reached with the arrow keys alone.
+  for (const section of ['General', 'Appearance', 'Editing', 'Backups', 'Password lock', 'Linked Apps', 'Shortcuts']) {
+    await window.waitForFunction((wanted) => document.activeElement?.textContent === wanted, section);
+    if (section === 'Linked Apps') await window.waitForSelector('#linked-apps .app-row');
+    if (section === 'Shortcuts') await window.waitForSelector('#shortcuts-page dd[data-shortcut]');
+    await check(`Preferences, ${section}`);
+    if (section !== 'Shortcuts') await window.keyboard.press('ArrowDown');
+  }
   await window.keyboard.press('Escape');
   await window.waitForSelector('#preferences', { state: 'detached' });
   assert.equal(await window.evaluate(() => document.activeElement?.classList.contains('prefs-button')), true, 'and comes back to where it was');
@@ -156,6 +163,7 @@ function audit() {
   ]) {
     await menu(command);
     await window.waitForSelector(selector, { timeout: 15000 }).catch((error) => { throw new Error(`${name} (${command}) didn’t open: ${error.message}`); });
+    if (command === 'shortcuts') await window.waitForSelector('#shortcuts-page dd[data-shortcut]');
     await check(name);
     await window.keyboard.press('Escape');
     await window.waitForFunction(() => !document.querySelector('dialog[open]'));

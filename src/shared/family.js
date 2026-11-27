@@ -15,6 +15,7 @@ const LINKS = {
   notes: (version) => `${REPO}/releases/tag/v${version}`,
   issue: () => `${REPO}/issues/new`,
   source: () => REPO,
+  releases: () => `${REPO}/releases`,
   license: () => `${REPO}/blob/master/LICENSE`,
   notices: () => `${REPO}/blob/master/THIRD_PARTY_NOTICES.md`,
 };

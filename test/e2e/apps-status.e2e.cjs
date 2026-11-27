@@ -166,6 +166,7 @@ const profile = path.join(work, 'profile');
 
   // The same panel is in Preferences.
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('menu:command', 'preferences'));
+  await window.click('#prefs-tab-apps');
   await window.waitForSelector('#preferences[open] .app-row[data-app="rt-press"]');
   assert.match(await window.innerText('#preferences .app-row[data-app="rt-press"]'), /Installed, not running/);
   assert.deepEqual(errors, []);

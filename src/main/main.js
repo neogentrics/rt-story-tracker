@@ -414,6 +414,7 @@ if (!app.requestSingleInstanceLock()) {
     openLibrary();
     registerIpc({
       status,
+      checkForUpdates: checkForUpdatesFromMenu,
       menuKeys: {
         // A shortcut was changed: the menu is built again with it.
         changed: () => rebuildMenu(),

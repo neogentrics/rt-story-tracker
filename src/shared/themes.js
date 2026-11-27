@@ -147,6 +147,7 @@ const DEFAULT_SETTINGS = {
   lockAfter: 15,
   appLink: false,
   shortcuts: {},
+  reopenLast: true,
 };
 
 const LIMITS = { textSize: [14, 28], pageWidth: [32, 64], backupKeep: [1, 100] };
@@ -176,6 +177,7 @@ function cleanSettings(input) {
     lockAfter: Object.hasOwn(LOCK_AFTER, source.lockAfter) ? Number(source.lockAfter) : DEFAULT_SETTINGS.lockAfter,
     appLink: source.appLink === true,
     shortcuts: cleanShortcuts(source.shortcuts),
+    reopenLast: source.reopenLast !== false,
   };
 }
 

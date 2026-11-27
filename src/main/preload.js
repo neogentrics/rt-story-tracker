@@ -87,6 +87,7 @@ contextBridge.exposeInMainWorld('storyTracker', {
   settings: () => call('settings:get'),
   saveSettings: (changes) => call('settings:save', changes),
   pauseShortcuts: (paused) => call('shortcuts:pause', paused),
+  askForUpdates: () => call('update:ask'),
   dictionary: () => call('dictionary:list'),
   addWord: (word) => call('dictionary:add', word),
   removeWord: (word) => call('dictionary:remove', word),

@@ -79,6 +79,7 @@ const filesHolding = (folder, text) => fs.readdirSync(folder, { recursive: true 
   fs.writeFileSync(path.join(shared, 'installed', 'recon-browser.json'), JSON.stringify({ protocol: 1, id: 'recon-browser', name: 'Recon Browser', version: '1.3.0', launch: process.execPath }));
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.click('#prefs-tab-apps');
   await window.waitForSelector('.app-row[data-app="recon-browser"] [aria-label="Open Recon Browser"]');
   assert.equal(await window.locator('.app-row[data-app="recon-browser"] [aria-label^="Link"]').count(), 0, 'finding it never links it');
   await window.check('#pref-link');

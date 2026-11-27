@@ -87,6 +87,7 @@ async function typeOnPage(window, text) {
   fs.mkdirSync(backupFolder);
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.click('#prefs-tab-backups');
   await window.click('#backup-choose');
   await window.waitForFunction((folder) => document.querySelector('#backup-folder').textContent === folder, backupFolder);
   await window.selectOption('#pref-backup-every', 'day');
