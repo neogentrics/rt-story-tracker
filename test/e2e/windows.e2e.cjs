@@ -305,7 +305,18 @@ function sources() {
     await press('lookup-button');
     await window.waitForSelector('#lookup-panel:not([hidden])');
     await clean('the look-up panel', null);
-    assert.ok((await window.locator('.sheet').boundingBox()).width >= 280, `the page can still be read beside the look-up panel at ${at}`);
+    const pageWidth = async () => Math.round((await window.locator('.sheet').boundingBox()).width);
+    const beside = await pageWidth();
+    assert.ok(beside >= 280, `the page can still be read beside the look-up panel at ${at}: it's ${beside}px wide`);
+    // A Windows window's frame takes some of the width it's given. Where there's least to spare, that much is taken away here too.
+    if (askedWidth <= 640) {
+      await window.evaluate(() => { document.body.style.paddingRight = '16px'; });
+      await settle(window);
+      const framed = await pageWidth();
+      assert.ok(framed >= 280, `and with a Windows window's frame taken off, at ${at}: it's ${framed}px wide`);
+      await window.evaluate(() => { document.body.style.paddingRight = ''; });
+      await settle(window);
+    }
     await menu(app, 'lookup');
 
     // Records.

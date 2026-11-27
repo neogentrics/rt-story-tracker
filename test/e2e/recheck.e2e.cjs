@@ -52,7 +52,7 @@ const launch = async () => {
 };
 const answer = (app, folder) => app.evaluate((_electron, value) => { global.answer = value; }, folder);
 const menu = (app, command) => app.evaluate(({ BrowserWindow }, name) => BrowserWindow.getAllWindows()[0].webContents.send('menu:command', name), command);
-const row = (window, title) => window.locator('.change', { has: window.locator('.change-head strong', { hasText: new RegExp(`^${title.replace(/[.()]/g, '\\$&')}$`) }) });
+const row = (window, title) => window.locator('.change', { has: window.locator('.change-head strong', { hasText: new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) });
 const pick = (window, title, label) => row(window, title).getByRole('radio', { name: label, exact: true }).check();
 const shownChanges = (window) => window.$$eval('.change', (rows) => rows.map((one) => `${one.dataset.group}: ${one.querySelector('strong').textContent}`).sort());
 const said = (window, pattern) => window.waitForFunction((source) => new RegExp(source).test(document.querySelector('#changes-status')?.textContent ?? ''), pattern.source);

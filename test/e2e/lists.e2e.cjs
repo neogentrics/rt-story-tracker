@@ -17,10 +17,10 @@ const resize = async (window, width, height = 800) => {
   await settle(window);
 };
 
-const launch = async () => {
+const launch = async (flags = []) => {
   const app = await electron.launch({
     executablePath: require('electron'),
-    args: [root, ...(process.platform === 'linux' ? ['--no-sandbox'] : [])],
+    args: [root, ...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...flags],
     env: { ...process.env, RTST_USER_DATA: profile, NMR_LINK_DIR: path.join(profile, 'shared') },
   });
   const window = await app.firstWindow();
@@ -487,6 +487,30 @@ const pickFromText = (app, label) => app.evaluate((_electron, name) => global.te
 
   assert.deepEqual(errors, []);
   await app.close();
+
+  // On a Mac a right-click selects the word under the pointer, and a button's label mustn't count as words to copy. A Mac does this by
+  // itself, so the checks above cover it there. Elsewhere a setting of the browser's makes it behave the same way, tried here on Linux.
+  if (process.platform === 'linux') {
+    ({ app, window, errors } = await launch(['--blink-settings=editingBehaviorType=0']));
+    await resize(window, 1200);
+    await window.waitForSelector('.ProseMirror');
+    const rightClickOn = async (selector) => {
+      await window.evaluate(() => {
+        document.activeElement?.blur();
+        getSelection().removeAllRanges();
+      });
+      await forget(app);
+      await window.click(selector, { button: 'right' });
+      await new Promise((done) => setTimeout(done, 700));
+      return { menus: await textMenus(app), selected: await window.evaluate(() => getSelection().toString()) };
+    };
+    // Ordinary words are selected and can be copied. Without this, the checks below could pass with the setting doing nothing.
+    const onWords = await rightClickOn('.page-footer .word-count');
+    assert.ok(onWords.selected && onWords.menus.length === 1, `the browser is behaving as on a Mac: ${JSON.stringify(onWords)}`);
+    for (const button of ['#open-library', '#mode-write', '#mode-records']) assert.deepEqual(await rightClickOn(button), { menus: [], selected: '' }, `a right-click on ${button}, as on a Mac`);
+    assert.deepEqual(errors, []);
+    await app.close();
+  }
   console.log('lists e2e passed');
 })().catch((error) => {
   console.error(error);

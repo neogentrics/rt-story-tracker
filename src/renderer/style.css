@@ -128,6 +128,8 @@ textarea {
 
 button {
   cursor: pointer;
+  /* A button's label isn't text to copy. On a Mac a right-click selects the word under the pointer, which would offer to copy it. */
+  user-select: none;
   display: inline-flex;
   gap: 0.4rem;
   align-items: center;
@@ -3252,7 +3254,9 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 }
 
 .lookup-pane {
-  flex: 0 0 min(25rem, 50%);
+  /* Half the room at most, and never so much that the page is left under 20.5rem. That's room for 280px of page inside its padding and a
+     scrollbar, in the smallest window, where a window's frame takes some of the width too, as it does on Windows. */
+  flex: 0 0 min(25rem, 50%, 100% - 20.5rem);
   overflow: auto;
   background: var(--sheet);
   color: var(--sheet-ink);
