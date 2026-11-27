@@ -149,6 +149,42 @@ const profile = path.join(work, 'profile');
     assert.deepEqual(Object.keys(request.headers).filter((name) => /^x-|rt-|story|version|id$/i.test(name)), [], 'no header of ours');
   }
   const asked = sent.length;
+
+  // The window is wide and easy to read, with every app showing and no box that scrolls inside it. Here an app has an update too, which
+  // is the most it holds. Only on a screen too small for it does the whole window scroll.
+  const shape = () => window.evaluate(() => {
+    const dialog = document.querySelector('#apps-dialog');
+    const box = dialog.getBoundingClientRect();
+    const px = (node) => parseFloat(getComputedStyle(node).fontSize);
+    return {
+      width: Math.round(box.width),
+      inside: box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && box.bottom <= window.innerHeight,
+      scrolls: [dialog, ...dialog.querySelectorAll('*')].filter((node) => ['auto', 'scroll'].includes(getComputedStyle(node).overflowY) && node.scrollHeight > node.clientHeight + 1).map((node) => node.id || node.className),
+      sideways: dialog.scrollWidth > dialog.clientWidth + 1,
+      unseen: [...dialog.querySelectorAll('.app-row, .app-row button, #apps-close, #apps-refresh')].filter((node) => { const at = node.getBoundingClientRect(); return at.top < box.top - 1 || at.bottom > box.bottom + 1; }).length,
+      rows: dialog.querySelectorAll('.app-row').length,
+      name: Math.min(...[...dialog.querySelectorAll('.app-info strong')].map(px)),
+      words: Math.min(...[...dialog.querySelectorAll('.app-info small, .quiet-note, label.check')].map(px)),
+      button: Math.min(...[...dialog.querySelectorAll('button')].map((node) => node.getBoundingClientRect().height).filter(Boolean)),
+    };
+  });
+  const sized = async (width, height) => {
+    await window.setViewportSize({ width, height });
+    await window.waitForFunction((wanted) => window.innerWidth === wanted, width);
+    return shape();
+  };
+  for (const [width, height] of [[1280, 800], [1024, 768]]) {
+    const now = await sized(width, height);
+    if (process.env.RTST_SHOTS) await window.screenshot({ path: path.join(process.env.RTST_SHOTS, `apps-${width}.png`) });
+    assert.deepEqual([now.rows, now.scrolls, now.unseen, now.sideways, now.inside], [5, [], 0, false, true], `the whole list, with no scrolling, at ${width}x${height}: ${JSON.stringify(now)}`);
+    assert.ok(now.width >= 880 && now.name >= 17 && now.words >= 15 && now.button >= 36, `wide and readable at ${width}x${height}: ${JSON.stringify(now)}`);
+  }
+  const small = await sized(640, 420);
+  if (process.env.RTST_SHOTS) await window.screenshot({ path: path.join(process.env.RTST_SHOTS, 'apps-small.png') });
+  assert.deepEqual([small.scrolls.length, small.sideways, small.inside], [1, false, true], `only the window itself scrolls when the screen is small: ${JSON.stringify(small)}`);
+  assert.match(String(small.scrolls[0]), /apps-dialog/);
+  await window.locator('#apps-close').scrollIntoViewIfNeeded();
+  await sized(1280, 800);
   await window.click('#apps-close');
   await tool(window, '.apps-button');
   await window.waitForSelector('#apps-dialog[open]');
@@ -170,6 +206,7 @@ const profile = path.join(work, 'profile');
   await window.click('#prefs-tab-apps');
   await window.waitForSelector('#preferences[open] .app-row[data-app="rt-press"]');
   assert.match(await window.innerText('#preferences .app-row[data-app="rt-press"]'), /Installed, not running/);
+  assert.ok(await window.$eval('#preferences #linked-apps', (list) => list.scrollHeight <= list.clientHeight + 1), 'in Preferences too, the list has no scrolling box of its own');
   assert.deepEqual(errors, []);
   await reader.stop();
   site.close();

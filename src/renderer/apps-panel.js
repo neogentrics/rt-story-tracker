@@ -125,7 +125,7 @@ export async function openApps(api) {
   const panel = createAppsPanel(api);
   const dialog = el(
     'dialog',
-    { id: 'apps-dialog', class: 'dialog', 'aria-label': TITLE },
+    { id: 'apps-dialog', class: 'dialog apps-window', 'aria-label': TITLE },
     el('h2', {}, TITLE),
     panel.node,
     el('div', { class: 'dialog-actions' }, el('button', { id: 'apps-close', class: 'primary', onclick: () => dialog.close() }, 'Done')),

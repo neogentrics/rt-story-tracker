@@ -49,6 +49,9 @@ Files you bring in. This will be 3.11.
 - **The word “null” no longer shows on screen.** It appeared on the forgot-password screen, on the screen for changing a password, and
   on a record's page, where a part of the screen that wasn't needed was written out as that word.
 - **Bringing records in fits a narrow window,** with each column of the file on its own lines, so nothing scrolls sideways.
+- **The Recon Towers apps window is easy to read.** It's as wide as Preferences, with larger text and buttons, and every app shows at
+  once instead of in a small box that scrolled. On a small screen the whole window scrolls. The list in *Preferences*, under *Linked
+  Apps*, has no scrolling box of its own either.
 
 ### Changed
 - **The Light and Dark themes are now called Paper and Night,** as in the other Recon Towers apps. Nothing else about them changes.

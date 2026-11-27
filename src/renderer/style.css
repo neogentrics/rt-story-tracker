@@ -3460,12 +3460,64 @@ kbd {
 }
 
 
+/* The list of apps is shown whole, with no scrolling box of its own: whatever holds it scrolls, and only when it has to. */
+#linked-apps {
+  max-height: none;
+  overflow: visible;
+}
+
 .app-row {
-  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--panel-edge);
+}
+
+.app-info {
+  flex: 1 1 20rem;
+  min-width: 0;
+  line-height: 1.45;
+}
+
+.app-info strong {
+  font-size: 1.1rem;
 }
 
 .app-info small {
   color: var(--sheet-ink-soft);
+  font-size: 0.95rem;
+}
+
+/* Buttons that are easy to hit, each with an edge that shows where it is. */
+.word-row .app-buttons button {
+  min-height: 2.35rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--panel-edge);
+}
+
+/* The window the toolbar's apps button opens, as wide and as easy to read as Preferences. On a small screen the whole of it scrolls. */
+.dialog.apps-window {
+  width: min(900px, calc(100vw - 3rem));
+  max-height: calc(100vh - 2rem);
+  padding: 1.3rem 1.8rem;
+  font-size: 1rem;
+}
+
+.apps-window .quiet-note,
+.dialog.apps-window .check {
+  font-size: 0.95rem;
+}
+
+.apps-window .apps-panel .quiet-note {
+  margin: 0.35rem 0;
+}
+
+.apps-window .dialog-actions button,
+.apps-window .apps-panel > p > button,
+.apps-window .apps-off button {
+  min-height: 2.35rem;
+  padding: 0.4rem 1.2rem;
 }
 
 .app-info .app-line {
@@ -3474,7 +3526,9 @@ kbd {
 
 .app-buttons {
   display: flex;
-  gap: 0.4rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
 }
 
 .about-x {
@@ -3739,6 +3793,13 @@ kbd {
    and in Preferences each setting goes under its name. */
 
 @media (max-width: 760px), (max-height: 560px) {
+  .dialog.apps-window {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+    padding: 0.7rem 0.9rem;
+  }
+
   .dialog.prefs-window,
   .dialog.files-window {
     width: calc(100vw - 1rem);
