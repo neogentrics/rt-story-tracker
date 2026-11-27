@@ -78,6 +78,22 @@ const RESERVED = {
   'CmdOrCtrl+B': 'bold',
   'CmdOrCtrl+I': 'italic',
   'CmdOrCtrl+U': 'underline',
+  // The rest of what the writing page does from the keyboard (its editor's own keys).
+  'CmdOrCtrl+Shift+S': 'striking through',
+  'CmdOrCtrl+Shift+B': 'quoting',
+  'CmdOrCtrl+Shift+7': 'numbered lists',
+  'CmdOrCtrl+Shift+8': 'bulleted lists',
+  'CmdOrCtrl+Shift+L': 'aligning left',
+  'CmdOrCtrl+Shift+E': 'centring',
+  'CmdOrCtrl+Shift+R': 'aligning right',
+  'CmdOrCtrl+Shift+J': 'justifying',
+  'CmdOrCtrl+Alt+0': 'plain text',
+  'CmdOrCtrl+Alt+1': 'headings',
+  'CmdOrCtrl+Alt+2': 'headings',
+  'CmdOrCtrl+Alt+3': 'headings',
+  'CmdOrCtrl+Return': 'a new line',
+  'CmdOrCtrl+Backspace': 'deleting backwards',
+  'CmdOrCtrl+Delete': 'deleting forwards',
   'CmdOrCtrl+Plus': 'zooming in',
   'CmdOrCtrl+Shift+Plus': 'zooming in',
   'CmdOrCtrl+-': 'zooming out',
@@ -176,7 +192,9 @@ function keyFromPress(press, platform = process.platform) {
 // May `id` have this key? { ok: true }, or { ok: false, reason } in plain words. `overrides` is what's set now.
 function checkKey(accelerator, id, overrides, platform = process.platform) {
   if (!usable(accelerator)) return { ok: false, reason: `${showKeys(accelerator, platform)} on its own would get in the way of typing. Use ${showKeys('CmdOrCtrl', platform)} with the key, or a function key.` };
-  if (Object.hasOwn(RESERVED, accelerator)) return { ok: false, reason: `${showKeys(accelerator, platform)} is for ${RESERVED[accelerator]} and can’t be changed.` };
+  // A command may always have the key it started with, even where the writing page uses that key too.
+  const own = ITEMS.find((item) => item.id === id);
+  if (Object.hasOwn(RESERVED, accelerator) && accelerator !== defaultKey(own, platform)) return { ok: false, reason: `${showKeys(accelerator, platform)} is for ${RESERVED[accelerator]} and can’t be changed.` };
   const keys = resolveKeys(overrides, platform);
   const holder = ITEMS.find((item) => item.id !== id && keys[item.id] === accelerator);
   if (holder) return { ok: false, reason: `${showKeys(accelerator, platform)} is already ${holder.does}. Choose another key, or change that one first.` };

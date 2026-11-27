@@ -61,9 +61,14 @@ function shortcutsPage(api, dialog) {
     listening = item.id;
     api.pauseShortcuts(true).catch(() => {});
     listener = async (event) => {
-      // A window that has been taken away mustn't keep taking keys.
+      // A window that has been taken away mustn't keep taking keys, and nor must this one once another has opened on top of it: the
+      // key goes where it was typed.
       if (!page.isConnected) {
         stopListening();
+        return;
+      }
+      if (event.target !== document.body && !dialog.contains(event.target)) {
+        leaveIt();
         return;
       }
       event.preventDefault();
@@ -153,11 +158,14 @@ function shortcutsPage(api, dialog) {
     if (listening) event.preventDefault();
   });
   page.stopListening = stopListening;
-  draw(null);
+  // The rows wait for the saved keys, so the page never shows, or checks against, keys that aren't the ones in use.
   api.settings().then((values) => {
     overrides = values.shortcuts ?? {};
     draw(null);
-  }).catch(() => {});
+  }).catch((error) => {
+    say(`Your shortcuts couldn’t be read: ${error.message}`);
+    fill(page, message);
+  });
   return page;
 }
 

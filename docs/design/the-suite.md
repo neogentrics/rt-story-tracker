@@ -293,8 +293,24 @@ the same family without copying every feature. The structure is the Reader's (it
 label, in that order. On a Mac, About is in the app menu, as the Reader does it. **Tutorial and Find a Command are the Reader's and aren't
 here yet.** They're on the roadmap for later.
 
-**Help Center and Keyboard Shortcuts** are two simple pages in one window, with the words in `src/shared/help-pages.js`. A test reads
-the menu and checks that every shortcut on the page is one the menu has, and the other way round, so the page can't drift.
+**Help Center and Keyboard Shortcuts** are two simple pages in one window. The Help Center's words are in `src/shared/help-pages.js`.
+They name no keys, because keys can be changed.
+
+**Changing shortcuts.** Every command that can have a key is listed once, in `src/shared/shortcuts.js`. The menu takes its keys from
+that list and the Keyboard Shortcuts page shows it. A test builds the menu and checks that the two agree, both ways. On the page,
+*Change* beside a command waits for the next key press, and *Escape* leaves the command as it was.
+
+- **What's allowed:** Ctrl (Cmd on a Mac) with another key, or a function key. A plain letter, or Shift or Alt with one, would take over
+  typing.
+- **What's refused:** a key another command has (the page names it), and the keys for copying, cutting, pasting, undoing, selecting
+  everything, zoom, full screen, quitting and what the writing page's editor does from the keyboard. Two starting keys, *Library*
+  (Ctrl+Shift+L) and *Save a Copy* (Ctrl+Shift+S), are also the editor's keys. They were so before shortcuts could be changed, and
+  each command can still go back to its own.
+- **Reset:** one command, or all of them. A reset that would give one key to two commands is refused.
+- **Where they're kept:** with this computer's settings, not in a project. Only the changes are saved, and what's read back is checked.
+- **While it listens,** the menu has no keys, so pressing one that's taken doesn't run its command. The keys come back when the page
+  stops listening, however that happens: a key, Escape, Done, the other tab, a menu item, the lock, another window on top, or leaving
+  the app.
 
 **About** is a window in the page, not the native box: the icon, the name, the version (and *portable* if it is), one line about the
 app, and four links: *Website* (the Recon Towers project page), *What's new in this version* (this release on GitHub), *Report a problem or
@@ -333,9 +349,10 @@ The owner wants one look and feel across every app, and `docs/app-suite.md` in t
 | Colour-safe, and Customize Theme | **Later (v3.20).** |
 | Toolbar: icon buttons with names; an adjustable toolbar in the Reader's v3.13 | Buttons have names, and that's now tested. **The adjustable toolbar is copied from the Reader when it exists (its v3.13).** The apps icon is at the right end. |
 | Updates: *Restart to update*, or a link to the download where the system can't update itself | **Already so**, with the Reader's words (below). |
-| Accessibility: every button named, keyboard use, checked automatically | **Started.** One test, `test/e2e/accessibility.e2e.cjs`, opens 20 screens and dialogs, checks 784 controls, and runs the main flows from the keyboard. See below. |
+| Accessibility: every button named, keyboard use, checked automatically | **Started.** One test, `test/e2e/accessibility.e2e.cjs`, opens 20 screens and dialogs, checks 814 controls, and runs the main flows from the keyboard. See below. |
 | Languages: every word in a table, Spanish, French, German, right-to-left | **Later (Ongoing).** |
-| Command palette on Ctrl+K, changeable shortcuts | **Later (v3.20).** Ctrl+K is *Look Up a Record* here today, so it moves into the palette when the palette arrives. |
+| Changeable shortcuts | **Done.** In *Help, Keyboard Shortcuts* (see *Changing shortcuts* above). |
+| Command palette on Ctrl+K | **Later (v3.20).** Ctrl+K is *Look Up a Record* here today. When the palette arrives it takes Ctrl+K, and *Look Up a Record* takes another key. |
 | Wording: *Open*, *Save*, *Restart to update*, *Check for Updates…* | **Done where the Reader has a word.** See below. |
 
 **Wording, against the Reader's labels.** *Open Project File…* is now *Open…*, and *Save a Copy of This Project…* is *Save a Copy…* (the Reader

@@ -51,6 +51,11 @@ Versions of a record, for authors who need to say what a record said as of each 
   *Restart to update*; once one is ready, Help says *Restart to Update*. A new test opens the main screens and dialogs and checks that
   every control has a name and that the main flows work from the keyboard. There's no Tutorial item in Help yet.
 
+- **Your own keyboard shortcuts.** In *Help, Keyboard Shortcuts*, choose *Change* beside a command and press the keys you want. Commands
+  that had no key, such as Trash or Attachments, can be given one. A key another command has is refused, and so is one that would get in
+  the way of typing or that copying, pasting, undoing, bold, italic, underline, zoom or full screen use. Escape leaves a command as it
+  was, *Reset* puts one back and *Reset all to the standard keys* puts back every one. Your keys are kept on this computer.
+
 ### 3.9
 
 Records, where the story bible lives, and the apps finding each other. This will be 3.9. It includes the suite half that used
