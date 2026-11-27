@@ -126,6 +126,10 @@ Comes before import, because the first thing people will trust it with is years 
 🙋 The app's format is private, so this is how your work leaves it. It ships before import, so nothing can ever go in
 that can't come out.
 
+Every export is built into this app, so with only RT Story Tracker installed you can make all of them. The Word, PDF and EPUB exports
+are this app's own code today. They're to come from the [shared code module](#ongoing--polish--distribution) once it exists, and stay built in
+([decision 31](docs/decisions.md)).
+
 | Feature | Size | Details |
 |---|:-:|---|
 | ✅ 🙋 Word | M | A chapter, a book, or a series as `.docx`, which also covers Pages on a Mac. |
@@ -133,7 +137,7 @@ that can't come out.
 | ✅ 🙋 Markdown, HTML, XML | M | Plus plain text and RTF. |
 | ✅ 🙋 Store-ready EPUB | L | An EPUB that KDP and other stores' uploaders accept, with the cover, contents, metadata and book details they ask for, checked before it's saved. It does the job of a tool like Kindle Create in our own way, with nothing else to install. |
 | ✅ OpenDocument | S | |
-| ✅ Book layouts | L | Trim sizes, mirrored margins, front and back matter, for print PDFs and ebooks. To be shared with RT Markdown Reader's v4.0. |
+| ✅ Book layouts | L | Trim sizes, mirrored margins, front and back matter, for print PDFs and ebooks. Built into this app. Who owns book layouts across the apps isn't settled yet. |
 | ✅ Export everything | S | A whole project as a folder of Markdown, pictures and CSV. |
 
 **Test:** export a book to each format and open it in Word, Pages, Calibre and a browser. Upload the EPUB to KDP's previewer and at least one other store, and neither reports a problem.
@@ -186,7 +190,8 @@ for release.
 
 ## v3.7 — RT Markdown Reader, on this computer
 
-🙋 Needs RT Markdown Reader 3.6. Built to [App Link](docs/design/working-with-rt-markdown-reader.md), not a second set of rules.
+🙋 Hand-offs between the two apps, a bonus for anyone who has both: nobody has to install the Reader to use this app. They work with
+RT Markdown Reader 3.6 or later. Built to [App Link](docs/design/working-with-rt-markdown-reader.md), not a second set of rules.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -213,7 +218,7 @@ there is no 3.8. The plan, the owner's four decisions (all as recommended) and w
 | ✅ 🙋 Apps panel | M | The same panel in every app: which Recon Towers apps are on this computer, which are running, and which are linked. It offers to link one or open one. Finding an app never links it. |
 | ✅ 🙋 What it's doing | S | A linked app can ask for a short status, such as what's open. A locked project says nothing about itself, and no writing is ever in the answer. |
 | ✅ 🙋 Asking for facts | M | A linked app can ask for what this one owns: word counts, draft status, dictionary pronunciations. This app can ask RT Author Desk for a book's published facts. |
-| ✅ 🙋 Publish through RT Markdown Reader | S | Sending to WordPress, Ghost, Discord and wikis stays in RT Markdown Reader. This app hands it the chapter over App Link, and doesn't build its own. Never a locked project. |
+| ✅ 🙋 Publish through RT Markdown Reader | S | A bonus when RT Markdown Reader is installed too: this app hands it the chapter over App Link, to send to WordPress, Ghost, Discord or a wiki. That sending stays the Reader's, and this app doesn't build its own. Never a locked project. |
 | Automations | M | Webhooks and n8n can start an export or a backup, or add a note to a project. Off until you turn it on, and locked projects stay out. **Not in 3.9, as decided:** it opens a listener on this computer, so it gets its own design first. |
 
 **Test:** install each app on a clean computer, in either order, and each finds the other. Uninstall one and it goes from
@@ -301,12 +306,12 @@ attachments. Issues 37 to 40, and 42 to 49.
 
 ## v3.12 — Read aloud
 
-🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It matches RT Markdown Reader's read aloud, with the offline voices, so nothing leaves the computer. Issue 41.
+🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It reads with offline voices, so nothing leaves the computer, and it's built into this app, with no other app needed. Read aloud is to come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Issue 41.
 
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 Read aloud | M | Hear a chapter in a natural voice, with each sentence highlighted as it is read, a choice of voice and speed, and a choice of speakers or headphones. |
-| 🙋 Same controls as RT Markdown Reader | S | Play, pause, skip a sentence, speed and voice, as in the Reader, so the two apps feel the same. |
+| 🙋 Same controls across the apps | S | Play, pause, skip a sentence, speed and voice. They're to come with read aloud from the shared code module, so it works the same in each app that has it. |
 
 **Test:** with the computer offline, read a chapter aloud, change the voice and speed, and pause and resume.
 
@@ -343,12 +348,12 @@ attachments. Issues 37 to 40, and 42 to 49.
 |---|:-:|---|
 | 🙋 Lore pages | M | Free pages, with links both ways. |
 | 🙋 Story ideas | S | Jot it, tag it, and turn it into a book when it's ready. |
-| 🙋 Dictionaries | M | Glossary and invented words, with meanings and a pronunciation guide, including words from other languages. Feeds spell check and read aloud, and RT Markdown Reader's voices through App Link, so a name is taught once. |
+| 🙋 Dictionaries | M | Glossary and invented words, with meanings and a pronunciation guide, including words from other languages. Feeds spell check and read aloud in this app, so a name is taught once. If RT Markdown Reader is linked, its voices can use the pronunciations too, over App Link: a bonus, never needed. |
 | 🙋 Research | M | Sources, notes, pictures and PDFs, attached to what they're for. Clips from Recon Browser become Research records, with the source as the citation. |
-| Citations | M | Bring in sources from BibTeX or Zotero, cite them, and build the list at the end. For research and non-fiction. |
+| Citations | M | Bring in sources from BibTeX or Zotero, cite them, and build the list at the end. For research and non-fiction. Built into this app, and to come from the [shared code module](#ongoing--polish--distribution). |
 | One search | M | Across chapters, records, lore and research. |
-| 🙋 Smart search | M | Search by meaning as well as by word, on your own computer, beside One search. Using RT Markdown Reader's way of doing it. |
-| Check links | S | Finds mentions and links that lead nowhere, across chapters, records and lore, as RT Markdown Reader's link checker does. |
+| 🙋 Smart search | M | Search by meaning as well as by word, on your own computer, beside One search. Built into this app, with no other app needed. Whether its code comes from the shared code module isn't decided. |
+| Check links | S | Finds mentions and links that lead nowhere, across chapters, records and lore. Built into this app, with no other app needed. Whether its code comes from the shared code module isn't decided. |
 
 **Test:** load the Universe Bible, Races and Research Library, and find a fact by search alone.
 
@@ -368,14 +373,15 @@ attachments. Issues 37 to 40, and 42 to 49.
 
 ## v3.17 — Claude and AI
 
-🙋 Must be in the app, with settings for how far it goes. Follows RT Markdown Reader's AI services. Connecting Claude Desktop and Claude
+🙋 Must be in the app, with settings for how far it goes. The AI services are built into this app, with no other app needed, and are to
+come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Connecting Claude Desktop and Claude
 Code to your projects came earlier, in [v3.13](#v313--connect-claude). AI is an
 add-on: it's off until you turn it on, and the app is complete without it.
 
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 AI assist (optional) | M | Proofread, rewrite, shorten, translate or summarise a selection. You see the change and accept it. |
-| 🙋 Your choice of AI | M | Claude, ChatGPT, Gemini, Mistral, OpenRouter, or a local model through Ollama or LM Studio, with a different model for each task if you like. Your own account and key, as in RT Markdown Reader. |
+| 🙋 Your choice of AI | M | Claude, ChatGPT, Gemini, Mistral, OpenRouter, or a local model through Ollama or LM Studio, with a different model for each task if you like. Your own account and key. |
 | 🙋 Claude Code | S | Use a Claude Code sign-in instead of a key, and Open in Claude Code from a project. |
 
 **Test:** proofread a selection with a local model, with the computer offline.
@@ -433,8 +439,9 @@ add-on: it's off until you turn it on, and the app is complete without it.
 
 ## v3.22 — Hear it and say it
 
-🙋 Read aloud itself moved up to 3.12. This release is the rest: names said right, and dictation, using RT Markdown Reader's offline voices and speech to text, with nothing to install and nothing
-leaving the computer.
+🙋 Read aloud itself moved up to 3.12. This release is the rest: names said right, and dictation, with offline voices and speech to text,
+so nothing leaves the computer. Both are built into this app, with no other app needed. They're to come from the
+[shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -512,6 +519,7 @@ these devices sync with it.
 
 | Feature | Size | Details |
 |---|:-:|---|
+| 🙋 Shared code module | L | **Not created yet. Waiting for the owner's go: nothing moves into it until then.** One private repository, like the one for themes, for the code more than one app needs: read aloud, dictation, your own AI service, citations, document formats and the other overlaps. Each app that needs a piece takes it in, so it works with only that app installed. Hand-offs between apps over App Link stay a bonus. [Decision 31](docs/decisions.md). |
 | Code signing | S | Windows and Mac, as for RT Markdown Reader. |
 | Tutorial & Help Center | M | Built in [v3.23](#v323--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
 | Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. Started in 3.10: one test opens every main screen and checks every control has a name and the main flows work from the keyboard. |

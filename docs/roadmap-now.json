@@ -45,7 +45,7 @@
       },
       {
         "title": "Next, from your own testing",
-        "text": "Read aloud like RT Markdown Reader (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13."
+        "text": "Read aloud, built into this app (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go."
       }
     ]
   },
@@ -76,11 +76,11 @@
     },
     {
       "q": "Will it read text aloud?",
-      "a": "Yes, in v3.22, using RT Markdown Reader's offline voices, with the dictionary's pronunciations. You can already send a chapter to RT Markdown Reader and have it read there."
+      "a": "Yes, in v3.12, with offline voices. It’s built into this app, so no other app is needed. Names said right, from the dictionary, and dictation follow in v3.22. All of it is to come from a shared code module, which isn’t created yet and waits for your go. If you also use RT Markdown Reader, you can send a chapter there and have it read, as a bonus."
     },
     {
       "q": "Will the dictionary know how to say words?",
-      "a": "Yes. In v3.15 each word can carry a pronunciation guide, for invented words and words from other languages. Read aloud uses it, and so do RT Markdown Reader's voices through App Link, so a name is taught once."
+      "a": "Yes. In v3.15 each word can carry a pronunciation guide, for invented words and words from other languages. Read aloud in this app uses it, so a name is taught once. If RT Markdown Reader is linked, its voices can use it too over App Link, which is a bonus you don’t need."
     },
     {
       "q": "Can more themes and fonts be downloaded?",
@@ -88,11 +88,11 @@
     },
     {
       "q": "Were these features taken from RT Markdown Reader?",
-      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17."
+      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17. Since 27 November 2026, a feature more than one app needs is to come from one shared code module, not a copy in each. The module isn’t created yet and waits for your go. Nobody has to install the Reader to use this app."
     },
     {
       "q": "How do I hand an AI a chapter as Markdown?",
-      "a": "Markdown export arrives in v3.3, App Link sends a chapter to RT Markdown Reader in v3.7 (both apps have to be up to date), and Claude can work with the book directly in v3.13."
+      "a": "Export the chapter as Markdown. That’s built into this app, from v3.3. Claude can work with the book directly in v3.13. If you also use RT Markdown Reader, App Link can send a chapter there too, as a bonus (v3.7 or later)."
     },
     {
       "q": "Can it be tested on real stories?",
@@ -100,7 +100,7 @@
     },
     {
       "q": "Will it make EPUBs that KDP accepts?",
-      "a": "It makes EPUBs that pass EPUBCheck, the official validator, with no errors or warnings. The test that counts is uploading one to KDP’s previewer, which is yours to do."
+      "a": "It makes EPUBs that pass EPUBCheck, the official validator, with no errors or warnings. The test that counts is uploading one to KDP’s previewer, which is yours to do. The EPUB, Word and PDF exports are built into this app, so it makes them on its own. They’re to come from the shared code module once it exists."
     }
   ]
 }
