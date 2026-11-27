@@ -85,9 +85,12 @@ class FolderCheck {
         const node = nodes.get(file.node);
         const base = { rel: entry.rel, size: entry.size, mtime: entry.mtime ?? 0, sha256: entry.sha256 ?? '' };
         const bookId = item ? this.bookOf(project, item.id) : null;
-        const whole = Boolean(node && (node.kind === 'whole' || node.split));
-        const given = node?.kind === 'whole' ? file.name : node?.title ?? '';
-        if (row.outcome === 'chapters') project.saveFolderFile(record.id, { ...base, kind: 'chapters', itemId: row.itemId, bookId, whole, given, chapters: Number(/^(\d+) chapters/.exec(row.note)?.[1] ?? 1) });
+        // The plan worked out today can keep another of two identical files than the import did. Then the plan says nothing about how
+        // this one was read, and the number of chapters it made does.
+        const chapters = Number(/^(\d+) chapters/.exec(row.note)?.[1] ?? 1);
+        const whole = node ? node.kind === 'whole' || Boolean(node.split) : chapters > 1;
+        const given = node ? (node.kind === 'whole' ? file.name : node.title) : chapters > 1 ? file.name : '';
+        if (row.outcome === 'chapters') project.saveFolderFile(record.id, { ...base, kind: 'chapters', itemId: row.itemId, bookId, whole, given, chapters });
         else if (row.outcome === 'older') project.saveFolderFile(record.id, { ...base, kind: 'older', itemId: row.itemId, bookId, whole, given });
         else if (row.outcome === 'attachment') project.saveFolderFile(record.id, { ...base, kind: 'attachment', itemId: row.itemId, bookId: item?.parentId ?? null });
         else if (row.outcome === 'cover') project.saveFolderFile(record.id, { ...base, kind: 'cover', itemId: row.itemId, bookId: row.itemId });

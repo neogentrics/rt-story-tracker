@@ -141,14 +141,19 @@ const compareNumbers = (a, b) => {
   return 0;
 };
 
+// The later first, going only by what the names say: the draft folder, a final mark, the version number and the date.
+function compareMarks(a, b) {
+  return compareNumbers(b.draft ?? [], a.draft ?? [])
+    || Number(b.version.final) - Number(a.version.final)
+    || compareNumbers(b.version.number ?? [], a.version.number ?? [])
+    || (b.version.date ?? '').localeCompare(a.version.date ?? '');
+}
+
 // The newest first. A mark in the name counts for more than a file's date, which a copy or a download can change.
 function compareVersions(a, b) {
   const rank = (file) => (file.version.old || file.inOldFolder ? 0 : file.version.copy ? 1 : 2);
   return rank(b) - rank(a)
-    || compareNumbers(b.draft ?? [], a.draft ?? [])
-    || Number(b.version.final) - Number(a.version.final)
-    || compareNumbers(b.version.number ?? [], a.version.number ?? [])
-    || (b.version.date ?? '').localeCompare(a.version.date ?? '')
+    || compareMarks(a, b)
     || b.mtime - a.mtime
     || a.rel.localeCompare(b.rel);
 }
@@ -161,5 +166,5 @@ function sameMarks(a, b) {
 
 module.exports = {
   COVER_FOLDER, DRAFT_FOLDER, FINISHED_FOLDER, NOISE_FILE, NOISE_FOLDER, NOTES_FOLDER, NOTES_NAME, OLD_FOLDER, SERIES_NAME, SUPPORT_FOLDER,
-  bookOf, chapterOf, compareVersions, folderName, kindOf, partOf, sameMarks, seriesTitle, tidy, versionOf,
+  bookOf, chapterOf, compareMarks, compareVersions, folderName, kindOf, partOf, sameMarks, seriesTitle, tidy, versionOf,
 };

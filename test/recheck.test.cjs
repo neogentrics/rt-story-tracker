@@ -512,6 +512,20 @@ test('an import from before 3.11: unchanged is quiet, and a chapter saved since 
   assert.deepEqual(listed(await it.run()), ['both: Chapter 1 [both folder app]']);
 });
 
+// Before issue 48 was fixed, which of two identical files an import kept could differ from which the plan would keep today.
+test('an import from before 3.11 that kept the other of two identical files is still read the way it was brought in', async () => {
+  const rel = 'Book_1_The_Road/Old/Manuscript.md';
+  const text = MANUSCRIPT['Book_1_The_Road/Manuscript.md'];
+  const it = await fromBefore({ [rel]: text });
+  const [record] = it.space.project.folderImports();
+  const state = JSON.parse(record.state);
+  const [entry] = state.entries;
+  state.entries = [{ ...entry, sha256: 'same' }, { ...entry, rel: 'Book_1_The_Road/Manuscript.md', sha256: 'same' }];
+  it.space.project.db.prepare('UPDATE folder_imports SET state = ? WHERE id = ?').run(JSON.stringify(state), record.id);
+  put(it.root, rel, text);
+  assert.deepEqual((await it.run()).entries, [], 'only its date changed, and all three chapters are found to be the same');
+});
+
 test('an import from before 3.11: a changed file of several chapters can only be kept beside yours', async () => {
   const it = await fromBefore(MANUSCRIPT);
   // Only its time changed, so every chapter is still in the book word for word.

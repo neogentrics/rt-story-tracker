@@ -269,7 +269,7 @@ another app, and check that the panel says the same in words.
 ## v3.11 — Files you bring in
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
-attachments. Issues 37 to 40, 42 to 47, and 49.
+attachments. Issues 37 to 40, and 42 to 49.
 
 | Feature | Size | Details |
 |---|:-:|---|

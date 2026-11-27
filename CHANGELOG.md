@@ -61,6 +61,11 @@ Files you bring in. This will be 3.11.
   small as 640 by 400, and never opens larger than the screen, including a small laptop with Windows scaled to 150 percent.
 - **The word “null” no longer shows on screen.** It appeared on the forgot-password screen, on the screen for changing a password, and
   on a record's page, where a part of the screen that wasn't needed was written out as that word.
+- **Find my files no longer drops a manuscript that has an exact copy in an old-versions folder.** Of identical files it kept whichever
+  came first by name, so a copy in *Old Versions* could win for a book whose title sorts after it, and an older draft then became the
+  book. Now it keeps the one most likely to be the writing: one that isn't old, then one that isn't in a notes or print folder, then one
+  not named as a copy, then the one nearest the top. The others are listed as its copies. This applies to imports from now on, and a
+  book already brought in the wrong way isn't changed.
 - **Bringing records in fits a narrow window,** with each column of the file on its own lines, so nothing scrolls sideways.
 - **The Recon Towers apps window is easy to read.** It's as wide as Preferences, with larger text and buttons, and every app shows at
   once instead of in a small box that scrolled. On a small screen the whole window scrolls. The list in *Preferences*, under *Linked

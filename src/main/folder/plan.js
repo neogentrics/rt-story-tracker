@@ -104,6 +104,22 @@ function holdsBook(folder) {
   return isBook(folder) || subfolders(folder).some(holdsBook);
 }
 
+// Which of two identical files to keep: the one more likely to be taken as the writing itself. First, one that isn't old, by its name or
+// its folder. Then one that isn't somewhere writing isn't taken from, such as notes or a print copy. Then one not marked as a copy, then
+// the one nearer the top. Where all that is the same, the later by its name's version marks, and last the first by name. A file's date
+// plays no part, because copying a file can change it.
+function compareCopies(a, b) {
+  const against = (file) => [
+    Number(Boolean(file.version.old || file.inOldFolder)),
+    Number(isNotes(file) || file.folders.some((folder) => signs.FINISHED_FOLDER.test(signs.tidy(folder)))),
+    Number(file.version.copy),
+    file.folders.length,
+  ];
+  const [first, second] = [against(a), against(b)];
+  const at = first.findIndex((value, place) => value !== second[place]);
+  return at === -1 ? signs.compareMarks(a, b) || byName(a, b) : first[at] - second[at];
+}
+
 class Planner {
   constructor(entries, edits) {
     this.edits = { answers: {}, titles: {}, left: {}, roles: {}, sections: {}, moves: [], ...edits };
@@ -145,15 +161,19 @@ class Planner {
 
   // Files that don't need a look at their folder: noise, exact copies, and what's inside a Scrivener project.
   sort() {
-    const seen = new Map();
-    for (const file of [...this.files].sort(byName)) {
+    // Of identical files, one is kept and the rest are its copies. All of them are looked at before it's decided which.
+    const kept = new Map();
+    for (const file of this.files) {
       const scrivener = file.folders.findIndex((folder) => /\.scriv$/i.test(folder));
       if (file.error) this.place(file, 'skipped', null, 'It couldn’t be read.');
       else if (signs.NOISE_FILE.test(file.name) || file.folders.some((folder) => signs.NOISE_FOLDER.test(folder))) this.place(file, 'skipped', null, 'A system file.');
       else if (scrivener !== -1 && !(file.extension === 'scrivx' && scrivener === file.folders.length - 1)) this.place(file, 'bundled', null, 'Part of a Scrivener project.');
       else if (file.size === 0) this.place(file, 'skipped', null, 'The file is empty.');
-      else if (file.sha256 && seen.has(file.sha256)) this.place(file, 'duplicate', null, `The same as ${seen.get(file.sha256)}.`);
-      if (file.sha256 && !file.role) seen.set(file.sha256, file.rel);
+      else if (file.sha256 && (!kept.has(file.sha256) || compareCopies(file, kept.get(file.sha256)) < 0)) kept.set(file.sha256, file);
+    }
+    for (const file of this.files) {
+      const best = file.role ? null : kept.get(file.sha256);
+      if (best && best !== file) this.place(file, 'duplicate', null, `The same as ${best.rel}.`);
       if (this.edits.left[file.id] && !file.role) this.place(file, 'skipped', null, 'You left it out.');
     }
   }
