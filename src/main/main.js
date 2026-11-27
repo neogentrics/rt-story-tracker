@@ -13,6 +13,7 @@ const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
 const { contextTemplate } = require('./context-menu');
+const { FolderLinks } = require('./folder/links');
 const { buildMenu } = require('./menu');
 const { sizeFrom, windowBounds } = require('./window-size');
 const { ITEMS, resolveKeys } = require('../shared/shortcuts');
@@ -35,6 +36,7 @@ else if (process.env.RTST_USER_DATA) app.setPath('userData', process.env.RTST_US
 
 let workspace = null;
 let settings = null;
+let folderLinks = null;
 let backups = null;
 let security = null;
 let linking = null;
@@ -120,6 +122,7 @@ function openLibrary() {
     const root = path.join(app.getPath('userData'), 'library');
     workspace = new Workspace(new Library(root));
     settings = new Settings(root);
+    folderLinks = new FolderLinks(app.getPath('userData'));
     backups = new Backups(workspace, settings);
     security = new Security({
       workspace,
@@ -446,6 +449,7 @@ if (!app.requestSingleInstanceLock()) {
         return settings;
       },
       updater,
+      folderLinks: () => folderLinks,
       backups: () => backups,
       security: () => security,
       linking: () => linking,

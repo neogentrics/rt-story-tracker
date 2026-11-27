@@ -150,6 +150,31 @@ const STEPS = [
       `);
     },
   },
+  {
+    // What each file of a folder import was when it was last looked at, and what it became, so the folder can be checked for changes.
+    // `pieces` is, for a file that became chapters, each chapter with the marks of its text in the file and in the app. It's empty
+    // where that wasn't written down, as in imports made before this step. Like earlier versions, none of this is logged as a change.
+    version: 8,
+    up(db) {
+      db.exec(`
+        CREATE TABLE folder_files (
+          import_id TEXT NOT NULL,
+          rel TEXT NOT NULL,
+          size INTEGER NOT NULL,
+          mtime INTEGER NOT NULL,
+          sha256 TEXT NOT NULL DEFAULT '',
+          kind TEXT NOT NULL,
+          item_id TEXT,
+          book_id TEXT,
+          whole INTEGER NOT NULL DEFAULT 0,
+          given TEXT NOT NULL DEFAULT '',
+          chapters INTEGER NOT NULL DEFAULT 0,
+          pieces TEXT NOT NULL DEFAULT '',
+          PRIMARY KEY (import_id, rel)
+        );
+      `);
+    },
+  },
 ];
 
 module.exports = { STEPS };

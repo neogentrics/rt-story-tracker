@@ -42,6 +42,7 @@ const GROUPS = [
       { id: 'lock', command: 'lock', does: 'Lock the project', keys: 'CmdOrCtrl+L' },
       { id: 'security', command: 'security', does: 'Password and lock', keys: '' },
       { id: 'findFiles', command: 'find-files', does: 'Find my files', keys: '' },
+      { id: 'folderChanges', command: 'folder-changes', does: 'Check the folder for changes', keys: '' },
       { id: 'attachments', command: 'attachments', does: 'Files', keys: '' },
       { id: 'details', command: 'details', does: 'Book details', keys: '' },
       { id: 'history', command: 'history', does: 'Earlier versions of this chapter', keys: '' },

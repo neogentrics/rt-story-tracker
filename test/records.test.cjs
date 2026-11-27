@@ -421,7 +421,7 @@ test('record work is in the change log, so it can be synced, and everything is e
 test('an older project gets the link table when it opens', () => {
   const { space, id } = project();
   const file = space.project.file;
-  space.project.db.exec('DROP TABLE record_links');
+  space.project.db.exec('DROP TABLE record_links; DROP TABLE folder_files');
   space.project.db.pragma('user_version = 6');
   space.closeProject();
   const reopened = space.openProject(id);

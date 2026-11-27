@@ -9,6 +9,8 @@ const REASONS = {
   restore: 'Before a restore',
   replace: 'Before a replace',
   imported: 'From your files',
+  folder: 'Before an update from the folder',
+  unused: 'From the folder, not used',
 };
 
 const when = (iso) => new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });

@@ -230,7 +230,7 @@ test('a project from step zero gets its word counts on opening', () => {
   const id = library.createProject('Old');
   const project = library.openProject(id);
   project.putItem({ id: 'old-chapter', kind: 'chapter', parentId: id, body: body('three old words') });
-  project.db.exec(`ALTER TABLE items DROP COLUMN words; ALTER TABLE items DROP COLUMN goal; DROP TABLE writing_days;
+  project.db.exec(`DROP TABLE folder_files; ALTER TABLE items DROP COLUMN words; ALTER TABLE items DROP COLUMN goal; DROP TABLE writing_days;
                    ALTER TABLE items DROP COLUMN trashed_at; DROP TABLE versions;
                    ALTER TABLE items DROP COLUMN details; DROP TABLE covers;
                    DROP TABLE attachment_files; DROP TABLE folder_imports; DROP TABLE folder_import_files;

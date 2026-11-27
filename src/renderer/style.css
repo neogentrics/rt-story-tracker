@@ -2235,6 +2235,139 @@ mark,
   text-decoration: line-through;
 }
 
+/* What has changed in the folder. The whole window scrolls, and its buttons stay in reach at the bottom. */
+.dialog.changes-window {
+  width: min(900px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 1.2rem 1.5rem 0;
+}
+
+.changes-folders,
+.change-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.changes-folders li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+  padding: 0.2rem 0;
+}
+
+.folder-path,
+.change-what {
+  overflow-wrap: anywhere;
+}
+
+.folder-path {
+  font-weight: 600;
+}
+
+.changes-status {
+  margin: 0.7rem 0;
+  font-weight: 600;
+}
+
+.change {
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--panel-edge);
+}
+
+.change-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.8rem;
+}
+
+.change-head strong {
+  overflow-wrap: anywhere;
+}
+
+.change-what {
+  flex: 1 1 14rem;
+  color: var(--sheet-ink-soft);
+  font-size: 0.86rem;
+}
+
+.change .quiet-note {
+  margin: 0.3rem 0;
+}
+
+.change-warning {
+  margin: 0.35rem 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.change-choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1.1rem;
+  margin-top: 0.35rem;
+}
+
+.change-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.change-book {
+  max-width: 100%;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.6rem;
+}
+
+.compare-same {
+  grid-column: 1 / -1;
+}
+
+.compare-side h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.86rem;
+}
+
+.compare-text {
+  max-height: 18rem;
+  overflow: auto;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 15px/1.55 var(--page-font);
+}
+
+.compare-text ins {
+  background: color-mix(in srgb, #2f9e44 24%, transparent);
+  text-decoration: underline;
+}
+
+.compare-text del {
+  background: color-mix(in srgb, #e03131 22%, transparent);
+  text-decoration: line-through;
+}
+
+.dialog .changes-actions {
+  position: sticky;
+  bottom: 0;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+  padding: 0.8rem 0 1rem;
+  border-top: 1px solid var(--panel-edge);
+  background: var(--sheet);
+}
+
 /* A narrow page, in split view or a small window: comments move underneath, so the writing keeps its width. */
 
 @container (max-width: 44rem) {

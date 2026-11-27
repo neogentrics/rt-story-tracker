@@ -86,6 +86,8 @@ class Workspace {
   }
 
   closeProject() {
+    // Anything else holding words from the project lets go of them.
+    this.onClose?.();
     this.project?.close();
     this.project = null;
     this.key?.fill(0);
@@ -493,4 +495,4 @@ class Workspace {
   }
 }
 
-module.exports = { Workspace };
+module.exports = { Workspace, cleanTitle, toImported };

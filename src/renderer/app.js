@@ -297,6 +297,7 @@ function onMenu(command) {
   if (command === 'export-book') room?.showExport();
   if (command === 'import') room?.showImport();
   if (command === 'find-files') room?.findFiles();
+  if (command === 'folder-changes') room?.checkFolder();
   if (command === 'attachments') room?.showAttachments();
   if (command === 'print') room?.showExport({ format: 'pdf', preview: true });
   if (command === 'details') room?.showDetails();

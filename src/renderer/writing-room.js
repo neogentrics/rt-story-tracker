@@ -6,6 +6,7 @@ import { openExport } from './export-dialog.js';
 import { openHistory } from './history.js';
 import { createBarFit } from './bar-fit.js';
 import { openFiles } from './files-dialog.js';
+import { openFolderChanges, summarise } from './folder-changes.js';
 import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
 import { createListSplitters } from './list-splitters.js';
@@ -213,6 +214,7 @@ export class WritingRoom {
   }
 
   leave() {
+    this.left = true;
     document.removeEventListener('keydown', this.keys);
     this.apps.destroy();
     this.barFit?.destroy();
@@ -409,6 +411,32 @@ export class WritingRoom {
     const first = node ?? chaptersOf(this.outline)[0];
     if (first) await this.openChapter(first.id);
     else this.selectBook(booksOf(this.outline)[0]?.id ?? null);
+    this.noticeFolderChanges();
+  }
+
+  // A look in the background as the project opens, at folders chosen on this computer only. It changes nothing, and says so quietly if
+  // there's something to see. If it can't look, it says nothing: the author can still ask from the menu.
+  async noticeFolderChanges() {
+    try {
+      if (!(await this.api.watchedFolders()).some((folder) => folder.linked)) return;
+      const { entries } = await this.api.checkFolders();
+      if (!this.left && entries.length) this.showInfo(`The folder has changes: ${summarise(entries)}. Nothing has been changed here.`, { label: 'See them', run: () => this.checkFolder() });
+    } catch {
+      // Nothing to say.
+    }
+  }
+
+  checkFolder() {
+    return this.attempt(async () => {
+      await this.flush();
+      this.clearMessage();
+      await openFolderChanges({
+        api: this.api,
+        onError: (text) => this.showMessage(text),
+        onBefore: () => this.flush(),
+        onApplied: (outline) => this.afterReplace(outline),
+      });
+    });
   }
 
   showMessage(text) {
@@ -517,6 +545,7 @@ export class WritingRoom {
         title: this.bookId ? findNode(this.outline, this.bookId)?.title : this.outline.title,
         onError: (text) => this.showMessage(text),
         onBefore: () => this.flush(),
+        onCheckFolder: () => this.checkFolder(),
         onOutline: (outline) => {
           this.outline = outline;
           this.renderLists();

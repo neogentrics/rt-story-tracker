@@ -20,8 +20,10 @@ const filesWord = (count) => `${formatCount(count)} ${count === 1 ? 'file' : 'fi
 
 // `id` is what's being looked at and `projectId` is the whole project. `onBefore` saves the page before writing is brought in, and
 // `onOutline` shows the new chapters.
-export async function openFiles({ api, id, title, projectId, onError, onBefore = async () => {}, onOutline = () => {} }) {
+export async function openFiles({ api, id, title, projectId, onError, onBefore = async () => {}, onOutline = () => {}, onCheckFolder = null }) {
   document.getElementById('attachments')?.remove();
+  // Only a project that something was brought into with Find my files has a folder to check.
+  const folders = onCheckFolder ? await api.watchedFolders() : [];
   let scope = id;
   let data = { files: [], covers: [], places: [] };
   let section = 'all';
@@ -337,7 +339,12 @@ export async function openFiles({ api, id, title, projectId, onError, onBefore =
         el('div', { class: 'files-bulk' }, el('label', { class: 'check' }, selectAll, el('span', {}, 'Select all')), selected, bulkSection, bulkPlace, bulkTrash),
         list),
       side),
-    el('div', { class: 'files-foot' }, status, el('div', { class: 'files-foot-buttons' }, el('button', { id: 'attachments-close', onclick: () => dialog.close() }, 'Close'), add)),
+    el('div', { class: 'files-foot' }, status, el('div', { class: 'files-foot-buttons' },
+      folders.length ? el('button', { id: 'files-check-folder', onclick: () => {
+        dialog.close();
+        onCheckFolder();
+      } }, 'Check folder for changes') : null,
+      el('button', { id: 'attachments-close', onclick: () => dialog.close() }, 'Close'), add)),
   );
   dialog.addEventListener('close', () => {
     thumbs.disconnect();

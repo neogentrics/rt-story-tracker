@@ -36,6 +36,19 @@ Files you bring in. This will be 3.11.
   Aero is always Glass and High Contrast always Solid, and your choice comes back with another theme.
 - **Metallic,** a brushed-metal finish from RT Markdown Reader on the top bar, the lists, the formatting bar, the find bar, windows and
   menus, with any theme. The page you write on stays flat.
+- **Check the folder for changes.** A project remembers the folder Find my files read. *File, This Project, Check Folder for Changes*,
+  a button in *Files*, and a quiet check as the project opens list what has changed there, what's new and what's gone. Nothing changes
+  until you choose it and press *Apply*, nothing is chosen for you to begin with, and the folder is only ever read.
+  - A chapter changed only in the folder can be updated, kept as it is in the app, or kept as both. Where it changed in both places you
+    can compare the two side by side, and whichever you choose, both sets of words are kept. Replaced and unused text goes into the
+    chapter's earlier versions, which are never thinned out. Comments and record links stay with the earlier version, and restoring it
+    brings them back.
+  - An updated file's old copy goes to the Trash. New files are sorted into sections, and become chapters only if you say so. A missing
+    file is only reported, and a moved one is recognised. Chapters in the Trash aren't brought back by themselves.
+  - Only a folder chosen on this computer is read, because a project can come from someone else. On another computer, choose the
+    folder once. A locked project reads nothing until it's unlocked.
+  - For folders brought in before 3.11, a chapter saved at all since then counts as changed in the app, so you may be asked more
+    often than you need to be, and a file that made several chapters can only be added beside yours.
 
 ### Fixed
 - **Text that was hard to read now meets the contrast standard in every theme:** the hint text in empty boxes, the word count beside
@@ -54,6 +67,8 @@ Files you bring in. This will be 3.11.
   Apps*, has no scrolling box of its own either.
 
 ### Changed
+- **A project opened in 3.11 can't be opened in 3.10 or earlier,** which will say it was saved by a newer version. The app keeps a copy
+  of the project from before the change, with its other backups of it.
 - **The Light and Dark themes are now called Paper and Night,** as in the other Recon Towers apps. Nothing else about them changes.
 - **Glass is left off** when your computer uses its own colours or asks for more contrast, and in printing, as Metallic is. It was
   already left off when your computer asks for less transparency.

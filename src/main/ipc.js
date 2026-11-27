@@ -6,6 +6,7 @@ const path = require('node:path');
 const { EXPORT_FORMATS } = require('../shared/details');
 const { checkExport, exportEverything, exportFile, safeName } = require('./export');
 const { FolderImport } = require('./folder');
+const { FolderCheck } = require('./folder/recheck');
 const { IMPORT_EXTENSIONS, Importer } = require('./import');
 const { RecordImporter } = require('./records-import');
 const { Files } = require('./files');
@@ -14,6 +15,7 @@ const MAX_COVER = 50 * 1024 * 1024;
 const importer = new Importer();
 const previews = new Set();
 const folderImport = new FolderImport();
+const folderCheck = new FolderCheck();
 const recordImporter = new RecordImporter();
 let chosenFolder = null;
 
@@ -299,7 +301,7 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('inbox:drop', (id) => inbox().drop(id));
 }
 
-function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
+function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, folderLinks, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
   const busy = (work) => busyWhile(workspace, work);
   const unlocked = (work) => (...args) => {
     security().needExportPass();
@@ -396,7 +398,29 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
     return folderImport.scan(workspace(), chosenFolder, folderProgress);
   });
   handle('folder:edit', (change) => folderImport.edit(workspace(), change));
-  handle('folder:run', busy(() => folderImport.run(workspace(), folderProgress)));
+  // A folder chosen on this computer is remembered as chosen here, so it can be checked for changes. One that a project only names,
+  // as when an import is picked up again on another computer, isn't.
+  handle('folder:run', busy(() => {
+    const { state } = folderImport;
+    if (state && state.root === chosenFolder) folderLinks().add(workspace().open().id, state.id, state.root);
+    return folderImport.run(workspace(), folderProgress);
+  }));
+  // Checking those folders again. Whatever was read from one is forgotten when the project closes or locks.
+  const checking = () => {
+    workspace().onClose = () => folderCheck.forget();
+    return workspace();
+  };
+  handle('folderCheck:folders', () => folderCheck.folders(checking(), folderLinks()));
+  handle('folderCheck:run', () => folderCheck.check(checking(), folderLinks()));
+  handle('folderCheck:compare', (key) => folderCheck.compare(checking(), String(key)));
+  handle('folderCheck:apply', busy((choices) => folderCheck.apply(checking(), Array.isArray(choices) ? choices : [])));
+  handle('folderCheck:locate', async (importId) => {
+    // The window opens where the system chooses, never at the path the project names.
+    const { canceled, filePaths } = await dialog.showOpenDialog(window(), { title: 'Where is the folder now?', properties: ['openDirectory'] });
+    if (canceled) return false;
+    await folderCheck.locate(checking(), folderLinks(), String(importId), filePaths[0]);
+    return true;
+  });
   handle('folder:stop', () => folderImport.stop());
   handle('folder:pending', () => folderImport.pending(workspace()));
   handle('folder:resume', busy(() => folderImport.resume(workspace(), folderProgress)));
