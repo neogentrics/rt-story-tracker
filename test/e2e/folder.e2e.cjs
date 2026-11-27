@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const docx = require('docx');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-folder-'));
@@ -98,13 +99,13 @@ const answer = (app, value) => app.evaluate(({ dialog }, folder) => {
   assert.equal(await window.locator('#book-list .row', { hasText: 'Unwanted' }).count(), 0);
 
   // The older file is in the chapter's history.
-  await window.click('.history-button');
+  await tool(window, '.history-button');
   await window.waitForSelector('.history-row');
   assert.match(await window.textContent('.history-row'), /From your files/);
   await window.click('#history-close');
 
   // Attachments show, with a picture's preview.
-  await window.click('.attachments-button');
+  await tool(window, '.attachments-button');
   await window.waitForSelector('#attachments[open]');
   assert.match(await window.textContent('#attachment-list'), /map\.png/);
   await window.waitForFunction(() => document.querySelector('.attachment-thumb')?.src.startsWith('data:image/png'));

@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const docx = require('docx');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-import-'));
@@ -44,7 +45,7 @@ const row = (window, title) => window.locator('#chapter-list .row', { hasText: t
 
   // An AI-made file: each clean-up is shown, and one can be refused.
   await answer(app, aiFile);
-  await window.click('.import-button');
+  await tool(window, '.import-button');
   await window.waitForSelector('#import[open]');
   assert.match(await window.textContent('#import-findings'), /Chat text at the top/);
   assert.match(await window.textContent('#import-findings'), /Chat text at the bottom/);
@@ -59,7 +60,7 @@ const row = (window, title) => window.locator('#chapter-list .row', { hasText: t
 
   // A Word manuscript, into a new book, with the word check shown.
   await answer(app, wordFile);
-  await window.click('.import-button');
+  await tool(window, '.import-button');
   await window.waitForSelector('#import[open]');
   await window.waitForFunction(() => document.querySelector('#import-check').textContent.includes('Nothing is missing'));
   assert.equal(await window.inputValue('#import-title'), 'manuscript');
@@ -83,7 +84,7 @@ const row = (window, title) => window.locator('#chapter-list .row', { hasText: t
   // A file the app can't read gets an answer, and nothing changes.
   fs.writeFileSync(path.join(work, 'old.doc'), 'x');
   await answer(app, path.join(work, 'old.doc'));
-  await window.click('.import-button');
+  await tool(window, '.import-button');
   await window.waitForFunction(() => document.querySelector('#room-message')?.textContent.includes('Save As'));
   await app.close();
 

@@ -350,10 +350,10 @@ textarea {
   container-type: inline-size;
 }
 
+/* The title takes the room that's left and is shortened to fit it. What the bar can't hold is moved by bar-fit.js. */
 .room-header {
-  display: grid;
-  grid-template-columns: 1fr minmax(0, auto) 1fr;
-  gap: 1rem;
+  display: flex;
+  gap: 0.75rem;
   align-items: center;
   min-height: 3.1rem;
   padding: 0.35rem 0.7rem;
@@ -363,6 +363,7 @@ textarea {
 
 .bar-side {
   display: flex;
+  flex: none;
   gap: 0.25rem;
   align-items: center;
   min-width: 0;
@@ -373,6 +374,7 @@ textarea {
 }
 
 .bar-title {
+  flex: 1 1 0;
   min-width: 0;
   text-align: center;
   line-height: 1.2;
@@ -400,6 +402,7 @@ textarea {
 }
 
 .bar-button {
+  flex: none;
   width: 2.15rem;
   height: 2.15rem;
   padding: 0;
@@ -434,6 +437,81 @@ textarea {
   opacity: 0.85;
 }
 
+.bar-words[hidden] {
+  display: none;
+}
+
+.room-header.compact {
+  gap: 0.35rem;
+}
+
+.room-header.compact .bar-text {
+  display: none;
+}
+
+.room-header.compact .mode-tabs {
+  margin-left: 0.15rem;
+}
+
+.room-header.compact .mode-tab {
+  padding-inline: 0.5rem;
+}
+
+/* The buttons the bar has no room for */
+
+.more-wrap {
+  position: relative;
+  flex: none;
+}
+
+.more-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: 14rem;
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100vh - 4.5rem);
+  padding: 0.35rem;
+  overflow-y: auto;
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  background: var(--sheet);
+  color: var(--sheet-ink);
+  box-shadow: 0 14px 36px rgb(0 0 0 / 35%);
+}
+
+.more-button svg {
+  stroke-width: 3.2;
+}
+
+.more-menu[hidden] {
+  display: none;
+}
+
+.more-menu .bar-button.in-menu {
+  justify-content: flex-start;
+  gap: 0.6rem;
+  width: 100%;
+  height: auto;
+  min-height: 2.2rem;
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+}
+
+.more-words {
+  margin: 0.3rem 0.6rem 0.4rem;
+  color: var(--sheet-ink-soft);
+  font-size: 0.82rem;
+}
+
+.more-words[hidden] {
+  display: none;
+}
+
 .room-message {
   display: flex;
   gap: 0.7rem;
@@ -462,7 +540,11 @@ textarea {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 15rem 18rem minmax(0, 1fr);
+  grid-template-columns: var(--books-width, 15rem) var(--chapters-width, 18rem) minmax(0, 1fr);
+}
+
+.column-actions {
+  flex-wrap: wrap;
 }
 
 .room.lists-hidden .column:not(.page-column) {
@@ -772,7 +854,15 @@ textarea {
 }
 
 .chapter-title {
+  display: block;
+  flex: none;
   width: 100%;
+  min-height: 0;
+  resize: none;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  field-sizing: content;
+  color: inherit;
   margin-bottom: 1.2rem;
   padding: 0 !important;
   border: 0 !important;
@@ -1927,6 +2017,44 @@ mark,
   }
 }
 
+/* Smaller windows. The lists narrow first. In a very small one, books and chapters share one column, each scrolling by itself, so the
+   page keeps a width that can be written in. */
+
+@container (max-width: 66rem) {
+  .columns {
+    grid-template-columns: var(--books-width, 11rem) var(--chapters-width, 13rem) minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 48rem) {
+  .columns {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    grid-template-rows: minmax(0, 2fr) minmax(0, 3fr);
+  }
+
+  .columns > .column:nth-child(1) {
+    grid-area: 1 / 1;
+    border-bottom: 1px solid var(--panel-edge);
+  }
+
+  .columns > .column:nth-child(2) {
+    grid-area: 2 / 1;
+  }
+
+  .columns > .page-column {
+    grid-area: 1 / 2 / span 2;
+  }
+
+  .room.lists-hidden .columns {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .room.lists-hidden .columns > .page-column {
+    grid-area: 1 / 1;
+  }
+}
+
 /* Glass: the panels and page are frosted over colour. Aero always has it, and it's an option for the other themes. */
 
 @media (prefers-reduced-transparency: no-preference) {
@@ -2171,6 +2299,7 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 
 .browser-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-left: auto;
 }
@@ -2300,6 +2429,30 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 
 .record-table-wrap {
   overflow: auto;
+}
+
+@container (max-width: 48rem) {
+  .records-room {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+
+  .records-nav {
+    padding-inline: 0.6rem;
+  }
+
+  .records-pane {
+    padding: 0.6rem 0.6rem 1rem;
+  }
+
+  .record-browser,
+  .record-page,
+  .records-empty {
+    padding: 0.8rem 0.8rem 1rem;
+  }
+
+  .browser-actions {
+    margin-left: 0;
+  }
 }
 
 .record-table {
@@ -2450,6 +2603,11 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 .record-title {
   flex: 1;
   min-width: 10rem;
+  resize: none;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  field-sizing: content;
+  color: inherit;
   padding: 0.1rem 0.2rem !important;
   border: 0 !important;
   border-bottom: 1px solid transparent !important;
@@ -2707,11 +2865,16 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 
   .room:has(.lookup-pane:not([hidden])) .columns {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .room:has(.lookup-pane:not([hidden])) .columns > .page-column {
+    grid-area: 1 / 1;
   }
 }
 
 .lookup-pane {
-  flex: 0 0 25rem;
+  flex: 0 0 min(25rem, 50%);
   overflow: auto;
   background: var(--sheet);
   color: var(--sheet-ink);
@@ -3325,4 +3488,86 @@ kbd {
 .change-list {
   margin: 0;
   padding-left: 1.2rem;
+}
+
+/* The two big windows, in a small app window or on a small screen: they take all but a margin of it, their lists of sections narrow,
+   and in Preferences each setting goes under its name. */
+
+@media (max-width: 760px), (max-height: 560px) {
+  .dialog.prefs-window,
+  .dialog.files-window {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    height: calc(100vh - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+
+  .prefs-head,
+  .prefs-foot,
+  .files-head,
+  .files-foot {
+    padding: 0.4rem 0.8rem;
+  }
+
+  .prefs-nav,
+  .files-nav {
+    padding: 0.4rem;
+  }
+
+  .prefs-nav [role="tab"],
+  .files-nav button {
+    padding: 0.3rem 0.55rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .prefs-body {
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+  }
+
+  .prefs-panes {
+    padding: 0.7rem 0.9rem 1rem;
+  }
+
+  .prefs-pane .field {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+
+  .files-nav {
+    width: 9.5rem;
+  }
+
+  .dialog .files-head h2 {
+    font-size: 1rem;
+  }
+
+  .files-bulk {
+    gap: 0.3rem 0.45rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .files-bulk select,
+  .files-bulk button {
+    max-width: 8.5rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.82rem;
+  }
+
+  /* The look at a file lies over the list, which has no width to spare. */
+  .files-body {
+    position: relative;
+  }
+
+  .file-side {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(22rem, 100%);
+    background: var(--sheet);
+    box-shadow: -12px 0 28px rgb(0 0 0 / 25%);
+  }
+
+  .file-side[hidden] {
+    display: none;
+  }
 }

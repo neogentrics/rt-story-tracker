@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-features-'));
@@ -79,7 +80,7 @@ async function typeOnPage(window, text) {
   await window.click('#pref-close');
 
   // Goals.
-  await window.click('.goals-button');
+  await tool(window, '.goals-button');
   await window.fill('#goal-daily', '100');
   await window.fill('#goal-chapter', '50');
   await window.click('#goals-save');
@@ -87,7 +88,7 @@ async function typeOnPage(window, text) {
   await window.waitForFunction(() => document.querySelector('.word-count').textContent.includes('of 50 words in this chapter'));
 
   // Focus mode.
-  await window.click('.focus-button');
+  await tool(window, '.focus-button');
   assert.equal(await window.isVisible('#book-list'), false, 'focus hides the lists');
   assert.equal(await window.isVisible('.toolbar'), false);
   assert.ok(await window.isVisible('.ProseMirror'));

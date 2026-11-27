@@ -4,7 +4,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { Saver } from '../shared/saver.js';
 import { countWords, plainText, toDocument } from '../shared/text.js';
 import { CommentMark, CommentsPanel } from './comments.js';
-import { el, formatCount, words } from './dom.js';
+import { el, formatCount, oneLine, words } from './dom.js';
 import { FindBar } from './find-bar.js';
 import { FindHighlight } from './find-plugin.js';
 import { icon } from './icons.js';
@@ -104,13 +104,15 @@ export class Page {
       ),
       onClose ? el('button', { class: 'tool close-pane', type: 'button', title: 'Close this side', 'aria-label': 'Close this side', onclick: onClose }, icon('close')) : null,
     );
-    this.titleInput = el('input', {
+    // A text area rather than a one-line input, so a long title wraps onto more lines. It still holds one line of text.
+    this.titleInput = el('textarea', {
       id: 'chapter-title',
       class: 'chapter-title',
-      type: 'text',
+      rows: '1',
       'aria-label': 'Chapter title',
       maxlength: '500',
       oninput: () => {
+        oneLine(this.titleInput);
         this.saver.touch();
         this.onTitle(this.chapterId, this.titleInput.value);
       },

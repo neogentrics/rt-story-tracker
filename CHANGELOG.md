@@ -18,6 +18,13 @@ Files you bring in. This will be 3.11.
   Writing can become a chapter or a record, and the file then waits in the Trash for 30 days. None of this writes an unencrypted copy of
   a file anywhere. Only *Save a copy* writes one out, where you choose.
 
+### Fixed
+- **The app works in a small window and on a small screen.** In a narrow window the title in the top bar ran into the word counts and the
+  buttons squeezed together. Now the title is shortened, then the counts, and the buttons used least move into a *More* menu that works
+  from the keyboard. The lists narrow, and in a very small window books and chapters share one column. Long chapter and record titles
+  wrap instead of being cut off, even in a full window. Preferences, Files and Records fit narrow windows. The window can now be made as
+  small as 640 by 400, and never opens larger than the screen, including a small laptop with Windows scaled to 150 percent.
+
 ### Changed
 - **Questions start on a likely answer.** Find my files no longer starts on *attachments*. Writing it can't place starts on *Notes*,
   and loose files named as chapters start on one book. A cover whose name uses underscores is now found.

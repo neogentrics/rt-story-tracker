@@ -1,9 +1,10 @@
 // The three columns: books, then the chapters of the chosen book, then the page.
 import { canHold, findNode, indexTree, resolveDrop, resolveStep } from '../shared/outline.js';
-import { el, formatCount, words } from './dom.js';
+import { el, formatCount, shortCount, words } from './dom.js';
 import { openDetails } from './details-dialog.js';
 import { openExport } from './export-dialog.js';
 import { openHistory } from './history.js';
+import { createBarFit } from './bar-fit.js';
 import { openFiles } from './files-dialog.js';
 import { openFolderImport } from './folder-import.js';
 import { openImport } from './import-dialog.js';
@@ -20,6 +21,11 @@ const DRAG_TYPE = 'application/x-rtst-item';
 const lastChapterKey = (projectId) => `lastChapter:${projectId}`;
 const MAX_GOAL = 10000000;
 const KIND_ICONS = { series: 'series', book: 'book', part: 'part', chapter: 'chapter' };
+
+// The order the top bar's buttons move into the More menu as it narrows, the least used first. The last few stay until the word counts
+// have gone.
+const LEAVE_ORDER = ['goals-button', 'trash-button', 'security-button', 'focus-button', 'history-button', 'import-button', 'export-button', 'attachments-button', 'lookup-button', 'find-button', 'prefs-button', 'apps-button'];
+const STAY_LONGEST = 3;
 
 function iconButton(id, name, label, onclick) {
   return el('button', { class: `bar-button ${id}`, title: label, 'aria-label': label, onclick }, icon(name));
@@ -87,38 +93,41 @@ export class WritingRoom {
     this.addDropZone(this.bookList, () => this.outline.id);
     this.addDropZone(this.chapterList, () => this.bookId);
 
+    const tools = [
+      iconButton('lookup-button write-only', 'records', 'Look up a record', () => this.toggleLookup()),
+      iconButton('find-button write-only', 'search', 'Find and replace', () => this.find()),
+      iconButton('import-button', 'import', 'Import', () => this.showImport()),
+      iconButton('export-button', 'export', 'Export', () => this.showExport()),
+      iconButton('attachments-button', 'attach', 'Files', () => this.showAttachments()),
+      iconButton('history-button write-only', 'history', 'Earlier versions of this chapter', () => this.showHistory()),
+      iconButton('goals-button write-only', 'goal', 'Goals', () => this.openGoals(this.activePage.chapterId)),
+      iconButton('focus-button write-only', 'focus', 'Focus mode', () => this.toggleFocus()),
+      iconButton('trash-button', 'trash', 'Trash', () => this.showTrash()),
+      iconButton('security-button', 'lock', 'Password and lock', () => onSecurity()),
+      this.apps.button,
+      iconButton('prefs-button', 'settings', 'Preferences', () => onPreferences()),
+    ];
+    this.barWords = el('span', { class: 'bar-words' }, this.todayWords, this.projectWords);
+    const barTitle = el('div', { class: 'bar-title' }, this.projectTitle, this.subtitle);
+    const barRight = el('div', { class: 'bar-side bar-right' }, this.barWords, ...tools);
+    let header;
+
     root.replaceChildren(
       el(
         'div',
         { class: 'room' },
-        el(
+        header = el(
           'header',
           { class: 'room-header' },
           el(
             'div',
             { class: 'bar-side' },
             iconButton('toggle-lists', 'menu', 'Show or hide the lists', () => this.room.classList.toggle('lists-hidden')),
-            el('button', { id: 'open-library', class: 'bar-primary', onclick: () => onLibrary() }, icon('library'), 'Library'),
+            el('button', { id: 'open-library', class: 'bar-primary', title: 'Library', 'aria-label': 'Library', onclick: () => onLibrary() }, icon('library'), el('span', { class: 'bar-text' }, 'Library')),
             el('div', { class: 'mode-tabs', role: 'group', 'aria-label': 'Show' }, this.writeButton, this.recordsButton),
           ),
-          el('div', { class: 'bar-title' }, this.projectTitle, this.subtitle),
-          el(
-            'div',
-            { class: 'bar-side bar-right' },
-            el('span', { class: 'bar-words' }, this.todayWords, this.projectWords),
-            iconButton('lookup-button write-only', 'records', 'Look up a record', () => this.toggleLookup()),
-            iconButton('find-button write-only', 'search', 'Find and replace', () => this.find()),
-            iconButton('import-button', 'import', 'Import', () => this.showImport()),
-            iconButton('export-button', 'export', 'Export', () => this.showExport()),
-            iconButton('attachments-button', 'attach', 'Files', () => this.showAttachments()),
-            iconButton('history-button write-only', 'history', 'Earlier versions of this chapter', () => this.showHistory()),
-            iconButton('goals-button write-only', 'goal', 'Goals', () => this.openGoals(this.activePage.chapterId)),
-            iconButton('focus-button write-only', 'focus', 'Focus mode', () => this.toggleFocus()),
-            iconButton('trash-button', 'trash', 'Trash', () => this.showTrash()),
-            iconButton('security-button', 'lock', 'Password and lock', () => onSecurity()),
-            this.apps.button,
-            iconButton('prefs-button', 'settings', 'Preferences', () => onPreferences()),
-          ),
+          barTitle,
+          barRight,
         ),
         this.message,
         this.columns,
@@ -157,6 +166,10 @@ export class WritingRoom {
     );
 
     this.room = root.querySelector('.room');
+    this.barFit = createBarFit({
+      header, title: barTitle, bar: barRight, tools, leaving: LEAVE_ORDER, core: STAY_LONGEST,
+      showWords: (level) => this.renderBarWords(level),
+    });
     this.page = this.makePage(this.pageRoot);
     this.activePage = this.page;
     this.pageRoot.addEventListener('focusin', () => {
@@ -196,6 +209,7 @@ export class WritingRoom {
   leave() {
     document.removeEventListener('keydown', this.keys);
     this.apps.destroy();
+    this.barFit?.destroy();
     this.records?.destroy();
     document.querySelectorAll('.mention-pop, .record-picker').forEach((node) => node.remove());
   }
@@ -207,6 +221,7 @@ export class WritingRoom {
       await this.flush();
       this.mode = mode;
       this.room.dataset.mode = mode;
+      this.barFit.fit();
       this.reportActivity();
       this.columns.hidden = mode === 'records';
       this.recordsRoot.hidden = mode !== 'records';
@@ -257,9 +272,30 @@ export class WritingRoom {
 
   showProgress() {
     const { today, dailyGoal } = this.progress;
-    const met = dailyGoal > 0 && today >= dailyGoal;
-    this.todayWords.textContent = dailyGoal ? `${formatCount(today)} of ${words(dailyGoal)} today` : `${words(today)} today`;
-    this.todayWords.classList.toggle('goal-met', met);
+    this.todayWords.classList.toggle('goal-met', dailyGoal > 0 && today >= dailyGoal);
+    this.updateBarWords();
+  }
+
+  // The counts in the top bar, at the length there's room for. It returns them in full, for the More menu.
+  renderBarWords(level = this.wordLevel ?? 'long') {
+    this.wordLevel = level;
+    const { today = 0, dailyGoal = 0 } = this.progress ?? {};
+    const total = this.outline.words;
+    const full = [dailyGoal ? `${formatCount(today)} of ${words(dailyGoal)} today` : `${words(today)} today`, words(total)];
+    const brief = [dailyGoal ? `${shortCount(today)}/${shortCount(dailyGoal)} today` : `${shortCount(today)} today`, total === 1 ? '1 word' : `${shortCount(total)} words`];
+    const [first, second] = level === 'short' ? brief : full;
+    this.todayWords.textContent = first;
+    this.projectWords.textContent = second;
+    this.barWords.hidden = level === 'none';
+    this.barWords.title = full.join(' · ');
+    return full.join(' · ');
+  }
+
+  // A count that has grown or shrunk can change what fits.
+  updateBarWords() {
+    const before = this.barWords?.textContent;
+    this.renderBarWords();
+    if (this.barWords?.textContent !== before) this.barFit?.fit();
   }
 
   toggleFocus() {
@@ -583,7 +619,7 @@ export class WritingRoom {
   renderLists() {
     const shelves = flatten(this.outline.children);
     this.bookList.replaceChildren(...shelves.map(({ node, depth }) => this.row(node, depth)));
-    this.projectWords.textContent = words(this.outline.words);
+    this.updateBarWords();
     this.renderChapters();
   }
 
@@ -736,7 +772,7 @@ export class WritingRoom {
       const label = document.querySelector(`[data-words-for="${at.node.id}"]`);
       if (label) label.textContent = words(at.node.words);
     }
-    this.projectWords.textContent = words(this.outline.words);
+    this.updateBarWords();
     this.showCounts();
   }
 

@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { codeFor, stepAt } = require('../../src/main/storage/totp');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-lock-'));
@@ -56,7 +57,7 @@ const unlock = async (window, password) => {
   await window.keyboard.type(`It began with ${WORD} at dawn.`);
 
   // Setting a password: the fields first, and they're checked.
-  await window.click('.security-button');
+  await tool(window, '.security-button');
   await window.fill('#new-password', 'short');
   await window.fill('#new-password-again', 'short');
   await window.click('#security-next');
@@ -102,7 +103,7 @@ const unlock = async (window, password) => {
   assert.match(await window.textContent('.ProseMirror'), /More words\./);
 
   // Exporting asks first, because what comes out isn't protected.
-  await window.click('.export-button');
+  await tool(window, '.export-button');
   await window.waitForSelector('#confirm-password');
   await window.fill('#confirm-secret', 'not the password');
   await window.click('#confirm-ok');
@@ -132,7 +133,7 @@ const unlock = async (window, password) => {
   await window.waitForSelector('#new-password-dialog', { state: 'detached' });
 
   // Trust this computer and add an authenticator, where the system has somewhere safe to keep them.
-  await window.click('.security-button');
+  await tool(window, '.security-button');
   await window.waitForSelector('#ways');
   const canTrust = await window.locator('#way-trust').count();
   console.log(`  this computer can be trusted: ${Boolean(canTrust)}`);
@@ -168,7 +169,7 @@ const unlock = async (window, password) => {
     await window.waitForSelector('.ProseMirror');
 
     // With no code and Open without asking, the library opens it. Locking still shows the lock, and doesn't undo itself.
-    await window.click('.security-button');
+    await tool(window, '.security-button');
     await window.click('#way-remove-code');
     await window.fill('#confirm-secret', NEXT_PASSWORD);
     await window.click('#confirm-ok');
@@ -180,7 +181,7 @@ const unlock = async (window, password) => {
     await window.click('#lock-here');
     await window.waitForSelector('.ProseMirror');
 
-    await window.click('.security-button');
+    await tool(window, '.security-button');
     await window.click('#way-untrust');
     await window.fill('#confirm-secret', NEXT_PASSWORD);
     await window.click('#confirm-ok');
@@ -222,7 +223,7 @@ const unlock = async (window, password) => {
   assert.match(await window.textContent('.ProseMirror'), /More words\./);
 
   // Taking the password off again.
-  await window.click('.security-button');
+  await tool(window, '.security-button');
   await window.waitForSelector('#ways');
   await window.click('#security-remove');
   await window.waitForSelector('#confirm-password');

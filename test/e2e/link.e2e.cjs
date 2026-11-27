@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { AppLink } = require('../../src/main/app-link');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-applink-'));
@@ -140,13 +141,13 @@ const answerYes = (app) => app.evaluate(({ dialog }) => { dialog.showMessageBox 
   await window.selectOption('#inbox-book', '');
   await window.click('#inbox-add');
   await window.waitForFunction(() => document.querySelector('#book-list').textContent.includes('Maps'));
-  await window.click('.attachments-button');
+  await tool(window, '.attachments-button');
   await window.waitForSelector('.attachment-row');
   assert.match(await window.textContent('.attachment-row'), /map\.png/);
   await window.click('#attachments-close');
 
   // A locked project: never sent, and a document waits for the password.
-  await window.click('.security-button');
+  await tool(window, '.security-button');
   await window.fill('#new-password', PASSWORD);
   await window.fill('#new-password-again', PASSWORD);
   await window.click('#security-next');

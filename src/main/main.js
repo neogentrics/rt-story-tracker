@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, safeStorage, session, shell } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, safeStorage, screen, session, shell } = require('electron');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -13,6 +13,7 @@ const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
 const { buildMenu } = require('./menu');
+const { sizeFrom, windowBounds } = require('./window-size');
 const { ITEMS, resolveKeys } = require('../shared/shortcuts');
 const { Security } = require('./security');
 const { runSelfTest, writeInWindow } = require('./self-test');
@@ -193,8 +194,9 @@ function spellingMenu(window, params) {
 
 // A test can ask for a smaller window, such as the 1024 by 768 screen of a hosted Windows computer, with RTST_WINDOW_SIZE=1024x768.
 function windowSize() {
-  const [, width, height] = /^(\d{3,4})x(\d{3,4})$/.exec(process.env.RTST_WINDOW_SIZE ?? '') ?? [];
-  return width ? { width: Number(width), height: Number(height) } : { width: 1280, height: 820 };
+  // A test can pretend the screen is smaller than it is, with RTST_WORK_AREA, or ask for a size with RTST_WINDOW_SIZE.
+  const work = sizeFrom(process.env.RTST_WORK_AREA) ?? screen.getPrimaryDisplay().workAreaSize;
+  return windowBounds(work, sizeFrom(process.env.RTST_WINDOW_SIZE));
 }
 
 function createWindow({ show = true } = {}) {
@@ -205,8 +207,6 @@ function createWindow({ show = true } = {}) {
   }
   const window = new BrowserWindow({
     ...windowSize(),
-    minWidth: 900,
-    minHeight: 560,
     show: false,
     title: 'RT Story Tracker',
     webPreferences: {

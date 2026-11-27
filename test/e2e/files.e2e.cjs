@@ -8,6 +8,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const docx = require('docx');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-filesview-'));
@@ -104,7 +105,7 @@ function problems() {
   await window.locator('#book-list .row', { hasText: 'Ash' }).click();
 
   const started = Date.now();
-  await window.click('.attachments-button');
+  await tool(window, '.attachments-button');
   await window.waitForSelector('#attachments[open] .attachment-row');
   const took = Date.now() - started;
   assert.ok(took < 5000, `the view opened in ${took}ms`);

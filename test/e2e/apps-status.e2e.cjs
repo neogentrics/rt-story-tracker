@@ -9,6 +9,7 @@ const os = require('node:os');
 const path = require('node:path');
 const http = require('node:http');
 const { AppLink } = require('../../src/main/app-link');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-apps-'));
@@ -56,7 +57,7 @@ const profile = path.join(work, 'profile');
   await waitDot('off');
   assert.equal(await name(), 'Recon Towers apps: App Link is off');
   assert.equal(await window.locator('.apps-dot').getAttribute('aria-hidden'), 'true', 'the dot is never the only signal');
-  await window.click('.apps-button');
+  await tool(window, '.apps-button');
   await window.waitForSelector('#apps-dialog[open]');
   assert.equal(await window.locator('#apps-off').isVisible(), true);
   assert.match(await window.innerText('#apps-off'), /App Link is off/);
@@ -114,7 +115,7 @@ const profile = path.join(work, 'profile');
   assert.equal(await dot(), 'green', 'the dot stays right with the panel closed');
 
   // Remove the link and it's amber again; turn App Link off and it says so.
-  await window.click('.apps-button');
+  await tool(window, '.apps-button');
   await window.waitForSelector('#apps-dialog[open]');
   await window.click('[aria-label="Remove the link to RT Markdown Reader"]');
   await waitDot('amber');
@@ -127,7 +128,7 @@ const profile = path.join(work, 'profile');
 
   // Version awareness: a newer version is a nudge with the numbers, and the button depends on the app.
   reply = published;
-  await window.click('.apps-button');
+  await tool(window, '.apps-button');
   await window.waitForSelector('#apps-dialog[open]');
   await window.check('#pref-link');
   await waitDot('amber');
@@ -149,7 +150,7 @@ const profile = path.join(work, 'profile');
   }
   const asked = sent.length;
   await window.click('#apps-close');
-  await window.click('.apps-button');
+  await tool(window, '.apps-button');
   await window.waitForSelector('#apps-dialog[open]');
   assert.equal(sent.length, asked, 'opening the panel again within the day asks nothing');
   reply = { code: 500, body: {} };
