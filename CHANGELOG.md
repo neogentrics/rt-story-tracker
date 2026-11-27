@@ -3,9 +3,9 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [3.11.0] - 2026-11-27
 
-Files you bring in. This will be 3.11.
+Files you bring in.
 
 ### Added
 - **Find my files sorts what it keeps.** Every file it keeps now goes in a section: *Covers*, *Art*, *Audio*, *Video*, *Notes*,

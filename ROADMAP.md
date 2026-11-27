@@ -38,7 +38,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | ✅ Released with [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0), [built there](docs/design/the-suite.md) |
 | [v3.9](#v39--records-with-the-suite) | Records, with the suite | ✅ Released ([3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0)) |
 | [v3.10](#v310--versions-of-a-record) | Versions of a record | ✅ Released ([3.10.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.10.0)) |
-| [v3.11](#v311--files-you-bring-in) | Files you bring in | Planned |
+| [v3.11](#v311--files-you-bring-in) | Files you bring in | ✅ Released ([3.11.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.11.0)) |
 | [v3.12](#v312--read-aloud) | Read aloud | Planned |
 | [v3.13](#v313--connect-claude) | Connect Claude | Planned |
 | [v3.14](#v314--timeline-and-places) | Timeline and places | Planned |
@@ -270,6 +270,8 @@ another app, and check that the panel says the same in words.
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
 attachments. Issues 37 to 40, and 42 to 49.
+
+✅ **Released as [3.11.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.11.0).**
 
 | Feature | Size | Details |
 |---|:-:|---|

@@ -92,7 +92,7 @@ open the app from *System Settings → Privacy & Security*.
 | **Links both ways** | Open a record, follow its links, and see every record and chapter that links back to it |
 | **@ in a chapter** | Type `@` and a name to link a record, then Ctrl or Cmd and click it to look it up beside the page. The name stays in the text as ordinary words |
 | **Tables, cards and saved views** | Filter, sort, choose columns and save the way you've set it up. A view never changes a record |
-| **Versions of a record** | Freeze a record for each book, with what changed filled in. A frozen version can never be changed. A printable part and an author-only part, canon lock, and records printed as a PDF with a label like Record 0100 · Revision 2 *(being built, after 3.9)* |
+| **Versions of a record** | Freeze a record for each book, with what changed filled in. A frozen version can never be changed. A printable part and an author-only part, canon lock, and records printed as a PDF with a label like Record 0100 · Revision 2 |
 | **Numbering** | `W-001`, with the next free number offered, ranges for each series, and no number used twice |
 | **Bring in records** | From spreadsheets (CSV) or Markdown files, or a whole folder. You see where each column goes before anything is written |
 | **The other Recon Towers apps** | An Apps panel lists the ones on this computer, installed or running, and links you once. A linked app can send you documents, see a short line about what's open, and ask for a book's word count, never your writing |
@@ -127,8 +127,8 @@ open the app from *System Settings → Privacy & Security*.
 | **Works offline** | No account, no server, and your writing never leaves your computer |
 | **Updates itself** | On Windows and the Linux AppImage. Mac and the `.deb` tell you when a new version is out |
 
-Coming next: sorting the files you bring in (3.11), read aloud (3.12), Connect Claude (3.13), then a
-timeline and places, lore, ideas and research. See the [roadmap](ROADMAP.md).
+Coming next: read aloud (3.12), Connect Claude (3.13), then a timeline and places, lore, ideas and
+research. See the [roadmap](ROADMAP.md).
 
 ### What this app does with each kind of document
 

@@ -1,8 +1,12 @@
 {
   "now": {
-    "title": "3.10 is out. 3.11, Files you bring in, is being built",
-    "note": "3.9 (Records with the suite) and 3.10 (versions of a record, web clips from Recon Browser, and a look like the rest of the family) are released. 3.11 sorts the files you bring in, from your own test of Find my files.",
+    "title": "3.11 is out. Next is 3.12, Read aloud",
+    "note": "3.11, Files you bring in, is released. It sorts the files you bring in, from your own test of Find my files. 3.9 (Records with the suite) and 3.10 (versions of a record, web clips from Recon Browser, and a look like the rest of the family) came before it.",
     "items": [
+      {
+        "title": "3.11: files you bring in",
+        "text": "Find my files sorts by type, with a files view and sections for audio, art and covers, and the app can check that folder for changes. Also a Look choice of Solid, Metallic or Glass, lists you can resize and fold, right-click menus, a bigger apps window, fixes for small windows and small screens and for a manuscript dropped in favour of its copy, and other apps are now told this one takes web clips as research."
+      },
       {
         "title": "Records",
         "text": "Characters, places, weapons or your own kinds, with links both ways, @ in a chapter, saved views, numbering and bringing records in from files."
@@ -37,17 +41,17 @@
       },
       {
         "title": "Released before this",
-        "text": "3.10.0 is the latest release. Before it came 3.9.0, and 3.7.2, which let Find my files see OneDrive files on Windows."
+        "text": "3.11.0 is the latest release. Before it came 3.10.0, 3.9.0, and 3.7.2, which let Find my files see OneDrive files on Windows."
       },
       {
         "title": "Next, from your own testing",
-        "text": "Now: Find my files sorting by type, with a files view and audio, art and cover sections, noticing when files in that folder change, a bigger apps window, a Look choice with Metallic beside Solid and Glass, a fix so the app works in small windows and on small screens, lists you can resize and fold, right-click menus, and an App Link change so other apps know this one takes web clips as research (3.11). Then read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes."
+        "text": "Read aloud like RT Markdown Reader (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes."
       }
     ]
   },
   "waiting": {
     "title": "A test and {decisions} decisions",
-    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below. None of them hold up 3.11."
+    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below."
   },
   "questions": [
     {
@@ -68,7 +72,7 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself yet. Sharing themes across the apps is planned for later, and waits for your go-ahead. RT Markdown Reader has a third look, Metallic, beside Solid and Glass. This app gets it in 3.11, with the same Look choice. Colour-safe and Customize Theme come later, in v3.23."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, with a Look of Solid, Metallic or Glass. A theme added to one app doesn't reach the other by itself yet. Sharing themes across the apps is planned for later, and waits for your go-ahead. From 3.11 it has the same Look choice as RT Markdown Reader. Colour-safe and Customize Theme come later, in v3.23."
     },
     {
       "q": "Will it read text aloud?",
