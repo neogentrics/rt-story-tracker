@@ -3,6 +3,23 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [3.10.0] - 2026-11-27
+
+Versions of a record, for authors who need to say what a record said as of each book.
+
+### Added
+- **Keep versions**, a switch on a kind of record, off by default. A record can be **frozen for a book**: a copy of it as it is,
+  tied to the book you choose, numbered Revision 1, 2 and so on, with what changed since the last one filled in for you.
+- **A frozen version can never be changed or unfrozen.** Freezing asks once and names the book. A mistake in a frozen version is
+  written down as a correction, and the fix goes in the next revision, which is the record as you're editing it.
+- **A printable part and an author-only part.** In a kind that keeps versions each field is for print or for the author alone,
+  and starts as author only. There are two sets of notes, one for print and one that never leaves.
+- **Print records**: one record or a set as a PDF, each starting a page, headed like “Record 0100 · Revision 2”, as the latest
+  frozen version or as a draft. Only the printable part is printed.
+- **Canon lock** on a record: it can be read, and changes only after you've said yes.
+- Export everything writes the printable part of each record, and each frozen version as its own file. The author-only part is
+  never in it. It stays in your project and its backups.
+
 ## [3.9.0] - 2026-11-27
 
 Records, where the story bible lives, and the apps finding each other. It includes the suite half that used to be 3.8,

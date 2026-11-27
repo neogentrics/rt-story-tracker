@@ -34,10 +34,10 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.4](#v34--bring-it-in) | Bring it in | ✅ Released ([3.4.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.4.0)) |
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
-| [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | 🚧 Released as 3.7.0, being tested by the owner |
+| [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), then [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1)) |
 | [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
 | [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
-| [v3.10](#v310--versions-of-a-record) | Versions of a record | Planned |
+| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Being built on the VM, after 3.9 |
 | [v3.11](#v311--timeline-and-places) | Timeline and places | Planned |
 | [v3.12](#v312--lore-ideas-research-dictionaries) | Lore, ideas, research, dictionaries | Planned |
 | [v3.13](#v313--where-every-book-stands) | Where every book stands | Planned |
@@ -240,15 +240,18 @@ on his own computer, and finding a character faster than in Notion.
 
 ## v3.10 — Versions of a record
 
-🙋 What a record said as of each book, for authors who need it. Off in the simple templates.
+🙋 What a record said as of each book, for authors who need it. Off in the simple templates. [How it's built](docs/design/records.md#versions).
+
+🚧 **Being built on the VM, on its own branch after 3.9. Not released.** The choices behind it are decision 28 in
+[decisions](docs/decisions.md).
 
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 Versions per book | M | `0100 v1`, `v2`, each tied to the book it covers, with *Changes since* filled in for you. |
-| 🙋 Draft and Frozen | S | A version freezes when its book is published. It can't be edited after that: fixes go in the next one. |
-| 🙋 A printable part and an author-only part | S | Hidden lore and notes stay out of print. |
-| Print records | M | A record or a set as a PDF, with labels such as *Record 0100 · Revision 2*. Replaces the dossier scripts. |
-| Canon lock | S | Locked items warn before they change. |
+| 🙋 Draft and Frozen | S | A version freezes when the author freezes it for a book, naming the book. It can never be edited or unfrozen: fixes go in the next one. |
+| 🙋 A printable part and an author-only part | S | Hidden lore and notes stay out of every print, export, status line and fact. |
+| Print records | M | A record or a set as a PDF, with labels such as *Record 0100 · Revision 2*. Replaces the dossier scripts. Built last. |
+| Canon lock | S | Locked items warn before they change, and change only if the author confirms. |
 
 **Test:** freeze a version, try to edit it, and print a set without the author-only part.
 

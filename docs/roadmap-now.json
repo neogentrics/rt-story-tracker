@@ -1,7 +1,7 @@
 {
   "now": {
-    "title": "3.9: Records, with the suite",
-    "note": "Built and tested on the VM, not released yet.",
+    "title": "3.9 is built; 3.10 is being built",
+    "note": "3.9, Records with the suite, is built and in review. 3.10, Versions of a record, is being built on its own branch.",
     "items": [
       {
         "title": "Records",
@@ -10,6 +10,10 @@
       {
         "title": "The suite",
         "text": "The apps finding each other when installed, an Apps panel, a status line and a book’s word count on request. Webhooks and n8n are left for their own design."
+      },
+      {
+        "title": "3.10: versions of a record",
+        "text": "Freeze a record for each book, with a printable part and an author-only part, canon lock, and records printed as a PDF with a label like Record 0100 · Revision 2. A frozen version can never be changed or unfrozen."
       },
       {
         "title": "Released before this",

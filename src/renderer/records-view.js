@@ -4,6 +4,7 @@ import { el, fill } from './dom.js';
 import { icon } from './icons.js';
 import { RecordBrowser } from './record-browser.js';
 import { RecordPage } from './record-page.js';
+import { VersionView, openPrintRecords } from './record-versions.js';
 import { openRecordsImport } from './records-import-dialog.js';
 import { openTypeDialog, openTemplates, templateCards } from './type-dialog.js';
 
@@ -131,6 +132,7 @@ export class RecordsView {
       onNewRecord: (type) => this.newRecord(type),
       onEditType: (type) => this.editType(type),
       onImport: (type) => this.bringIn(type),
+      onPrint: (type, ids) => openPrintRecords({ api: this.api, type, ids, onError: this.onError }),
     });
     this.renderTypes();
     await this.browser.show(id);
@@ -162,12 +164,31 @@ export class RecordsView {
         onError: this.onError,
         onOpenRecord: (next) => this.openRecord(next),
         onOpenChapter: (chapterId) => this.onOpenChapter(chapterId),
+        onOpenVersion: (versionId) => this.openVersion(versionId),
         onTrashed: (record) => this.recordTrashed(record),
       });
       await this.page.open(id, { fresh });
       this.typeId = this.page.data.type.id;
       this.renderTypes();
       this.renderNav();
+    } catch (error) {
+      this.onError(error.message);
+    }
+  }
+
+  // A frozen version, read-only. Back goes to the record it's a version of.
+  async openVersion(versionId) {
+    try {
+      await this.flush();
+      const recordId = this.page?.id ?? this.versionOf;
+      this.versionOf = recordId;
+      const host = el('div', { class: 'record-host' });
+      this.pane.replaceChildren(host);
+      this.page?.destroy();
+      this.page = null;
+      this.browser = null;
+      const view = new VersionView(host, { api: this.api, onError: this.onError, onBack: () => this.openRecord(recordId, { push: false }) });
+      await view.open(versionId);
     } catch (error) {
       this.onError(error.message);
     }
