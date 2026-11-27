@@ -281,6 +281,17 @@ Calls made while building it, which are the owner's to overrule:
   will show more words than the owner wrote. A way to keep a book out of the totals is a later job.
 - **A clip with no source still works.** The window shows no source line, and the chapter has none at the top.
 
+### 30. Connect Claude gets its own release
+
+✅ **Chosen by the owner, November 2026.** Connecting Claude Desktop and Claude Code to your projects no longer waits for the Claude and
+AI release. It's **v3.13**, after *Files you bring in* (3.11) and *Read aloud* (3.12), and ahead of *Timeline and places* (3.14).
+
+- **With the connection:** your choice of access (Off to begin with, Read only, Suggest, or Read and write), and the record of every
+  change Claude makes, which can be undone. A locked project is never reachable. It follows RT Markdown Reader's connector.
+- **Still later, together, in Claude and AI (3.17):** AI assist, your choice of AI, and signing in with Claude Code instead of a key.
+- It was first planned as 3.11. It moved to 3.13 when the owner's own test of *Find my files* put sorting brought-in files first, and a
+  tester's wish moved *Read aloud* up.
+
 ## The order, and where to start
 
 ### 22. Build order
