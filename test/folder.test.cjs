@@ -333,6 +333,33 @@ test('a scan only looks, finds copies, and stays in its folder', async (t) => {
   assert.equal(found.find((entry) => entry.rel === 'd.txt').sha256, undefined, 'a file with no twin is never read');
 });
 
+test('files Windows reports as links, as OneDrive does, are still found, and real links still are not', async (t) => {
+  const outside = folderOf({ 'secret.txt': 'outside' });
+  const root = folderOf({ 'Book/Chapter 1.docx': 'one', 'Book/Notes/a.txt': 'two' });
+  try {
+    fs.symlinkSync(outside, path.join(root, 'link'), 'junction');
+  } catch {
+    t.diagnostic('Links aren\'t available here.');
+  }
+  const { readdir } = fs.promises;
+  // Every entry says it is a link, which is what Node reports for a OneDrive file on Windows.
+  fs.promises.readdir = async (dir, options) => (await readdir(dir, options)).map((entry) => (
+    options?.withFileTypes ? Object.assign(Object.create(entry), { isSymbolicLink: () => true, isDirectory: () => false, isFile: () => false }) : entry
+  ));
+  t.after(() => { fs.promises.readdir = readdir; });
+  const found = await scanFolder(root);
+  assert.deepEqual(found.map((entry) => entry.rel).sort(), ['Book/Chapter 1.docx', 'Book/Notes/a.txt']);
+});
+
+test('a full copy in a Print folder is a finished copy, not a second manuscript to ask about', () => {
+  const result = plan(['Book 1/The Road manuscript.docx', 'Book 1/Print/The Road FULL BOOK.docx']);
+  assert.deepEqual(result.asks, []);
+  assert.equal(roleOf(result, 'Book 1/The Road manuscript.docx'), 'whole');
+  assert.equal(roleOf(result, 'Book 1/Print/The Road FULL BOOK.docx'), 'attachment');
+  const alone = plan(['Book 1/Print/The Road FULL BOOK.docx']);
+  assert.equal(roleOf(alone, 'Book 1/Print/The Road FULL BOOK.docx'), 'whole', 'with nothing else it is the manuscript');
+});
+
 test('an attachment is encrypted, comes back whole, and is stored once', async () => {
   const { space, bookId } = project();
   const secret = Buffer.from(`Picture of ${crypto.randomUUID()}`);

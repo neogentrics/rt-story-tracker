@@ -243,7 +243,10 @@ class Planner {
   }
 
   // No chapter names at all: one manuscript in some number of versions, or several files that need explaining.
-  unnamed(writing, book, key, holderOf) {
+  unnamed(everything, book, key, holderOf) {
+    // A whole copy in a Print or Ebook folder is a finished copy of the manuscript, not a second manuscript to ask about.
+    const copy = (file) => file.folders.some((folder) => signs.FINISHED_FOLDER.test(signs.tidy(folder)));
+    const writing = everything.some((file) => !copy(file)) ? everything.filter((file) => !copy(file)) : everything;
     const groups = this.groups(writing, (file) => file.version.rest.toLowerCase());
     const manuscripts = groups.filter((group) => group.some((file) => WHOLE_NAME.test(file.version.rest)));
     if (groups.length === 1) {

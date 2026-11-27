@@ -1,0 +1,21 @@
+name: Question or feedback
+description: Not sure how something works, or want to tell us how it feels to use
+title: "[Question] "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Anything goes here: a question, something confusing, or how using it felt. If something is broken, please use *Bug report* instead. This page is public, so please don't paste your writing or private details.
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like to tell us or ask?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Help → About RT Story Tracker
+      placeholder: "3.7.1"
