@@ -45,7 +45,7 @@
       },
       {
         "title": "Next, from your own testing",
-        "text": "Read aloud, built into this app (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go."
+        "text": "Read aloud, built into this app (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go. Publishing to WordPress, Ghost and Discord from inside this app, with your sign-ins kept inside the Lock, is on the roadmap as 3.25, as you decided. RT Markdown Reader can still do it over App Link. Nothing is being built yet."
       }
     ]
   },
