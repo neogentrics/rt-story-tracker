@@ -269,7 +269,7 @@ another app, and check that the panel says the same in words.
 ## v3.11 — Files you bring in
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
-attachments. Issues 37 to 40.
+attachments. Issues 37 to 40, and 42 and 43.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -277,8 +277,10 @@ attachments. Issues 37 to 40.
 | 🙋 A files view | M | After a book is brought in, a list of every file in it, with a preview and a menu to change what a file is (chapter, cover, art, record, audio, attachment) or to remove it. Files that were not sorted in the preview can be sorted later. |
 | 🙋 Audio, art and cover sections | M | A place for audio files, art and covers in each book, so they are sorted on the way in and browsed afterwards. |
 | The number means words | S | The count beside a book, part or chapter says *words*, so it is not read as a file count. |
+| 🙋🛡️ Check the folder for changes | M | A book remembers the folder Find my files read it from, because files get changed there outside the app. *Check folder for changes*, and a check when the project opens, list files that changed, are new or are gone. Nothing is applied by itself: a changed file can be taken from the folder, left as it is in the app, or kept as both, a new one is sorted into a section, and a missing one is only reported. Where a chapter changed in both places both are kept, and replaced text goes into its earlier versions. A locked project reads nothing until it's unlocked. Watching the folder and editing in both places stay in [v3.20](#v320--files-kept-in-step). |
+| 🙋 A readable apps window | S | The Recon Towers apps window is as wide and readable as Preferences, with larger text and buttons and every app shown, with no scrolling box inside it. |
 
-**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards.
+**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read.
 
 ## v3.12 — Read aloud
 
