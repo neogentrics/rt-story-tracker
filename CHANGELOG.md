@@ -7,7 +7,15 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
 
 Files you bring in. This will be 3.11.
 
+### Added
+- **Find my files sorts what it keeps.** Every file it keeps now goes in a section: *Covers*, *Art*, *Audio*, *Video*, *Notes*,
+  *Finished copies* (PDFs, e-books and what's in Print or E-book folders) or *Other files*, which is only for a type it doesn't know.
+  The preview groups each book's files that way with a count, and any file can be moved to another section before you bring it in.
+  Files brought in by an earlier version are sorted the same way, and nothing stored changes.
+
 ### Changed
+- **Questions start on a likely answer.** Find my files no longer starts on *attachments*. Writing it can't place starts on *Notes*,
+  and loose files named as chapters start on one book. A cover whose name uses underscores is now found.
 - **Word counts say so.** The number beside a book, part or chapter now reads *226 words*, so it isn't taken for a number of files.
 
 ## [3.10.0] - 2026-11-27

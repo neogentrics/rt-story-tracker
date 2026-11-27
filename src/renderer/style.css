@@ -1489,6 +1489,14 @@ mark,
   font-size: 0.86rem;
 }
 
+.plan-section-name {
+  padding: 0.15rem 0.35rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+}
+
 .plan-files select {
   flex: none;
   max-width: 9rem;

@@ -1,9 +1,13 @@
+import { SECTIONS, sectionLabel } from '../shared/sections.js';
 import { sizeOf } from './attachments-dialog.js';
 import { el, formatCount } from './dom.js';
 import { icon } from './icons.js';
 
 const KIND_ICONS = { series: 'library', book: 'book', part: 'folder', chapter: 'page', whole: 'page' };
 const DRAGGABLE = new Set(['book', 'part', 'chapter', 'whole']);
+// A section with more files than this starts closed, and an open one shows this many at a time, so thousands of files stay quick.
+const OPEN_UP_TO = 8;
+const SHOWN_AT_A_TIME = 100;
 const files = (count) => `${formatCount(count)} ${count === 1 ? 'file' : 'files'}`;
 const versions = (count) => `${formatCount(count)} earlier ${count === 1 ? 'version' : 'versions'}`;
 let showProgress = () => {};
@@ -19,7 +23,7 @@ function noteFor(node) {
   const parts = [];
   if (node.kind === 'book') parts.push(`${holdsChapters(node)} ${holdsChapters(node) === 1 ? 'chapter' : 'chapters'}`);
   if (node.cover) parts.push('cover');
-  if (node.attachments.length) parts.push(`${node.attachments.length} attached`);
+  if (node.attachments.length) parts.push(`${files(node.attachments.length)} kept`);
   return parts.join(' · ');
 }
 
@@ -87,19 +91,69 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
     input.select();
   }
 
-  function fileRow(id) {
-    const file = plan.files.find((item) => item.id === id);
+  // Which sections are open and how far each is shown, kept while the plan is worked out again after a change.
+  const openSections = new Map();
+  const shownOf = new Map();
+
+  function fileRow(file, holder) {
     const role = el(
       'select',
       {
         'aria-label': `What to do with ${file.name}`,
-        onchange: (event) => change(event.target.value === 'leave' ? { type: 'leave', id, left: true } : { type: 'role', id, role: event.target.value }),
+        onchange: (event) => {
+          const { value } = event.target;
+          if (value === 'leave') change({ type: 'leave', id: file.id, left: true });
+          else if (value === 'chapter') change({ type: 'role', id: file.id, role: 'chapter' });
+          else {
+            // The section it goes to is opened, so the file doesn't seem to vanish.
+            openSections.set(`${holder}:${value}`, true);
+            change({ type: 'section', id: file.id, section: value });
+          }
+        },
       },
-      el('option', { value: 'attachment' }, 'Attachment'),
+      SECTIONS.map((section) => el('option', { value: section.id }, section.label)),
       file.kind === 'writing' ? el('option', { value: 'chapter' }, 'Chapter') : null,
       el('option', { value: 'leave' }, 'Leave out'),
     );
+    role.value = file.section;
     return el('li', {}, el('div', { class: 'plan-row' }, el('span', { class: 'plan-title', title: file.rel }, file.name), el('span', { class: 'plan-note' }, sizeOf(file.size)), role));
+  }
+
+  // The files kept with a series, a book or the project, a group for each section.
+  function sectionRows(node) {
+    const kept = new Set(node.attachments);
+    const here = plan.files.filter((file) => kept.has(file.id));
+    return SECTIONS.flatMap((section) => {
+      const inIt = here.filter((file) => file.section === section.id);
+      if (inIt.length === 0) return [];
+      const key = `${node.id}:${section.id}`;
+      const open = openSections.get(key) ?? inIt.length <= OPEN_UP_TO;
+      const shown = shownOf.get(key) ?? SHOWN_AT_A_TIME;
+      return [el(
+        'li',
+        { class: 'plan-section', dataset: { section: section.id } },
+        el('button', {
+          type: 'button',
+          class: 'plan-section-name',
+          'aria-expanded': String(open),
+          dataset: { toggle: key },
+          onclick: () => {
+            openSections.set(key, !open);
+            showPlan(plan, key);
+          },
+        }, el('span', { 'aria-hidden': 'true' }, open ? '▾' : '▸'), ` ${section.label} (${formatCount(inIt.length)})`),
+        open
+          ? el('ul', {},
+            inIt.slice(0, shown).map((file) => fileRow(file, node.id)),
+            inIt.length > shown
+              ? el('li', {}, el('button', { type: 'button', class: 'link', dataset: { more: key }, onclick: () => {
+                shownOf.set(key, shown + SHOWN_AT_A_TIME);
+                showPlan(plan, key);
+              } }, `Show ${formatCount(Math.min(SHOWN_AT_A_TIME, inIt.length - shown))} more of ${formatCount(inIt.length)}`))
+              : null)
+          : null,
+      )];
+    });
   }
 
   function nodeRow(node) {
@@ -154,7 +208,7 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
       {},
       row,
       open && hasInside
-        ? el('ul', {}, node.children.map(nodeRow), node.attachments.length ? el('li', { class: 'plan-files' }, el('ul', {}, node.attachments.map(fileRow))) : null)
+        ? el('ul', {}, node.children.map(nodeRow), node.attachments.length ? el('li', { class: 'plan-files' }, el('ul', {}, sectionRows(node))) : null)
         : null,
     );
   }
@@ -184,14 +238,21 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
     );
   }
 
-  function showPlan(next) {
+  function showPlan(next, focusSection = null) {
     plan = next;
+    const scrolled = body.querySelector('#plan-tree')?.scrollTop ?? 0;
+    const kept = plan.totals.attachments + plan.totals.covers;
+    const bySection = SECTIONS
+      .map((section) => [section, (plan.totals.sections[section.id] ?? 0) + (section.id === 'cover' ? plan.totals.covers : 0)])
+      .filter(([, count]) => count)
+      .map(([section, count]) => `${sectionLabel(section.id)} ${formatCount(count)}`)
+      .join(', ');
     const { totals } = plan;
     const room = plan.freeBytes >= totals.attachmentBytes;
     heading.textContent = `Find my files: ${plan.root.split(/[\\/]/).pop()}`;
     const summary = [
       `${files(totals.files)}, ${sizeOf(totals.bytes)}.`,
-      `${formatCount(totals.chapters + totals.whole)} to read as writing, ${versions(totals.older)}, ${formatCount(totals.attachments + totals.covers)} to keep as attachments.`,
+      `${formatCount(totals.chapters + totals.whole)} to read as writing, ${versions(totals.older)}, ${files(kept)} to keep${bySection ? ` (${bySection})` : ''}.`,
       totals.duplicates ? `${formatCount(totals.duplicates)} exact copies.` : '',
       `Your originals are never touched.`,
     ].filter(Boolean).join(' ');
@@ -203,7 +264,7 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
       el(
         'div',
         { class: 'plan-body' },
-        el('div', { id: 'plan-tree', class: 'plan-tree' }, el('ul', {}, plan.tree.children.map(nodeRow), plan.tree.attachments.length ? el('li', {}, el('div', { class: 'plan-row' }, icon('attach'), el('span', { class: 'plan-title' }, 'Kept with the project')), el('ul', { class: 'plan-files' }, plan.tree.attachments.map(fileRow))) : null)),
+        el('div', { id: 'plan-tree', class: 'plan-tree' }, el('ul', {}, plan.tree.children.map(nodeRow), plan.tree.attachments.length ? el('li', {}, el('div', { class: 'plan-row' }, icon('attach'), el('span', { class: 'plan-title' }, 'Kept with the project')), el('ul', { class: 'plan-files' }, sectionRows(plan.tree))) : null)),
         el(
           'div',
           { id: 'plan-asks', class: 'plan-asks' },
@@ -219,6 +280,9 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
       button('plan-cancel', 'Cancel', close),
       el('button', { id: 'plan-go', class: 'primary', disabled: !room, onclick: () => bringIn(api.runFolderImport) }, icon('import'), 'Bring it in'),
     );
+    const tree = body.querySelector('#plan-tree');
+    tree.scrollTop = scrolled;
+    if (focusSection) tree.querySelector(`[data-toggle="${focusSection}"]`)?.focus({ preventScroll: true });
   }
 
   function showWorking(text) {
