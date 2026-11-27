@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, safeStorage, session, shell } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, safeStorage, screen, session, shell } = require('electron');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -12,7 +12,10 @@ const { LINKS, detailsText } = require('../shared/family');
 const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
+const { contextTemplate } = require('./context-menu');
+const { FolderLinks } = require('./folder/links');
 const { buildMenu } = require('./menu');
+const { sizeFrom, windowBounds } = require('./window-size');
 const { ITEMS, resolveKeys } = require('../shared/shortcuts');
 const { Security } = require('./security');
 const { runSelfTest, writeInWindow } = require('./self-test');
@@ -33,6 +36,7 @@ else if (process.env.RTST_USER_DATA) app.setPath('userData', process.env.RTST_US
 
 let workspace = null;
 let settings = null;
+let folderLinks = null;
 let backups = null;
 let security = null;
 let linking = null;
@@ -57,7 +61,15 @@ let keysPaused = false;
 function rebuildMenu() {
   if (!menuHooks) return;
   const keys = resolveKeys(keysPaused ? { ...Object.fromEntries(ITEMS.map((item) => [item.id, ''])) } : settings?.values.shortcuts, process.platform);
-  Menu.setApplicationMenu(buildMenu({ ...menuHooks, keys, updateReady: readyVersion }));
+  Menu.setApplicationMenu(buildMenu({ ...menuHooks, keys, updateReady: readyVersion, settings: settings?.values }));
+}
+
+// View, Look: saved here, and the window is told so it can draw it.
+function setLook(surface) {
+  if (!settings) return;
+  settings.save({ surface });
+  rebuildMenu();
+  mainWindow?.webContents.send('menu:command', 'settings-changed');
 }
 
 // The system's own encrypted storage. On Linux with no keyring Electron falls back to a fixed password, which is no
@@ -110,6 +122,7 @@ function openLibrary() {
     const root = path.join(app.getPath('userData'), 'library');
     workspace = new Workspace(new Library(root));
     settings = new Settings(root);
+    folderLinks = new FolderLinks(app.getPath('userData'));
     backups = new Backups(workspace, settings);
     security = new Security({
       workspace,
@@ -169,32 +182,25 @@ function requestFlush(window) {
   });
 }
 
-function spellingMenu(window, params) {
-  const fixes = params.dictionarySuggestions.map((word) => ({
-    label: word,
-    click: () => window.webContents.replaceMisspelling(word),
-  }));
-  const word = params.misspelledWord;
-  const add = word
-    ? [{ label: `Add “${word}” to Dictionary`, click: () => window.webContents.session.addWordToSpellCheckerDictionary(word) }]
-    : [];
-  const template = [
-    ...fixes,
-    ...add,
-    ...(fixes.length || word ? [{ type: 'separator' }] : []),
-    { role: 'cut', enabled: params.editFlags.canCut },
-    { role: 'copy', enabled: params.editFlags.canCopy },
-    { role: 'paste', enabled: params.editFlags.canPaste },
-    { type: 'separator' },
-    { role: 'selectAll' },
-  ];
-  Menu.buildFromTemplate(template).popup({ window });
+async function textMenu(window, params) {
+  // The writing page is the only place with comments and find and replace.
+  const onPage = params.isEditable
+    && await window.webContents.executeJavaScript("Boolean(document.activeElement?.closest('.pane .ProseMirror'))").catch(() => false);
+  if (window.isDestroyed()) return;
+  const template = contextTemplate(params, {
+    onPage,
+    replace: (word) => window.webContents.replaceMisspelling(word),
+    learn: (word) => window.webContents.session.addWordToSpellCheckerDictionary(word),
+    send: (command) => window.webContents.send('menu:command', command),
+  });
+  if (template.length) Menu.buildFromTemplate(template).popup({ window });
 }
 
 // A test can ask for a smaller window, such as the 1024 by 768 screen of a hosted Windows computer, with RTST_WINDOW_SIZE=1024x768.
 function windowSize() {
-  const [, width, height] = /^(\d{3,4})x(\d{3,4})$/.exec(process.env.RTST_WINDOW_SIZE ?? '') ?? [];
-  return width ? { width: Number(width), height: Number(height) } : { width: 1280, height: 820 };
+  // A test can pretend the screen is smaller than it is, with RTST_WORK_AREA, or ask for a size with RTST_WINDOW_SIZE.
+  const work = sizeFrom(process.env.RTST_WORK_AREA) ?? screen.getPrimaryDisplay().workAreaSize;
+  return windowBounds(work, sizeFrom(process.env.RTST_WINDOW_SIZE));
 }
 
 function createWindow({ show = true } = {}) {
@@ -205,8 +211,6 @@ function createWindow({ show = true } = {}) {
   }
   const window = new BrowserWindow({
     ...windowSize(),
-    minWidth: 900,
-    minHeight: 560,
     show: false,
     title: 'RT Story Tracker',
     webPreferences: {
@@ -225,7 +229,7 @@ function createWindow({ show = true } = {}) {
   window.on('closed', () => {
     if (window === mainWindow) BrowserWindow.getAllWindows().forEach((other) => other.close());
   });
-  window.webContents.on('context-menu', (_event, params) => spellingMenu(window, params));
+  window.webContents.on('context-menu', (_event, params) => textMenu(window, params));
   // The saved work is safe in the database, so a crashed window just starts again.
   window.webContents.on('render-process-gone', (_event, details) => {
     if (details.reason !== 'clean-exit' && !window.isDestroyed()) window.webContents.reload();
@@ -416,7 +420,7 @@ if (!app.requestSingleInstanceLock()) {
       status,
       checkForUpdates: checkForUpdatesFromMenu,
       menuKeys: {
-        // A shortcut was changed: the menu is built again with it.
+        // A shortcut or the look was changed: the menu is built again with it.
         changed: () => rebuildMenu(),
         pause: (paused) => {
           keysPaused = paused === true;
@@ -445,6 +449,7 @@ if (!app.requestSingleInstanceLock()) {
         return settings;
       },
       updater,
+      folderLinks: () => folderLinks,
       backups: () => backups,
       security: () => security,
       linking: () => linking,
@@ -461,6 +466,7 @@ if (!app.requestSingleInstanceLock()) {
       checkForUpdates: checkForUpdatesFromMenu,
       about: showAbout,
       version: app.getVersion(),
+      setLook,
     };
     rebuildMenu();
     mainWindow = createWindow({ show: !selfTestFile });

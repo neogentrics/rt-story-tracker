@@ -32,7 +32,7 @@ scratch. Versions 1.0 to 2.3 were a Windows-only app called StoryTracker that ne
 </tr>
 <tr>
 <td><img src="docs/screenshots/lookup.png" alt="A chapter open with a character looked up beside it"><br><b>Look it up while you write.</b> Type @ to link a name, then check it without leaving the page.</td>
-<td><img src="docs/screenshots/theme-glass.png" alt="A chapter in the Dusk theme with Glass on"><br><b>Make it yours.</b> Fifteen themes, Glass with any of them, and seventeen fonts.</td>
+<td><img src="docs/screenshots/theme-glass.png" alt="A chapter in the Dusk theme with Glass on"><br><b>Make it yours.</b> Fifteen themes in a Solid, Metallic or Glass look, and seventeen fonts.</td>
 </tr>
 <tr>
 <td><img src="docs/screenshots/find.png" alt="Find and replace, with every match marked on the page"><br><b>Find and replace.</b> In a chapter, a book or the whole project, with an Undo.</td>
@@ -92,24 +92,26 @@ open the app from *System Settings → Privacy & Security*.
 | **Links both ways** | Open a record, follow its links, and see every record and chapter that links back to it |
 | **@ in a chapter** | Type `@` and a name to link a record, then Ctrl or Cmd and click it to look it up beside the page. The name stays in the text as ordinary words |
 | **Tables, cards and saved views** | Filter, sort, choose columns and save the way you've set it up. A view never changes a record |
-| **Versions of a record** | Freeze a record for each book, with what changed filled in. A frozen version can never be changed. A printable part and an author-only part, canon lock, and records printed as a PDF with a label like Record 0100 · Revision 2 *(being built, after 3.9)* |
+| **Versions of a record** | Freeze a record for each book, with what changed filled in. A frozen version can never be changed. A printable part and an author-only part, canon lock, and records printed as a PDF with a label like Record 0100 · Revision 2 |
 | **Numbering** | `W-001`, with the next free number offered, ranges for each series, and no number used twice |
 | **Bring in records** | From spreadsheets (CSV) or Markdown files, or a whole folder. You see where each column goes before anything is written |
 | **The other Recon Towers apps** | An Apps panel lists the ones on this computer, installed or running, and links you once. A linked app can send you documents, see a short line about what's open, and ask for a book's word count, never your writing |
 | **Series, books, parts, chapters** | Three columns, as in the old app. A project holds series and books, and a book holds parts and chapters |
 | **Move things around** | Drag a chapter to reorder it, into a part, or to another book. Alt and the arrow keys work too |
+| **Lists that fit how you work** | Resize the two lists, fold series and parts away, and right-click anything in them to rename, move, duplicate, export or trash it. The Menu key and Shift+F10 open the same menu |
 | **Live word counts** | For the chapter, the book and the whole project, as you type |
 | **Saves itself** | A couple of seconds after you pause, and every five seconds while you type. There's no Save button to forget |
 | **Spell check** | With your own dictionary, so invented names stop being marked wrong |
 | **Find and replace** | In a chapter, a book or the whole project. A replace across chapters has an Undo |
-| **Themes and fonts** | Fifteen themes, Glass with any of them, seventeen fonts, and control of text size and page width |
+| **Themes and fonts** | Fifteen themes, a Look of Solid, Metallic or Glass, seventeen fonts, and control of text size and page width |
 | **Focus mode** | Just the page, until you press Esc |
 | **Goals** | Words a day and words for a chapter |
 | **Comments** | Notes on a selection, kept out of the book and its word count |
 | **Split view** | Two chapters side by side |
 | **Import** | Word, Markdown, plain text, RTF, HTML, EPUB, OpenDocument, PDF text, Scrivener and Pages, split into chapters, with word counts compared. Your original file is never changed |
-| **Find my files** | Point it at a folder. It sorts everything into series, books, chapters, versions and attachments, asks what it can't tell, and accounts for every file. Your originals are never touched |
-| **Attachments** | Pictures, audio, PDFs and anything else, kept with a book and encrypted like the rest of the project |
+| **Find my files** | Point it at a folder. It sorts everything into series, books, chapters and versions, files the rest as covers, art, audio, video, notes or finished copies, asks what it can't tell, and accounts for every file. Your originals are never touched |
+| **Keeps up with your folder** | Change your files where you found them, and the app lists what changed, what's new and what's gone. Compare side by side and choose. Nothing changes by itself, replaced words are kept, and the folder is only read |
+| **Files** | Pictures, audio, notes and anything else, kept with a book by section and encrypted like the rest of the project. Look at them, move them, use a picture as the cover, or make writing into a chapter or a record |
 | **AI clean-up** | Finds chat text, stray symbols and odd headings in AI-made files, shows you each one, and only changes what you agree to |
 | **Export** | A chapter, book, series or whole project as Word, PDF, EPUB, Markdown, HTML, OpenDocument, RTF, plain text or XML |
 | **Store-ready EPUB** | Cover, contents, metadata and series details, passing the official EPUB validator |
@@ -125,9 +127,19 @@ open the app from *System Settings → Privacy & Security*.
 | **Works offline** | No account, no server, and your writing never leaves your computer |
 | **Updates itself** | On Windows and the Linux AppImage. Mac and the `.deb` tell you when a new version is out |
 
-Coming next: Records, then versions of a record and web clips from Recon Browser (3.9 and 3.10, built and
-not released yet). After those, sorting the files you bring in (3.11), read aloud (3.12), Connect Claude
-(3.13), then a timeline and places, lore, ideas and research. See the [roadmap](ROADMAP.md).
+Coming next: read aloud (3.12), Connect Claude (3.13), then a timeline and places, lore, ideas and
+research. See the [roadmap](ROADMAP.md).
+
+### What this app does with each kind of document
+
+Another Recon Towers app can say what kind of document it's sending. When one asks what this app is, it's told which kinds get more
+than the usual handling, as `kinds`:
+
+| Kind | What this app does with it |
+|---|---|
+| `research` | A web clip. It waits to be filed with its source, and starts on a book called *Research* |
+
+A document of any other kind arrives as a plain document, and you choose where it goes.
 
 ## How your writing is kept
 

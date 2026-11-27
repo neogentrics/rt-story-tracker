@@ -149,7 +149,7 @@ class Linking {
     const running = this.server ? await this.server.found() : [];
     for (const item of running) {
       // What a running app says about itself is newer than the file it left, so it wins.
-      Object.assign(row(item.id, item.name), { running: true, version: item.version || rows.get(item.id)?.version || '', protocol: item.protocol, minProtocol: item.minProtocol, accepts: item.accepts });
+      Object.assign(row(item.id, item.name), { running: true, version: item.version || rows.get(item.id)?.version || '', protocol: item.protocol, minProtocol: item.minProtocol, accepts: item.accepts, kinds: item.kinds });
     }
     for (const [id, link] of Object.entries(this.load())) {
       const found = row(id, link.name);
@@ -161,7 +161,8 @@ class Linking {
       item.canOpen = item.installed && item.known && !item.running;
       item.state = stateOf(item);
       item.canGet = item.known && !item.installed && !item.running;
-      // Whether it can be linked at all. Only the protocol and the kinds of document decide: never its version number.
+      // Whether it can be linked at all. Only the protocol and the formats of document decide: never its version number, or the kinds it
+      // does something special with.
       const fit = item.protocol ? linkability({ mine: { protocol: PROTOCOL, minProtocol: MIN_PROTOCOL, accepts: ['markdown', 'text'] }, theirs: item }) : { ok: true };
       item.needsUpdate = fit.ok ? '' : fit.who;
       item.canLink = item.state === 'found' && fit.ok;

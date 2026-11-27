@@ -6,13 +6,16 @@ const path = require('node:path');
 const { EXPORT_FORMATS } = require('../shared/details');
 const { checkExport, exportEverything, exportFile, safeName } = require('./export');
 const { FolderImport } = require('./folder');
+const { FolderCheck } = require('./folder/recheck');
 const { IMPORT_EXTENSIONS, Importer } = require('./import');
 const { RecordImporter } = require('./records-import');
+const { Files } = require('./files');
 
 const MAX_COVER = 50 * 1024 * 1024;
 const importer = new Importer();
 const previews = new Set();
 const folderImport = new FolderImport();
+const folderCheck = new FolderCheck();
 const recordImporter = new RecordImporter();
 let chosenFolder = null;
 
@@ -298,7 +301,7 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('inbox:drop', (id) => inbox().drop(id));
 }
 
-function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
+function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, folderLinks, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
   const busy = (work) => busyWhile(workspace, work);
   const unlocked = (work) => (...args) => {
     security().needExportPass();
@@ -326,6 +329,7 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
   handle('item:rename', (input) => workspace().rename(input));
   handle('item:move', (input) => workspace().move(input));
   handle('item:trash', (id) => workspace().trashItem(id));
+  handle('item:duplicate', (id) => workspace().duplicate(id));
   handle('item:restore', (id) => workspace().restoreItem(id));
   handle('trash:list', () => workspace().listTrash());
   handle('library:trashProject', (id) => workspace().trashProject(id));
@@ -364,9 +368,11 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
   handle('find:undo', () => workspace().undoReplace());
   handle('settings:get', () => settings().values);
   handle('settings:save', (changes) => {
-    const before = JSON.stringify(settings().values.shortcuts);
+    const menuShows = ({ shortcuts, theme, surface }) => JSON.stringify([shortcuts, theme, surface]);
+    const before = menuShows(settings().values);
     const saved = settings().save(changes);
-    if (JSON.stringify(saved.shortcuts) !== before) menuKeys.changed();
+    // The menu shows the shortcuts and which look is ticked, so it's built again when either changes.
+    if (menuShows(saved) !== before) menuKeys.changed();
     session.defaultSession.setSpellCheckerEnabled(saved.spellcheck);
     return saved;
   });
@@ -392,7 +398,29 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
     return folderImport.scan(workspace(), chosenFolder, folderProgress);
   });
   handle('folder:edit', (change) => folderImport.edit(workspace(), change));
-  handle('folder:run', busy(() => folderImport.run(workspace(), folderProgress)));
+  // A folder chosen on this computer is remembered as chosen here, so it can be checked for changes. One that a project only names,
+  // as when an import is picked up again on another computer, isn't.
+  handle('folder:run', busy(() => {
+    const { state } = folderImport;
+    if (state && state.root === chosenFolder) folderLinks().add(workspace().open().id, state.id, state.root);
+    return folderImport.run(workspace(), folderProgress);
+  }));
+  // Checking those folders again. Whatever was read from one is forgotten when the project closes or locks.
+  const checking = () => {
+    workspace().onClose = () => folderCheck.forget();
+    return workspace();
+  };
+  handle('folderCheck:folders', () => folderCheck.folders(checking(), folderLinks()));
+  handle('folderCheck:run', () => folderCheck.check(checking(), folderLinks()));
+  handle('folderCheck:compare', (key) => folderCheck.compare(checking(), String(key)));
+  handle('folderCheck:apply', busy((choices) => folderCheck.apply(checking(), Array.isArray(choices) ? choices : [])));
+  handle('folderCheck:locate', async (importId) => {
+    // The window opens where the system chooses, never at the path the project names.
+    const { canceled, filePaths } = await dialog.showOpenDialog(window(), { title: 'Where is the folder now?', properties: ['openDirectory'] });
+    if (canceled) return false;
+    await folderCheck.locate(checking(), folderLinks(), String(importId), filePaths[0]);
+    return true;
+  });
   handle('folder:stop', () => folderImport.stop());
   handle('folder:pending', () => folderImport.pending(workspace()));
   handle('folder:resume', busy(() => folderImport.resume(workspace(), folderProgress)));
@@ -424,6 +452,20 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, workspace, u
   handle('records:importPreview', (typeId) => recordImporter.preview(typeId ? workspace().records.typeItem(typeId) : null));
   handle('records:importRun', busy((input) => recordImporter.run(workspace().records, input)));
   handle('attachments:list', (id) => workspace().listAttachments(id));
+  // The Files view. Ids arrive as a list, so many can be changed in one go.
+  const idsOf = (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0 || ids.length > 100000) throw new Error('Choose some files first.');
+    return ids.map(String);
+  };
+  const files = () => new Files(workspace());
+  handle('files:list', (id) => files().list(id));
+  handle('files:preview', (id) => files().preview(id));
+  handle('files:section', busy(({ ids, section }) => files().setSection(idsOf(ids), section)));
+  handle('files:move', busy(({ ids, parentId }) => files().move(idsOf(ids), parentId)));
+  handle('files:trash', busy((ids) => files().trash(idsOf(ids))));
+  handle('files:cover', busy((id) => files().useAsCover(id)));
+  handle('files:chapter', busy(({ id, bookId }) => files().makeChapter(id, bookId)));
+  handle('files:record', busy(({ id, typeId }) => files().makeRecord(id, typeId)));
   handle('attachments:add', busy((parentId) => addAttachments(workspace, window, parentId)));
   handle('attachments:preview', (id) => workspace().previewAttachment(id));
   handle('attachments:save', busy(unlocked((id) => saveAttachment(workspace, window, id))));

@@ -88,6 +88,8 @@ most of the saved work is.
 ### 14. Sharing code with RT Markdown Reader
 
 ✅ **Chosen 4 November 2026: Copy to begin with,** and share a piece once both apps use it and it has settled.
+For features more than one app needs, [decision 31](#31-apps-stand-alone-and-shared-features-are-one-module) replaced this on
+27 November 2026.
 
 | Choice | In short |
 |---|---|
@@ -291,6 +293,27 @@ AI release. It's **v3.13**, after *Files you bring in* (3.11) and *Read aloud* (
 - **Still later, together, in Claude and AI (3.17):** AI assist, your choice of AI, and signing in with Claude Code instead of a key.
 - It was first planned as 3.11. It moved to 3.13 when the owner's own test of *Find my files* put sorting brought-in files first, and a
   tester's wish moved *Read aloud* up.
+
+### 31. Apps stand alone, and shared features are one module
+
+✅ **Chosen by the owner, 27 November 2026,** for the whole suite. Recorded in the
+[feature map](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-features.md#decisions-the-owner-2026-11-27).
+
+1. **Every app works on its own.** Nobody has to install RT Markdown Reader. An app never needs another app to do a job it advertises.
+   When apps are linked, hand-offs over App Link are a bonus, never a requirement.
+2. **A shared feature is one code module** that each app that needs it takes in, the way the themes are to be shared. It isn't got by
+   asking the Reader. This covers read aloud, dictation, your own AI service, citations, document formats and the map's other overlaps.
+   The module will live in a private repository like the one for themes. **It isn't created yet, and nothing moves into it until the
+   owner says go.**
+3. **Exports are built into every app that uses them,** so with only RT Story Tracker installed, it exports.
+
+What it means here:
+
+- **Decision 14** (copy to begin with, and share a piece later) no longer applies to these features.
+- **Decision 25** stands: this app keeps its exports.
+- On the roadmap, read aloud (v3.12), citations (v3.15), your choice of AI (v3.17), names said right and dictation (v3.22), and the
+  Word, PDF and EPUB exports are to come from the module. The exports are this app's own code today.
+- **Not settled by this:** which print PDF engine the shared package uses, and who owns book layouts.
 
 ## The order, and where to start
 

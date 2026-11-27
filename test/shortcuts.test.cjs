@@ -138,6 +138,32 @@ test('the menu is built with the author’s keys, and a command with no key take
   assert.deepEqual([key('Export…'), key('Print…'), key('Trash'), key('Find…')], ['CmdOrCtrl+J', undefined, 'F6', 'CmdOrCtrl+F']);
 });
 
+test('View, Look has the three looks, ticks the one that’s drawn, and only offers what the theme can be', () => {
+  const real = Module._load;
+  Module._load = function load(request, ...rest) {
+    return request === 'electron' ? { Menu: { buildFromTemplate: (template) => template } } : real.call(this, request, ...rest);
+  };
+  const chosen = [];
+  try {
+    delete require.cache[require.resolve('../src/main/menu')];
+    const { buildMenu } = require('../src/main/menu');
+    const looks = (settings) => buildMenu({ send: () => {}, checkForUpdates: () => {}, about: () => {}, version: '1.0.0', settings, setLook: (id) => chosen.push(id) })
+      .find((menu) => menu.label === 'View').submenu.find((item) => item.label === 'Look').submenu;
+    const state = (settings) => looks(settings).map((item) => `${item.label}:${item.checked ? 'ticked' : '-'}:${item.enabled ? 'on' : 'off'}`);
+    assert.deepEqual(state({ theme: 'sepia', surface: 'metallic' }), ['Solid:-:on', 'Metallic:ticked:on', 'Glass:-:on']);
+    assert.deepEqual(state({ theme: 'system', surface: 'glass' }), ['Solid:-:on', 'Metallic:-:on', 'Glass:ticked:on']);
+    assert.deepEqual(state({ theme: 'aero', surface: 'metallic' }), ['Solid:-:off', 'Metallic:-:off', 'Glass:ticked:on']);
+    assert.deepEqual(state({ theme: 'contrast', surface: 'glass' }), ['Solid:ticked:on', 'Metallic:-:off', 'Glass:-:off']);
+    assert.deepEqual(state(undefined), ['Solid:ticked:on', 'Metallic:-:on', 'Glass:-:on'], 'before the settings have been read');
+    assert.deepEqual(looks({}).map((item) => item.type), ['radio', 'radio', 'radio']);
+    looks({}).forEach((item) => item.click());
+    assert.deepEqual(chosen, ['solid', 'metallic', 'glass']);
+  } finally {
+    Module._load = real;
+    delete require.cache[require.resolve('../src/main/menu')];
+  }
+});
+
 test('keys read the way this computer says them', () => {
   assert.deepEqual([showKeys('CmdOrCtrl+Alt+J', 'win32'), showKeys('CmdOrCtrl+Alt+J', 'darwin')], ['Ctrl+Alt+J', 'Cmd+Option+J']);
 });

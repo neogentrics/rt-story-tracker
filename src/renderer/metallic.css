@@ -1,0 +1,116 @@
+/* Metallic: a brushed-metal finish for the app's own chrome, on top of any theme. It's RT Markdown Reader's (its
+   src/renderer/styles/metallic.css), with this app's parts in place of the Reader's. Layered gradients, not blur: a light line along
+   the top edge, a darker band through the middle, a soft light band near the bottom, a dark line at the very bottom, a drop shadow,
+   raised buttons, a glossier main button, and recessed text boxes.
+
+   How strong each layer is comes from the lightness of the text on that surface. Dark text means a light surface, which gets a bright
+   highlight and a faint dark band, and light text means a dark surface, which gets a faint highlight and a deep band. So it follows
+   every theme, including those with a dark bar or dark lists around a light page.
+
+   What gets it: the top bar and its buttons, the two lists, the formatting bar, the footer, the comments, the find bar, windows and
+   menus. What stays flat: the page, records, printing and exports, High Contrast, forced colours, and where more contrast was asked for.
+   Gradients can lower the contrast of the text over them, and an accessibility checker can't see that, so test/e2e/look.e2e.cjs measures
+   it, for every theme. */
+
+@media screen and (forced-colors: none) and (prefers-contrast: no-preference) {
+  /* Which text is on each surface. */
+  :root[data-surface='metallic']:not([data-theme='contrast']) :is(.room-header, .library-bar) { --m-ink: var(--on-bar); }
+  :root[data-surface='metallic']:not([data-theme='contrast']) :is(.column:not(.page-column), .toolbar, .page-footer, .find-bar, .comments) { --m-ink: var(--on-panel); }
+  :root[data-surface='metallic']:not([data-theme='contrast']) :is(.dialog, .more-menu, .popup-menu, .column-menu, .record-picker, .mention-pop, .home-card, input, select, textarea) { --m-ink: var(--sheet-ink); }
+
+  /* The strength of each layer, worked out from --m-ink's lightness (l, from 0 to 1) where it's used. The ends are what a light surface
+     (l about .3) and a dark one (l .75 or more) each want, and between them it's a straight line. The numbers are the Reader's. */
+  :root[data-surface='metallic']:not([data-theme='contrast']) :is(.room-header, .library-bar, .column:not(.page-column), .toolbar, .page-footer, .find-bar, .comments, .dialog, .more-menu, .popup-menu, .column-menu, .record-picker, .mention-pop, .home-card, input, select, textarea) {
+    --m-top: oklch(from var(--m-ink) 1 0 0 / clamp(.10, calc(1.213 - 1.444 * l), .78));
+    --m-top-2: oklch(from var(--m-ink) 1 0 0 / clamp(.03, calc(.34 - .4 * l), .22));
+    --m-band: oklch(from var(--m-ink) .15 0 0 / clamp(.07, calc(-.057 + .422 * l), .26));
+    --m-low: oklch(from var(--m-ink) 1 0 0 / clamp(.05, calc(.533 - .644 * l), .34));
+    --m-edge: oklch(from var(--m-ink) .15 0 0 / clamp(.13, calc(-.05 + .6 * l), .40));
+    --m-line-hi: oklch(from var(--m-ink) 1 0 0 / clamp(.42, calc(1.303 - 1.178 * l), .95));
+    --m-line-lo: oklch(from var(--m-ink) .15 0 0 / clamp(.22, calc(-.067 + .956 * l), .65));
+    --m-drop: oklch(from var(--m-ink) .15 0 0 / clamp(.20, calc(.667 * l), .50));
+    --m-well: oklch(from var(--m-ink) .15 0 0 / clamp(.20, calc(-.067 + .889 * l), .60));
+    --m-lip: oklch(from var(--m-ink) 1 0 0 / clamp(.16, calc(1.31 - 1.533 * l), .85));
+    --m-rim: color-mix(in srgb, var(--chrome-border) 55%, #fff 45%);
+    /* A bar is shaded by proportion. A panel is shaded by distance from its edges, so a tall window gets a bright top and a soft bottom
+       rather than a bright half. */
+    --m-sheen-bar: linear-gradient(180deg, var(--m-top) 0%, var(--m-top-2) 28%, var(--m-band) 58%, var(--m-low) 88%, var(--m-edge) 100%);
+    /* A button on a bar is lighter than the bar it sits on, or the two highlights add up. */
+    --m-sheen-btn: linear-gradient(180deg, var(--m-top-2) 0%, transparent 46%, var(--m-band) 100%);
+    --m-sheen-panel:
+      linear-gradient(180deg, var(--m-top) 0, var(--m-top-2) 56px, transparent 120px),
+      linear-gradient(0deg, var(--m-edge) 0, var(--m-low) 28px, transparent 90px),
+      linear-gradient(180deg, transparent 120px, var(--m-band) 50%, transparent calc(100% - 90px));
+  }
+
+  :root[data-surface='metallic']:not([data-theme='contrast']) {
+    /* The bar at the top. */
+    :is(.room-header, .library-bar) {
+      background: var(--m-sheen-bar), var(--toolbar-fill);
+      box-shadow: inset 0 1px 0 var(--m-line-hi), inset 0 -1px 0 var(--m-line-lo), 0 3px 12px var(--m-drop);
+    }
+
+    /* The formatting bar and the footer. */
+    :is(.toolbar, .page-footer) {
+      background: var(--m-sheen-bar), var(--sidebar-fill);
+      box-shadow: inset 0 1px 0 var(--m-line-hi), inset 0 -1px 0 var(--m-line-lo);
+    }
+
+    /* The two lists, the find bar and the comments. */
+    :is(.column:not(.page-column), .find-bar, .comments) {
+      background: var(--m-sheen-panel), var(--sidebar-fill);
+      border-color: var(--m-rim);
+      box-shadow: inset -1px 0 0 var(--m-line-hi), 3px 0 12px var(--m-drop);
+    }
+
+    .column-actions { box-shadow: inset 0 1px 0 var(--m-line-hi); }
+
+    /* Windows and menus. */
+    :is(.dialog, .more-menu, .popup-menu, .column-menu, .record-picker, .mention-pop, .home-card) {
+      background: var(--m-sheen-panel), var(--page);
+      border-color: var(--m-rim);
+      box-shadow: inset 0 1px 1px var(--m-line-hi), inset -1px 0 0 var(--m-line-hi), 0 20px 50px -10px var(--m-drop);
+    }
+
+    /* Buttons are raised plates, tinted toward their own text: lighter on a dark surface and darker on a light one. */
+    :is(.room-header, .library-bar) :is(.bar-button:not(.in-menu), .bar-primary):not(:disabled),
+    :is(.column-actions, .toolbar, .find-bar, .dialog-actions, .prefs-foot) button:not(.primary, .quiet, :disabled) {
+      background: var(--m-sheen-btn), color-mix(in srgb, currentcolor 7%, transparent);
+      border: 1px solid var(--m-rim);
+      box-shadow: inset 0 1px 0 var(--m-line-hi), 0 1px 4px var(--m-drop);
+    }
+
+    /* A button on the bar with words on it is tinted away from its words, as in Solid, so the plate takes no contrast from them. */
+    :is(.room-header, .library-bar) .bar-primary.bar-primary:not(:disabled) { background: var(--m-sheen-btn), var(--bar-tint); }
+
+    :is(.room-header, .library-bar, .column-actions, .toolbar, .find-bar, .dialog-actions, .prefs-foot) button:not(.primary, :disabled):hover { filter: brightness(1.12); }
+    :is(.column-actions, .toolbar, .find-bar, .dialog-actions, .prefs-foot) button:not(.primary, .quiet, :disabled):active { box-shadow: inset 0 2px 4px var(--m-well); }
+    .toolbar button[aria-pressed='true']:not(:disabled) { box-shadow: inset 0 2px 4px var(--m-well), inset 0 0 0 1px var(--m-line-lo); }
+
+    /* The main button: the accent colour, glossier. */
+    button.primary:not(:disabled) {
+      background: linear-gradient(180deg, rgb(255 255 255 / 15%) 0%, rgb(255 255 255 / 3%) 48%, rgb(0 0 0 / 16%) 100%), var(--accent);
+      border: 1px solid color-mix(in srgb, var(--accent) 65%, #fff 35%);
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 2px 6px var(--m-drop, rgb(0 0 0 / 25%));
+    }
+
+    /* Text boxes and lists are recessed: dark inside, a light lip below. The Write and Records switch is a groove with a plate in it. */
+    /* The column the page is in is a .column too, and what's on the page stays flat. */
+    :is(.column:not(.page-column), .toolbar, .find-bar, .dialog, .home-card) :is(input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file']), select, textarea):not(.comment-text, .comment-box) {
+      background: linear-gradient(180deg, var(--m-well) 0%, transparent 55%), var(--page);
+      border-color: var(--m-rim);
+      box-shadow: inset 0 2px 3px var(--m-well), 0 1px 0 var(--m-lip);
+    }
+
+    .room-header .mode-tabs {
+      background: linear-gradient(180deg, var(--m-well) 0%, transparent 55%);
+      border-color: var(--m-rim);
+      box-shadow: inset 0 2px 3px var(--m-well), 0 1px 0 var(--m-lip);
+    }
+
+    .room-header .mode-tab.active {
+      background: var(--m-sheen-btn), var(--bar-tint);
+      box-shadow: inset 0 1px 0 var(--m-line-hi), 0 1px 3px var(--m-drop);
+    }
+  }
+}

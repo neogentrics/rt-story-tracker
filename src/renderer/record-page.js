@@ -6,7 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { Saver } from '../shared/saver.js';
 import { readNumber } from '../shared/records.js';
 import { toDocument } from '../shared/text.js';
-import { el, fill } from './dom.js';
+import { el, fill, oneLine } from './dom.js';
 import { icon } from './icons.js';
 import { MentionMark, mentionSuggestions } from './mentions.js';
 import { openRecordPicker } from './record-picker.js';
@@ -125,13 +125,14 @@ export class RecordPage {
     this.editor?.destroy();
     this.printEditor?.destroy();
     this.printEditor = null;
-    this.titleInput = el('input', {
+    // A text area, so a long name wraps. It still holds one line of text.
+    this.titleInput = el('textarea', {
       class: 'record-title',
-      type: 'text',
+      rows: '1',
       maxlength: '500',
       'aria-label': 'Name',
-      value: record.title,
       oninput: () => {
+        oneLine(this.titleInput);
         this.title = this.titleInput.value;
         this.saver.touch();
       },
@@ -142,6 +143,7 @@ export class RecordPage {
         }
       },
     });
+    this.titleInput.value = record.title;
     this.stateLabel = el('span', { class: 'save-state', role: 'status', dataset: { state: 'saved' } }, STATE.saved);
     const head = el(
       'header',
@@ -159,7 +161,9 @@ export class RecordPage {
     this.printHost = el('div', { class: 'record-notes-host print-notes-host' });
     this.lockBanner = el('div', { class: 'lock-banner', role: 'status', hidden: true });
     this.backlinksBox = el('section', { class: 'record-backlinks', 'aria-label': 'Linked from' });
-    this.root.replaceChildren(
+    // fill, not replaceChildren: a part that isn't there would be written as the word "null".
+    fill(
+      this.root,
       head,
       this.lockBanner,
       this.versionStrip(),

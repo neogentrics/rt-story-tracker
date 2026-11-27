@@ -79,4 +79,4 @@ async function scanFolder(root, { onProgress = () => {}, shouldStop = () => fals
   return entries;
 }
 
-module.exports = { scanFolder };
+module.exports = { hashOf, scanFolder, walkFolder: walk };

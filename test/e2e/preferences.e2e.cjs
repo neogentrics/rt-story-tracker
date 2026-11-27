@@ -14,7 +14,7 @@ const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-preferences-'));
 // Each section, in order, and the settings that have to be in it.
 const SECTIONS = [
   ['general', 'General', ['#pref-reopen', '#pref-check-updates', '#pref-releases']],
-  ['appearance', 'Appearance', ['#pref-theme', '#pref-glass', '#pref-page-font', '#pref-ui-font', '#pref-text-size', '#pref-page-width']],
+  ['appearance', 'Appearance', ['#pref-theme', '#pref-surface', '#pref-page-font', '#pref-ui-font', '#pref-text-size', '#pref-page-width']],
   ['editing', 'Editing', ['#pref-spellcheck', '#new-word', '#dictionary-words']],
   ['backups', 'Backups', ['#backup-folder', '#backup-choose', '#pref-backup-every', '#pref-backup-keep', '#backup-now', '#backup-note']],
   ['lock', 'Password lock', ['#pref-lock-after']],

@@ -68,7 +68,7 @@ export async function openImport({ api, books, parentId, emptyBookId, onDone, on
       ...preview.sections.map((section) =>
         section.type === 'part'
           ? el('li', { class: 'import-part' }, section.title)
-          : el('li', {}, el('span', {}, section.title), el('span', { class: 'row-words' }, formatCount(section.words)))),
+          : el('li', {}, el('span', {}, section.title), el('span', { class: 'row-words' }, words(section.words)))),
     );
     check.textContent = wordCheck(preview);
     const lines = [...preview.notes];

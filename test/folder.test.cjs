@@ -62,6 +62,64 @@ const nodeNamed = (node, title) => {
   return null;
 };
 
+// Issue 48. A book folder with the manuscript at the top, an exact copy of it in Old Versions, and an older draft beside the copy. The
+// issue's own names are the first. The rule it reports, that whichever copy sorts first is kept, only goes wrong for a title that sorts
+// after "Old", so the same layout is tried with one of those too.
+for (const title of ['My Book', 'The Long Road']) {
+  const MANUSCRIPT = `${title} - Manuscript.docx`;
+  const EXACT_COPY = `Old Versions/${title} - Manuscript v9 (before 2026-11-15).docx`;
+  const OLDER_DRAFT = `Old Versions/${title} - Manuscript v11 (before 2026-11-22).docx`;
+
+  test(`an exact copy in Old Versions never takes the manuscript’s place: ${title}`, () => {
+    const result = plan([{ rel: MANUSCRIPT, sha256: 'same', size: 500 }, { rel: EXACT_COPY, sha256: 'same', size: 500 }, { rel: OLDER_DRAFT, sha256: 'older', size: 400 }]);
+    assert.deepEqual([roleOf(result, MANUSCRIPT), roleOf(result, EXACT_COPY), roleOf(result, OLDER_DRAFT)], ['whole', 'duplicate', 'older']);
+    assert.equal(result.files.find((file) => file.rel === EXACT_COPY).reason, `The same as ${MANUSCRIPT}.`);
+  });
+
+  test(`bringing that folder in makes the book from the manuscript, with the older draft in its history: ${title}`, async () => {
+    const paragraph = (text) => new docx.Paragraph({ children: [new docx.TextRun(text)] });
+    const current = await docx.Packer.toBuffer(new docx.Document({ sections: [{ children: [paragraph('The words as they are now.')] }] }));
+    const older = await docx.Packer.toBuffer(new docx.Document({ sections: [{ children: [paragraph('An older draft of the words, from before.')] }] }));
+    const root = folderOf({ [MANUSCRIPT]: current, [EXACT_COPY]: current, [OLDER_DRAFT]: older });
+    const { space } = project();
+    const folder = new FolderImport();
+    await folder.scan(space, root, () => {});
+    const { report } = await folder.run(space, () => {});
+    const chapters = [];
+    const walk = (node) => {
+      if (node.kind === 'chapter') chapters.push(node);
+      node.children.forEach(walk);
+    };
+    walk(space.outline());
+    assert.deepEqual(chapters.map((chapter) => plainText(space.loadChapter(chapter.id).body)), ['The words as they are now.']);
+    assert.deepEqual(space.project.listVersions(chapters[0].id).map((version) => plainText(space.project.getVersion(version.id).body)), ['An older draft of the words, from before.']);
+    const listedAs = (outcome) => report.groups.find((group) => group.outcome === outcome)?.files.map((file) => file.rel) ?? [];
+    assert.deepEqual([listedAs('chapters'), listedAs('older'), listedAs('duplicate')], [[MANUSCRIPT], [OLDER_DRAFT], [EXACT_COPY]]);
+  });
+}
+
+// Which of several identical files is kept. Each list has the one to keep first, and the others are its copies.
+test('of identical files, the one kept is the one that would be taken as the writing', () => {
+  const cases = [
+    ['an old or versions folder loses', ['Zed/Story.docx', 'Archive/Story.docx']],
+    ['an old or backup mark loses', ['Story.docx', 'Story backup.docx']],
+    ['notes lose, even with a later version number', ['Story.docx', 'Notes/Story v12.docx']],
+    ['a print or e-book folder loses', ['Writing/Sent/Story.docx', 'Ebook/Story.docx']],
+    ['a copy mark loses', ['Story.docx', 'Story (1).docx']],
+    ['the top of the folder wins', ['Story.docx', 'Aaa/Story.docx']],
+    ['between two drafts, the later one wins', ['Draft v3/Story.docx', 'Draft v2/Story.docx']],
+    ['between two versions side by side, the later one wins', ['Story v3.docx', 'Story v2.docx']],
+    ['with nothing to tell them apart, the first by name wins', ['Aaa/Story.docx', 'Bbb/Story.docx']],
+  ];
+  for (const [what, rels] of cases) {
+    // Whatever order they're found in, and whichever has the newer date.
+    for (const list of [rels, [...rels].reverse()]) {
+      const result = plan(list.map((rel, at) => ({ rel, sha256: 'same', size: 100, mtime: 1000 + at })));
+      assert.deepEqual(rels.map((rel) => roleOf(result, rel) === 'duplicate'), rels.map((_, at) => at > 0), `${what}: ${list}`);
+    }
+  }
+});
+
 test('names say what they can', () => {
   assert.deepEqual(signs.chapterOf('Chapter 3 The Road').title, 'Chapter 3: The Road');
   assert.equal(signs.chapterOf('Ch03').place, 3);

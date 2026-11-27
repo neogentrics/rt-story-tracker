@@ -4,6 +4,8 @@ const { canHold } = require('../../shared/outline');
 const { parseRecord, parseType } = require('../../shared/records');
 const { countWords, mentionsIn, plainText } = require('../../shared/text');
 const { copyDatabase, databaseInfo } = require('./database');
+const { SECTION_IDS } = require('../../shared/sections');
+const { sectionOf } = require('../folder/filing');
 
 const REMOVAL_MARKER_DAYS = 90;
 const TRASH_DAYS = 30;
@@ -22,6 +24,8 @@ const COLUMNS = {
   details: 'details',
 };
 const SMALLEST_GAP = 1e-6;
+// Why an earlier version is never thinned out: it came from the author's files, or was kept when the folder was checked.
+const KEPT_REASONS = ['imported', 'folder', 'unused'];
 
 const wordsIn = (body) => countWords(plainText(body));
 
@@ -373,11 +377,19 @@ class Project {
     return this.db.prepare('SELECT * FROM versions WHERE id = ?').get(id) ?? null;
   }
 
-  // Every version from the last two days stays. Older ones thin out to the last of each day.
+  // A version with words of its own, kept beside a chapter without changing the chapter.
+  addVersion(itemId, { title, body, reason }) {
+    this.db
+      .prepare('INSERT INTO versions (item_id, title, body, words, reason, at) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(itemId, title, body, wordsIn(body), reason, this.now().toISOString());
+  }
+
+  // Every version from the last two days stays. Older ones thin out to the last of each day. Those from the author's own files, and
+  // those kept when the folder was checked, never do.
   thinVersions() {
     const cutoff = new Date(this.now().getTime() - EVERY_VERSION_DAYS * DAY_MS).toISOString();
     return this.db
-      .prepare(`DELETE FROM versions WHERE at < ? AND reason != 'imported' AND id NOT IN (
+      .prepare(`DELETE FROM versions WHERE at < ? AND reason NOT IN (${KEPT_REASONS.map((reason) => `'${reason}'`).join(', ')}) AND id NOT IN (
                   SELECT MAX(id) FROM versions GROUP BY item_id, substr(at, 1, 10)
                 )`)
       .run(cutoff).changes;
@@ -391,13 +403,13 @@ class Project {
   }
 
   // `source` is a path or a Buffer. Contents already in the project aren't stored twice.
-  async addAttachment(parentId, { name, source, type = '', from = '' }) {
+  async addAttachment(parentId, { name, source, type = '', from = '', section = '' }) {
     const stored = await this.attachments.store(source);
     const known = this.db.prepare('SELECT file FROM attachment_files WHERE sha256 = ?').get(stored.sha256);
     if (known) this.attachments.remove(stored.file);
     else this.db.prepare('INSERT INTO attachment_files (sha256, file, size) VALUES (?, ?, ?)').run(stored.sha256, stored.file, stored.size);
     const item = this.addItem({ kind: 'attachment', parentId, title: name });
-    const details = { file: known?.file ?? stored.file, size: stored.size, type, from };
+    const details = { file: known?.file ?? stored.file, size: stored.size, type, from, ...(SECTION_IDS.has(section) ? { section } : {}) };
     return this.putItem({ id: item.id, details: JSON.stringify(details) });
   }
 
@@ -405,6 +417,11 @@ class Project {
     const item = this.getItem(id);
     if (item?.kind !== 'attachment') throw new Error('That attachment is missing.');
     return { ...JSON.parse(item.details), id, name: item.title, parentId: item.parentId };
+  }
+
+  // The mark of an attached file's contents.
+  attachmentHash(id) {
+    return this.db.prepare('SELECT sha256 FROM attachment_files WHERE file = ?').get(this.attachment(id).file)?.sha256 ?? '';
   }
 
   // What's attached to something and everything under it, leaving out what's in the Trash.
@@ -420,8 +437,9 @@ class Project {
                 WHERE items.kind = 'attachment' ORDER BY parent.position, items.position`)
       .all(rootId);
     return rows.map(({ id, title, details, owner, ownerId }) => {
-      const { size, type, from } = JSON.parse(details);
-      return { id, name: title, size, type, from, owner, ownerId };
+      const { size, type, from, section } = JSON.parse(details);
+      // A file saved with no section, as every file was before 3.11, is sorted by what it is each time it's listed.
+      return { id, name: title, size, type, from, owner, ownerId, section: SECTION_IDS.has(section) ? section : sectionOf(title, from) };
     });
   }
 
@@ -476,6 +494,34 @@ class Project {
 
   finishFolderImport(id, status) {
     this.db.prepare('UPDATE folder_imports SET status = ?, finished_at = ? WHERE id = ?').run(status, this.now().toISOString(), id);
+  }
+
+  // The imports a folder can be checked against, the newest first. One that was dropped, or is still to be finished, isn't.
+  folderImports() {
+    return this.db
+      .prepare(`SELECT id, root, state, status, started_at AS startedAt, finished_at AS finishedAt FROM folder_imports
+                WHERE status = 'done' ORDER BY started_at DESC, rowid DESC`)
+      .all();
+  }
+
+  setFolderRoot(id, root) {
+    this.db.prepare('UPDATE folder_imports SET root = ? WHERE id = ?').run(root, id);
+  }
+
+  folderFiles(importId) {
+    return this.db
+      .prepare(`SELECT rel, size, mtime, sha256, kind, item_id AS itemId, book_id AS bookId, whole, given, chapters, pieces
+                FROM folder_files WHERE import_id = ? ORDER BY rel`)
+      .all(importId)
+      .map((row) => ({ ...row, whole: Boolean(row.whole), pieces: row.pieces ? JSON.parse(row.pieces) : null }));
+  }
+
+  // `whole` and `given` are how writing was read: whether it was split at its headings, and the title it was given.
+  saveFolderFile(importId, { rel, size, mtime, sha256 = '', kind, itemId = null, bookId = null, whole = false, given = '', chapters = 0, pieces = null }) {
+    this.db
+      .prepare(`INSERT OR REPLACE INTO folder_files (import_id, rel, size, mtime, sha256, kind, item_id, book_id, whole, given, chapters, pieces)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(importId, rel, size, mtime, sha256, kind, itemId, bookId, whole ? 1 : 0, given, chapters, pieces ? JSON.stringify(pieces) : '');
   }
 
   unfinishedFolderImport() {

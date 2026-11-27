@@ -1,11 +1,11 @@
 {
   "now": {
-    "title": "3.7.2 is out, 3.9 and 3.10 are built",
-    "note": "3.7.2 fixes a bug that hid OneDrive files from Find my files, and a Print folder wrongly counted as a second manuscript, and it widens Preferences and puts a Preferences button on the library screen. It’s released. 3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
+    "title": "3.11 is out. Next is 3.12, Read aloud",
+    "note": "3.11, Files you bring in, is released. It sorts the files you bring in, from your own test of Find my files. 3.9 (Records with the suite) and 3.10 (versions of a record, web clips from Recon Browser, and a look like the rest of the family) came before it.",
     "items": [
       {
-        "title": "3.7.2: patch",
-        "text": "Find my files now sees OneDrive files on Windows. A full copy in a Print folder is a finished copy, not a second manuscript. Preferences opens wide, in two columns, and the library screen has a Preferences button so the themes can be found. Released."
+        "title": "3.11: files you bring in",
+        "text": "Find my files sorts by type, with a files view and sections for audio, art and covers, and the app can check that folder for changes. Also a Look choice of Solid, Metallic or Glass, lists you can resize and fold, right-click menus, a bigger apps window, fixes for small windows and small screens and for a manuscript dropped in favour of its copy, and other apps are now told this one takes web clips as research."
       },
       {
         "title": "Records",
@@ -41,17 +41,17 @@
       },
       {
         "title": "Released before this",
-        "text": "3.7.2 is the latest release. Before it, 3.7.1 brought the new name, and 3.7.0 RT Markdown Reader on this computer."
+        "text": "3.11.0 is the latest release. Before it came 3.10.0, 3.9.0, and 3.7.2, which let Find my files see OneDrive files on Windows."
       },
       {
         "title": "Next, from your own testing",
-        "text": "Find my files sorting by type with a files view and audio and art sections (3.11), read aloud like RT Markdown Reader (3.12), and Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. The menus, Help and About now follow RT Markdown Reader’s layout, in the 3.10 work that isn’t released yet."
+        "text": "Read aloud, built into this app (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go."
       }
     ]
   },
   "waiting": {
     "title": "A test and {decisions} decisions",
-    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below. 3.9 and 3.10 are built and wait for your go-ahead to release."
+    "text": "Your own tests of Records and printing on Windows and Mac, a real power cut during a lock, and the decisions below."
   },
   "questions": [
     {
@@ -60,7 +60,7 @@
     },
     {
       "q": "Where are the themes?",
-      "a": "In 3.7.1, under File, then Preferences (Ctrl+,), or the gear at the top right once a project is open. 3.7.2 adds a Preferences button on the library screen. From 3.10 they’re in Preferences under Appearance, which is also at the end of the Edit menu."
+      "a": "In Preferences, under Appearance. Preferences is the button at the top of the library, and it’s at the end of the Edit menu (Ctrl+,). On a Mac it’s in the app’s own menu."
     },
     {
       "q": "What happens to pictures in an imported file?",
@@ -72,15 +72,15 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, plus Glass with any theme but High Contrast. A theme added to one app doesn't reach the other by itself. Packs, under Later, would change that. RT Markdown Reader is adding a third look, Metallic, beside Solid and Glass. This app copies it once it ships there (v3.23), along with Colour-safe and Customize Theme."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, with a Look of Solid, Metallic or Glass. A theme added to one app doesn't reach the other by itself yet. Sharing themes across the apps is planned for later, and waits for your go-ahead. From 3.11 it has the same Look choice as RT Markdown Reader. Colour-safe and Customize Theme come later, in v3.23."
     },
     {
       "q": "Will it read text aloud?",
-      "a": "Yes, in v3.22, using RT Markdown Reader's offline voices, with the dictionary's pronunciations. You can already send a chapter to RT Markdown Reader and have it read there."
+      "a": "Yes, in v3.12, with offline voices. It’s built into this app, so no other app is needed. Names said right, from the dictionary, and dictation follow in v3.22. All of it is to come from a shared code module, which isn’t created yet and waits for your go. If you also use RT Markdown Reader, you can send a chapter there and have it read, as a bonus."
     },
     {
       "q": "Will the dictionary know how to say words?",
-      "a": "Yes. In v3.15 each word can carry a pronunciation guide, for invented words and words from other languages. Read aloud uses it, and so do RT Markdown Reader's voices through App Link, so a name is taught once."
+      "a": "Yes. In v3.15 each word can carry a pronunciation guide, for invented words and words from other languages. Read aloud in this app uses it, so a name is taught once. If RT Markdown Reader is linked, its voices can use it too over App Link, which is a bonus you don’t need."
     },
     {
       "q": "Can more themes and fonts be downloaded?",
@@ -88,11 +88,11 @@
     },
     {
       "q": "Were these features taken from RT Markdown Reader?",
-      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17."
+      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17. Since 27 November 2026, a feature more than one app needs is to come from one shared code module, not a copy in each. The module isn’t created yet and waits for your go. Nobody has to install the Reader to use this app."
     },
     {
       "q": "How do I hand an AI a chapter as Markdown?",
-      "a": "Markdown export arrives in v3.3, App Link sends a chapter to RT Markdown Reader in v3.7 (both apps have to be up to date), and Claude can work with the book directly in v3.13."
+      "a": "Export the chapter as Markdown. That’s built into this app, from v3.3. Claude can work with the book directly in v3.13. If you also use RT Markdown Reader, App Link can send a chapter there too, as a bonus (v3.7 or later)."
     },
     {
       "q": "Can it be tested on real stories?",
@@ -100,7 +100,7 @@
     },
     {
       "q": "Will it make EPUBs that KDP accepts?",
-      "a": "It makes EPUBs that pass EPUBCheck, the official validator, with no errors or warnings. The test that counts is uploading one to KDP’s previewer, which is yours to do."
+      "a": "It makes EPUBs that pass EPUBCheck, the official validator, with no errors or warnings. The test that counts is uploading one to KDP’s previewer, which is yours to do. The EPUB, Word and PDF exports are built into this app, so it makes them on its own. They’re to come from the shared code module once it exists."
     }
   ]
 }

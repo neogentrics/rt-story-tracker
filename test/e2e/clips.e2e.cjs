@@ -9,6 +9,7 @@ const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 const { AppLink } = require('../../src/main/app-link');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-clips-'));
@@ -127,7 +128,7 @@ const filesHolding = (folder, text) => fs.readdirSync(folder, { recursive: true 
   assert.equal(titles.filter((title) => /Research/.test(title)).length, 1);
 
   // A locked project: the clip is never offered behind the lock, and no file holds it until it's added.
-  await window.click('.security-button');
+  await tool(window, '.security-button');
   await window.fill('#new-password', PASSWORD);
   await window.fill('#new-password-again', PASSWORD);
   await window.click('#security-next');

@@ -1,4 +1,4 @@
-import { BACKUP_EVERY, LIMITS, LOCK_AFTER, PAGE_FONTS, THEMES, UI_FONTS } from '../shared/themes.js';
+import { BACKUP_EVERY, LIMITS, LOCK_AFTER, LOOKS, PAGE_FONTS, THEMES, UI_FONTS, surfaceFor } from '../shared/themes.js';
 import { createAppsPanel } from './apps-panel.js';
 import { el } from './dom.js';
 import { openHelp } from './help-dialog.js';
@@ -36,6 +36,17 @@ function wordRow(word, onRemove) {
   );
 }
 
+// What's said under the Look box. A theme that's only ever drawn one way says so.
+function lookWords(theme) {
+  if (THEMES[theme]?.glass) return `${THEMES[theme].label} is always Glass. Your choice comes back with another theme.`;
+  if (THEMES[theme]?.flat) return `${THEMES[theme].label} is always Solid. Your choice comes back with another theme.`;
+  return 'A finish for the app’s own panels, with any theme. It’s left off when your computer asks for more contrast or uses its own colours, and Glass also when it asks for less transparency.';
+}
+
+// Set while the window is open, so a change made somewhere else, such as the View menu, shows in it too.
+let showSettings = null;
+export const settingsChanged = (settings) => showSettings?.(settings);
+
 // Preferences is a window with its sections listed on the left and the chosen section's settings on the right, as RT Markdown Reader's
 // is. It's sized to the app window, and only the right side scrolls. Everything changes as it's picked, so there's nothing to apply and
 // nothing to lose.
@@ -48,7 +59,17 @@ export async function openPreferences(api, { section = 'general' } = {}) {
   const change = async (name, value) => {
     settings = await api.saveSettings({ [name]: value });
     applyLook(settings);
+    showLook();
   };
+  const lookSelect = select('pref-surface', LOOKS, surfaceFor(settings.theme, settings.surface), (value) => change('surface', value));
+  lookSelect.setAttribute('aria-describedby', 'pref-look-note');
+  const lookNote = el('p', { id: 'pref-look-note', class: 'quiet-note' });
+  const showLook = () => {
+    lookSelect.value = surfaceFor(settings.theme, settings.surface);
+    lookSelect.disabled = Boolean(THEMES[settings.theme]?.glass || THEMES[settings.theme]?.flat);
+    lookNote.textContent = lookWords(settings.theme);
+  };
+  showLook();
 
   const words = el('ul', { id: 'dictionary-words', class: 'word-list' });
   const showWords = async () => {
@@ -124,7 +145,8 @@ export async function openPreferences(api, { section = 'general' } = {}) {
       label: 'Appearance',
       body: () => [
         field('Theme', select('pref-theme', themes, settings.theme, (value) => change('theme', value))),
-        check('pref-glass', settings.glass, 'Glass: frosted panels over colour, with any theme but High Contrast', (value) => change('glass', value)),
+        field('Look', lookSelect),
+        lookNote,
         field('Page font', select('pref-page-font', PAGE_FONTS, settings.pageFont, (value) => change('pageFont', value))),
         field('App font', select('pref-ui-font', UI_FONTS, settings.uiFont, (value) => change('uiFont', value))),
         field('Text size', range('pref-text-size', 'textSize', settings.textSize, (value) => change('textSize', value))),
@@ -224,8 +246,14 @@ export async function openPreferences(api, { section = 'general' } = {}) {
       el('button', { id: 'prefs-help', class: 'quiet', type: 'button', onclick: () => openHelp({ page: 'center', api }) }, 'Help Center'),
       el('button', { id: 'pref-close', class: 'primary', onclick: () => dialog.close() }, 'Done')),
   );
+  const mine = (saved) => {
+    settings = saved;
+    showLook();
+  };
+  showSettings = mine;
   dialog.addEventListener('close', () => {
     stopShortcutCapture();
+    if (showSettings === mine) showSettings = null;
     dialog.remove();
   });
   await showWords();

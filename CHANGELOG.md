@@ -3,6 +3,89 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [3.11.0] - 2026-11-27
+
+Files you bring in.
+
+### Added
+- **Find my files sorts what it keeps.** Every file it keeps now goes in a section: *Covers*, *Art*, *Audio*, *Video*, *Notes*,
+  *Finished copies* (PDFs, e-books and what's in Print or E-book folders) or *Other files*, which is only for a type it doesn't know.
+  The preview groups each book's files that way with a count, and any file can be moved to another section before you bring it in.
+  Files brought in by an earlier version are sorted the same way, and nothing stored changes.
+- **A Files view**, in place of Attachments (*File, This Project, Files*). It shows a book's files, or the whole project's, by section
+  with a count for each, and has a search. A picture can be looked at, a sound played and a document read. Any file can be moved to
+  another section or book, one at a time or many at once. A picture can become the book's cover, and the cover it replaces is kept.
+  Writing can become a chapter or a record, and the file then waits in the Trash for 30 days. None of this writes an unencrypted copy of
+  a file anywhere. Only *Save a copy* writes one out, where you choose.
+- **The two lists can be resized.** Drag the line beside a list, or move to it with Tab and use the arrow keys. Enter or a double click
+  goes back to the usual width. The widths are remembered on this computer, and in a smaller window the lists give way so the page keeps
+  its room.
+- **Series and parts fold away.** Each has an arrow, the left and right arrow keys do the same, and each list has *Collapse all* and
+  *Expand all*. What's folded is remembered, and opening a project doesn't unfold it. A folded series or part shows when what's open is
+  inside it, and a search in the chapter filter looks inside folded parts. A series now looks like a heading, with its books indented.
+- **A right-click menu on every series, book, part and chapter,** which the Menu key and Shift+F10 open too. It offers what fits the
+  row: open, rename, add, collapse, move up or down, move to another series or book, duplicate, export and *Move to Trash*, which has an
+  Undo. The empty part of each list has a short menu for adding.
+- **Duplicate** a chapter or a whole book. The copy comes straight after, with its writing, comments, goals, book details and cover.
+  Files kept with a book and earlier versions aren't copied, and the app says when files were left.
+- **On the writing page,** a right-click still offers cut, copy, paste, select all and spelling fixes, and now *Comment on the Selected
+  Words* and *Find and Replace*. A right-click where there’s nothing to type in and nothing selected no longer shows a menu of
+  greyed-out commands.
+- **A Look choice, Solid, Metallic or Glass,** in place of the Glass tick box. It's in *Preferences*, under *Appearance*, directly
+  below the theme, and under *View*, *Look*, as in RT Markdown Reader. If Glass was ticked you keep Glass, and otherwise you have Solid.
+  Aero is always Glass and High Contrast always Solid, and your choice comes back with another theme.
+- **Metallic,** a brushed-metal finish from RT Markdown Reader on the top bar, the lists, the formatting bar, the find bar, windows and
+  menus, with any theme. The page you write on stays flat.
+- **Check the folder for changes.** A project remembers the folder Find my files read. *File, This Project, Check Folder for Changes*,
+  a button in *Files*, and a quiet check as the project opens list what has changed there, what's new and what's gone. Nothing changes
+  until you choose it and press *Apply*, nothing is chosen for you to begin with, and the folder is only ever read.
+  - A chapter changed only in the folder can be updated, kept as it is in the app, or kept as both. Where it changed in both places you
+    can compare the two side by side, and whichever you choose, both sets of words are kept. Replaced and unused text goes into the
+    chapter's earlier versions, which are never thinned out. Comments and record links stay with the earlier version, and restoring it
+    brings them back.
+  - An updated file's old copy goes to the Trash. New files are sorted into sections, and become chapters only if you say so. A missing
+    file is only reported, and a moved one is recognised. Chapters in the Trash aren't brought back by themselves.
+  - Only a folder chosen on this computer is read, because a project can come from someone else. On another computer, choose the
+    folder once. A locked project reads nothing until it's unlocked.
+  - For folders brought in before 3.11, a chapter saved at all since then counts as changed in the app, so you may be asked more
+    often than you need to be, and a file that made several chapters can only be added beside yours.
+
+### Fixed
+- **Text that was hard to read now meets the contrast standard in every theme:** the hint text in empty boxes, the word count beside
+  the chosen row, and, in Mist, Blue and Aero, the words on the tinted buttons in the top bar. The chosen button there, such as
+  *Write*, is now shaded away from its text instead of toward it.
+- **The app works in a small window and on a small screen.** In a narrow window the title in the top bar ran into the word counts and the
+  buttons squeezed together. Now the title is shortened, then the counts, and the buttons used least move into a *More* menu that works
+  from the keyboard. The lists narrow, and in a very small window books and chapters share one column. Long chapter and record titles
+  wrap instead of being cut off, even in a full window. Preferences, Files and Records fit narrow windows. The window can now be made as
+  small as 640 by 400, and never opens larger than the screen, including a small laptop with Windows scaled to 150 percent.
+- **The word “null” no longer shows on screen.** It appeared on the forgot-password screen, on the screen for changing a password, and
+  on a record's page, where a part of the screen that wasn't needed was written out as that word.
+- **Find my files no longer drops a manuscript that has an exact copy in an old-versions folder.** Of identical files it kept whichever
+  came first by name, so a copy in *Old Versions* could win for a book whose title sorts after it, and an older draft then became the
+  book. Now it keeps the one most likely to be the writing: one that isn't old, then one that isn't in a notes or print folder, then one
+  not named as a copy, then the one nearest the top. The others are listed as its copies. This applies to imports from now on, and a
+  book already brought in the wrong way isn't changed.
+- **Bringing records in fits a narrow window,** with each column of the file on its own lines, so nothing scrolls sideways.
+- **Bringing records in is laid out in one column** at every size. It was spread over two by mistake, which in some windows left the
+  box for a new kind's name too narrow to type in.
+- **The Recon Towers apps window is easy to read.** It's as wide as Preferences, with larger text and buttons, and every app shows at
+  once instead of in a small box that scrolled. On a small screen the whole window scrolls. The list in *Preferences*, under *Linked
+  Apps*, has no scrolling box of its own either.
+
+### Changed
+- **App Link capability change:** when another Recon Towers app asks what this one is, the answer now also lists `kinds`, the kinds of
+  document it does something special with. Here that's `research`, for web clips, and nothing else. Any other kind still arrives as a
+  plain document. It never decides whether two apps link, and apps that don't know it carry on as before.
+- **A project opened in 3.11 can't be opened in 3.10 or earlier,** which will say it was saved by a newer version. The app keeps a copy
+  of the project from before the change, with its other backups of it.
+- **The Light and Dark themes are now called Paper and Night,** as in the other Recon Towers apps. Nothing else about them changes.
+- **Glass is left off** when your computer uses its own colours or asks for more contrast, and in printing, as Metallic is. It was
+  already left off when your computer asks for less transparency.
+- **Questions start on a likely answer.** Find my files no longer starts on *attachments*. Writing it can't place starts on *Notes*,
+  and loose files named as chapters start on one book. A cover whose name uses underscores is now found.
+- **Word counts say so.** The number beside a book, part or chapter now reads *226 words*, so it isn't taken for a number of files.
+
 ## [3.10.0] - 2026-11-27
 
 Versions of a record, for authors who need to say what a record said as of each book. Web clips from Recon Browser. And an app that

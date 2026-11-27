@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-safety-'));
@@ -58,7 +59,7 @@ async function typeOnPage(window, text) {
   await window.waitForFunction(() => document.querySelector('#room-message').textContent.includes('is in the Trash'));
   assert.equal(await row(window, 'Chapter 1').count(), 0);
   await window.waitForFunction(() => document.querySelector('#project-words').textContent.startsWith('0 words'));
-  await window.click('.trash-button');
+  await tool(window, '.trash-button');
   await window.waitForSelector('#trash[open]');
   assert.match(await window.textContent('#trash-list'), /Chapter 1.*30 days left/);
   await window.click('[aria-label="Restore Chapter 1"]');
@@ -71,13 +72,13 @@ async function typeOnPage(window, text) {
   // Earlier versions: compare and restore. The first change keeps what came before it.
   await typeOnPage(window, ' and more');
   await saved(window);
-  await window.click('.history-button');
+  await tool(window, '.history-button');
   await window.waitForSelector('#history[open]');
   await window.waitForSelector('.history-view ins');
   assert.equal(await window.textContent('.history-view ins'), ' and more');
   await window.click('#history-restore');
   await window.waitForFunction(() => document.querySelector('.ProseMirror').textContent === 'The writing that must never be lost');
-  await window.click('.history-button');
+  await tool(window, '.history-button');
   await window.waitForSelector('#history[open]');
   assert.match(await window.textContent('.history-list'), /Before a restore/);
   await window.click('#history-close');

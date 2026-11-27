@@ -554,6 +554,18 @@ test('an app on a protocol this one doesn’t speak is found, says it needs an u
   assert.deepEqual(space.linking.load(), {}, 'and nothing was linked');
 });
 
+test('the kinds an app lists never decide whether it can be linked: the protocol does', async (t) => {
+  for (const kinds of [undefined, [], ['audio'], ['research']]) {
+    assert.deepEqual(linkability({ mine: { protocol: 1, minProtocol: 1, accepts: ['markdown', 'text'], kinds: ['research'] }, theirs: { protocol: 1, accepts: ['markdown'], kinds } }), { ok: true }, String(kinds));
+  }
+  assert.equal(linkability({ mine: { protocol: 1, minProtocol: 1, kinds: ['research'] }, theirs: { protocol: 2, minProtocol: 2, kinds: ['research'] } }).ok, false, 'the same kinds don’t make up for the protocol');
+  const space = setUp(t, { versions: latestFile({}) });
+  await space.linking.apply();
+  await fakeApp(t, space, { hello: { protocol: 1, version: '1.0.0', accepts: ['markdown'], kinds: ['page', 'Bad Kind'] } });
+  const press = (await space.linking.status()).apps.find((app) => app.id === 'rt-press');
+  assert.deepEqual([press.kinds, press.needsUpdate, press.canLink], [['page'], '', true]);
+});
+
 test('an app that is only ahead, or only different, still links: an ordinary release never breaks a link', async (t) => {
   const space = setUp(t, { versions: latestFile({}) });
   await space.linking.apply();

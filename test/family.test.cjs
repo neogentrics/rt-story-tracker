@@ -83,12 +83,12 @@ test('File stays short, as the Reader’s does: the project’s own commands are
   const file = menuFor().template.find((menu) => menu.label === 'File').submenu;
   const project = file.find((item) => item.label === 'This Project').submenu;
   assert.deepEqual(REAL(project).map((item) => item.label), [
-    'Import…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
+    'Import…', 'Find My Files…', 'Check Folder for Changes…', 'Files…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
     'Documents Sent Here…', 'Open Chapter in RT Markdown Reader', 'Open Book in RT Markdown Reader', 'Publish Chapter with RT Markdown Reader…',
     'Password and Lock…', 'Lock Project',
   ]);
   const top = labels(file);
-  for (const moved of ['Import…', 'Find My Files…', 'Attachments…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…', 'Trash', 'Password and Lock…', 'Lock Project']) {
+  for (const moved of ['Import…', 'Find My Files…', 'Check Folder for Changes…', 'Files…', 'Book Details…', 'Documents Sent Here…', 'Earlier Versions of This Chapter…', 'Trash', 'Password and Lock…', 'Lock Project']) {
     assert.equal(top.includes(moved), false, `${moved} is in This Project, not File`);
   }
   assert.deepEqual(top.filter((label) => label !== '-'), ['New Chapter', 'New Book', 'Open…', 'Save a Copy…', 'This Project', 'Export…', 'Print…', 'Library', 'Exit'], 'Export and Print are at the top level, as in the Reader');
@@ -193,12 +193,15 @@ test('every shortcut the Shortcuts page lists is one the menu has, with its key 
     const walk = (items) => {
       for (const item of items) {
         if (item.submenu) walk(item.submenu);
-        else if (item.click && !item.role) found.push(item);
+        // A choice among several, such as the Look, is a setting rather than a command, and has no shortcut.
+        else if (item.click && !item.role && item.type !== 'radio') found.push(item);
       }
     };
     walk(template.flatMap((menu) => menu.submenu));
     for (const item of ITEMS) {
       const hit = found.filter((entry) => {
+        // Not every item sends something, such as the looks, so what the one before sent mustn't count.
+        sent.length = 0;
         entry.click();
         return sent.at(-1) === item.command;
       });

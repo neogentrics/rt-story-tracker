@@ -1,10 +1,13 @@
 'use strict';
 // Carries out a plan, one file at a time. Each step is written down in the project as it happens, so a run can stop at any
 // point, by choice or by a power cut, and pick up where it was. The originals are only ever read.
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { imageSize, readSource, sectionsOf } = require('../import');
 const { documentOf, wordsIn } = require('../import/split');
+const { sectionLabel } = require('../../shared/sections');
+const { piecesOf } = require('./pieces');
 
 const MAX_WRITING_BYTES = 200 * 1024 * 1024;
 const pause = () => new Promise(setImmediate);
@@ -26,6 +29,17 @@ class FolderRun {
     this.project.recordFolderImport(this.importId, { fileId: id, outcome, itemId, note });
     this.done.set(id, { fileId: id, outcome, itemId, note });
     if (this.files.has(id)) this.count += 1;
+  }
+
+  // What the file was when it was read, so the folder can be checked for changes later.
+  track(file, kind, more = {}) {
+    this.project.saveFolderFile(this.importId, { rel: file.rel, size: file.size, mtime: file.mtime ?? 0, kind, ...more });
+  }
+
+  // The file's size and time as they are now, which may be newer than when the folder was looked through.
+  asRead(file) {
+    const { size, mtimeMs } = fs.statSync(this.full(file));
+    return { ...file, size, mtime: Math.round(mtimeMs) };
   }
 
   async step(file, work) {
@@ -50,8 +64,12 @@ class FolderRun {
       this.record(file.id, 'missing', null, 'It was gone by the time it was reached.');
       return;
     }
-    const item = await this.project.addAttachment(parentId, { name: file.name, source: full, type: TYPES[file.extension] ?? '', from: file.rel });
-    this.record(file.id, 'attachment', item.id, note);
+    const now = this.asRead(file);
+    const item = await this.project.addAttachment(parentId, { name: file.name, source: full, type: TYPES[file.extension] ?? '', from: file.rel, section: file.section });
+    this.project.db.transaction(() => {
+      this.record(file.id, 'attachment', item.id, note || `Filed under ${sectionLabel(file.section)}.`);
+      this.track(now, 'attachment', { sha256: this.project.attachmentHash(item.id), itemId: item.id, bookId: parentId });
+    })();
   }
 
   itemFor(id) {
@@ -82,14 +100,21 @@ class FolderRun {
         return;
       }
       let source;
+      let read;
+      let sha256;
       try {
-        source = await readSource(full);
+        // Read once, so the mark of the file and the chapters made from it are of the same words.
+        read = this.asRead(file);
+        const data = fs.readFileSync(full);
+        sha256 = crypto.createHash('sha256').update(data).digest('hex');
+        source = await readSource(full, data);
       } catch (error) {
         await this.keep(file, bookItem, `It couldn’t be read as writing: ${error.message}`);
         return;
       }
       const whole = node.kind === 'whole' || node.split;
-      const sections = sectionsOf(source, whole ? null : 'none', node.kind === 'whole' ? file.name : node.title);
+      const given = node.kind === 'whole' ? file.name : node.title;
+      const sections = sectionsOf(source, whole ? null : 'none', given);
       if (sections.length === 0 || sections.every((section) => section.type === 'part' || wordsIn(section.blocks) === 0)) {
         await this.keep(file, bookItem, 'There were no words in it.');
         return;
@@ -103,6 +128,7 @@ class FolderRun {
           marks: source.context?.commentMarks,
         });
         this.record(file.id, 'chapters', made.first, made.chapters === 1 ? '' : `${made.chapters} chapters.`);
+        this.track(read, 'chapters', { sha256, itemId: made.first, bookId: bookItem, whole, given, chapters: made.chapters, pieces: piecesOf(this.project, made.made, sections) });
         this.madeChapters.set(node.id, made.made);
       })();
       for (const picture of source.pictures ?? []) {
@@ -128,7 +154,10 @@ class FolderRun {
             this.project.addOlderVersion(chapter.id, { title: section.title, body: JSON.stringify(documentOf(section.blocks)), at });
             matched += 1;
           }
-          if (matched === sections.length && matched > 0) this.record(file.id, 'older', chapters[0].id, `Went into the history of ${matched === 1 ? 'its chapter' : `${matched} chapters`}.`);
+          if (matched === sections.length && matched > 0) {
+            this.record(file.id, 'older', chapters[0].id, `Went into the history of ${matched === 1 ? 'its chapter' : `${matched} chapters`}.`);
+            this.track(this.asRead(file), 'older', { itemId: chapters[0].id, bookId: bookItem, whole, given: node.title });
+          }
         })();
         if (this.done.has(file.id)) return;
       } catch {
@@ -150,8 +179,11 @@ class FolderRun {
       const data = fs.readFileSync(full);
       const size = imageSize(data);
       if (size && !this.project.cover(bookItem)) {
-        this.project.setCover(bookItem, { type: TYPES[file.extension], data, ...size });
-        this.record(file.id, 'cover', bookItem);
+        this.project.db.transaction(() => {
+          this.project.setCover(bookItem, { type: TYPES[file.extension], data, ...size });
+          this.record(file.id, 'cover', bookItem);
+          this.track(this.asRead(file), 'cover', { sha256: crypto.createHash('sha256').update(data).digest('hex'), itemId: bookItem, bookId: bookItem });
+        })();
       } else {
         await this.keep(file, bookItem);
       }
@@ -193,11 +225,16 @@ class FolderRun {
     await this.addAttachments(this.plan.tree, this.project.id);
     await this.walk(this.plan.tree, this.project.id, null, null);
     if (this.stopped) return false;
+    // What was left behind is written down too, so it isn't offered as new. The inside of a Scrivener project is never looked at again.
+    const leave = (file, role, reason) => this.project.db.transaction(() => {
+      this.record(file.id, role, null, reason);
+      this.track(file, role === 'bundled' ? 'ignore' : 'left');
+    })();
     for (const file of this.plan.files) {
-      if (!this.done.has(file.id) && !file.node) this.record(file.id, file.role, null, file.reason);
+      if (!this.done.has(file.id) && !file.node) leave(file, file.role, file.reason);
     }
     const missed = this.plan.files.filter((file) => !this.done.has(file.id));
-    for (const file of missed) this.record(file.id, 'skipped', null, file.reason || 'It had no place in the plan.');
+    for (const file of missed) leave(file, 'skipped', file.reason || 'It had no place in the plan.');
     this.workspace.dropEmptyBooks();
     return true;
   }

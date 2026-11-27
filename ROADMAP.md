@@ -35,10 +35,10 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
 | [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1), then [3.7.2](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.2)) |
-| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
-| [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
-| [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions and clips built and tested, not released |
-| [v3.11](#v311--files-you-bring-in) | Files you bring in | Planned |
+| [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | ✅ Released with [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0), [built there](docs/design/the-suite.md) |
+| [v3.9](#v39--records-with-the-suite) | Records, with the suite | ✅ Released ([3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0)) |
+| [v3.10](#v310--versions-of-a-record) | Versions of a record | ✅ Released ([3.10.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.10.0)) |
+| [v3.11](#v311--files-you-bring-in) | Files you bring in | ✅ Released ([3.11.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.11.0)) |
 | [v3.12](#v312--read-aloud) | Read aloud | Planned |
 | [v3.13](#v313--connect-claude) | Connect Claude | Planned |
 | [v3.14](#v314--timeline-and-places) | Timeline and places | Planned |
@@ -51,6 +51,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.21](#v321--pictures-and-tables-on-the-page) | Pictures and tables on the page | Planned |
 | [v3.22](#v322--hear-it-and-say-it) | Hear it and say it | Planned |
 | [v3.23](#v323--find-your-way-around) | Find your way around | Planned |
+| [v3.24](#v324--writing-patterns) | Writing patterns | Waiting for the owner's go |
 | [v4.0](#v40--the-companion) | The companion | Planned |
 | [Later](#later--only-if-needed) | Only if needed | Ideas |
 | [Ongoing](#ongoing--polish--distribution) | Polish & distribution | Ongoing |
@@ -125,6 +126,10 @@ Comes before import, because the first thing people will trust it with is years 
 🙋 The app's format is private, so this is how your work leaves it. It ships before import, so nothing can ever go in
 that can't come out.
 
+Every export is built into this app, so with only RT Story Tracker installed you can make all of them. The Word, PDF and EPUB exports
+are this app's own code today. They're to come from the [shared code module](#ongoing--polish--distribution) once it exists, and stay built in
+([decision 31](docs/decisions.md)).
+
 | Feature | Size | Details |
 |---|:-:|---|
 | ✅ 🙋 Word | M | A chapter, a book, or a series as `.docx`, which also covers Pages on a Mac. |
@@ -132,7 +137,7 @@ that can't come out.
 | ✅ 🙋 Markdown, HTML, XML | M | Plus plain text and RTF. |
 | ✅ 🙋 Store-ready EPUB | L | An EPUB that KDP and other stores' uploaders accept, with the cover, contents, metadata and book details they ask for, checked before it's saved. It does the job of a tool like Kindle Create in our own way, with nothing else to install. |
 | ✅ OpenDocument | S | |
-| ✅ Book layouts | L | Trim sizes, mirrored margins, front and back matter, for print PDFs and ebooks. To be shared with RT Markdown Reader's v4.0. |
+| ✅ Book layouts | L | Trim sizes, mirrored margins, front and back matter, for print PDFs and ebooks. Built into this app. Who owns book layouts across the apps isn't settled yet. |
 | ✅ Export everything | S | A whole project as a folder of Markdown, pictures and CSV. |
 
 **Test:** export a book to each format and open it in Word, Pages, Calibre and a browser. Upload the EPUB to KDP's previewer and at least one other store, and neither reports a problem.
@@ -185,7 +190,8 @@ for release.
 
 ## v3.7 — RT Markdown Reader, on this computer
 
-🙋 Needs RT Markdown Reader 3.6. Built to [App Link](docs/design/working-with-rt-markdown-reader.md), not a second set of rules.
+🙋 Hand-offs between the two apps, a bonus for anyone who has both: nobody has to install the Reader to use this app. They work with
+RT Markdown Reader 3.6 or later. Built to [App Link](docs/design/working-with-rt-markdown-reader.md), not a second set of rules.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -199,10 +205,9 @@ app's own tests and against RT Markdown Reader 3.10 from source.
 
 ## v3.8 — The Recon Towers suite
 
-> [!NOTE]
-> **Folded into 3.9 on 18 November 2026,** at the owner's request: the suite and Records ship as one release, 3.9, and
-> there is no 3.8. The plan, the owner's four decisions (all as recommended) and what was built are in
-> [the suite design](docs/design/the-suite.md). The table below is the original plan and says what became of each row.
+**Released with [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0). Folded into 3.9 on 18 November 2026,** at the owner's request: the suite and Records ship as one release, 3.9, and
+there is no 3.8. The plan, the owner's four decisions (all as recommended) and what was built are in
+[the suite design](docs/design/the-suite.md). The table below is the original plan and says what became of each row.
 
 🙋 The apps know each other when they're installed, not only when they're running. Built to
 [the suite's rules](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md), not a second set.
@@ -213,17 +218,17 @@ app's own tests and against RT Markdown Reader 3.10 from source.
 | ✅ 🙋 Apps panel | M | The same panel in every app: which Recon Towers apps are on this computer, which are running, and which are linked. It offers to link one or open one. Finding an app never links it. |
 | ✅ 🙋 What it's doing | S | A linked app can ask for a short status, such as what's open. A locked project says nothing about itself, and no writing is ever in the answer. |
 | ✅ 🙋 Asking for facts | M | A linked app can ask for what this one owns: word counts, draft status, dictionary pronunciations. This app can ask RT Author Desk for a book's published facts. |
-| ✅ 🙋 Publish through RT Markdown Reader | S | Sending to WordPress, Ghost, Discord and wikis stays in RT Markdown Reader. This app hands it the chapter over App Link, and doesn't build its own. Never a locked project. |
+| ✅ 🙋 Publish through RT Markdown Reader | S | A bonus when RT Markdown Reader is installed too: this app hands it the chapter over App Link, to send to WordPress, Ghost, Discord or a wiki. That sending stays the Reader's, and this app doesn't build its own. Never a locked project. |
 | Automations | M | Webhooks and n8n can start an export or a backup, or add a note to a project. Off until you turn it on, and locked projects stay out. **Not in 3.9, as decided:** it opens a listener on this computer, so it gets its own design first. |
 
 **Test:** install each app on a clean computer, in either order, and each finds the other. Uninstall one and it goes from
 the list. Status from a locked project says nothing.
 
-## v3.9 — Records
+## v3.9 — Records, with the suite
 
 🙋 Where the story bible begins: characters, and anything else an author wants to track. [How it's built](docs/design/records.md).
 
-🚧 **Built and tested on the VM, not released.** The suite half of this release (v3.8 above) is built too.
+✅ **Released as [3.9.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.9.0).** The suite half of this release (v3.8 above) came out with it.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -245,7 +250,7 @@ on his own computer, and finding a character faster than in Notion.
 
 🙋 What a record said as of each book, for authors who need it. Off in the simple templates. [How it's built](docs/design/records.md#versions).
 
-🚧 **Versions and web clips are built and tested on the VM. Not released.** The choices behind versions are decision 28 and behind
+✅ **Released as [3.10.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.10.0).** The choices behind versions are decision 28 and behind
 clips decision 29, in [decisions](docs/decisions.md). Clips are in this release so that Recon Browser 1.3 has somewhere to send them.
 
 | Feature | Size | Details |
@@ -270,7 +275,9 @@ another app, and check that the panel says the same in words.
 ## v3.11 — Files you bring in
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
-attachments. Issues 37 to 40.
+attachments. Issues 37 to 40, and 42 to 49.
+
+✅ **Released as [3.11.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.11.0).**
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -278,17 +285,33 @@ attachments. Issues 37 to 40.
 | 🙋 A files view | M | After a book is brought in, a list of every file in it, with a preview and a menu to change what a file is (chapter, cover, art, record, audio, attachment) or to remove it. Files that were not sorted in the preview can be sorted later. |
 | 🙋 Audio, art and cover sections | M | A place for audio files, art and covers in each book, so they are sorted on the way in and browsed afterwards. |
 | The number means words | S | The count beside a book, part or chapter says *words*, so it is not read as a file count. |
+| 🙋🛡️ Check the folder for changes | M | A book remembers the folder Find my files read it from, because files get changed there outside the app. *Check folder for changes*, and a check when the project opens, list files that changed, are new or are gone. Nothing is applied by itself: a changed file can be taken from the folder, left as it is in the app, or kept as both, a new one is sorted into a section, and a missing one is only reported. Where a chapter changed in both places both are kept, and replaced text goes into its earlier versions. A locked project reads nothing until it's unlocked. Watching the folder and editing in both places stay in [v3.20](#v320--files-kept-in-step). |
+| 🙋 Works at any window size | M | The app works in a small window and on a small screen, including Windows with the display scaled to 125 or 150 percent. In the top bar the title is shortened rather than running into the word counts, which shorten and then hide, and buttons that don't fit move into a *More* menu, the least used first, each still reachable from the keyboard and named for screen readers. Long headings wrap. The window never opens larger than the screen, and where room runs out things scroll rather than going out of reach. |
+| 🙋 Lists you can arrange | M | The books list and the chapters list can each be made wider or narrower by dragging the line beside it, or from the keyboard, with a reset, and the widths are remembered on this computer. They stop before they push the page off a small window. Every series and part folds away with an arrow, and stays as you left it, with *Collapse all* and *Expand all*. A series looks clearly different from a book, with its books indented under it. |
+| 🙋 Right-click menus | M | Right-clicking a series, book, part or chapter shows the app's own menu with what can be done to it, such as rename, add, move, fold, book details, export, duplicate and Trash, in place of the browser's. The Menu key or Shift+F10 opens the same menu. On the writing page the menu keeps Cut, Copy, Paste and Select All, and adds ones that fit, such as Comment. Anything destructive asks first or goes to the Trash. |
+| 🙋 A readable apps window | S | The Recon Towers apps window is as wide and readable as Preferences, with larger text and buttons and every app shown, with no scrolling box inside it. |
+| 🙋 A Look choice | S | *Look* takes the place of the Glass tick box: **Solid**, **Metallic** or **Glass**, in Preferences under Appearance, directly below the theme, as in RT Markdown Reader, and in the View menu. Anyone who had Glass ticked keeps Glass, everyone else keeps Solid, and Aero is always Glass. Light and Dark are now called **Paper** and **Night**, as in the Reader, and the five themes the Reader doesn’t have stay. *Colour-safe* and *Customize Theme* are not part of this: they stay in [v3.23](#v323--find-your-way-around). |
+| 🙋 Metallic look | S | A brushed-metal finish on the app's toolbar, columns, windows and Find bar, copied from RT Markdown Reader's 3.13, on top of any theme. The page you write on stays flat, and High Contrast, forced colours, increased contrast and printing are left alone. A test measures the real text over the finish in every theme, for Solid, Metallic and Glass. Glass is now left off in the same cases as Metallic. |
+| 🙋🛡️ App Link: what this app does with each kind | S | An **App Link capability change**. When another Recon Towers app asks what this one is, the answer now also lists `kinds`: the kinds of document it does something special with, so a sender can offer an action for one kind only where it will mean something. Here that is `research` alone, for web clips. Any other kind still arrives as a plain document. `kinds` never decides whether two apps link: the App Link version does. |
 
-**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards.
+**What this app leaves out of the shared theming rules** (RT Markdown Reader's `docs/app-theming.md`), and why:
+
+- **Colour-safe** and **Customize Theme** stay in [v3.23](#v323--find-your-way-around). Until then there are no themes of your own, so the themes measured are the fifteen the app comes with.
+- **One theme button on the main screen**, holding Theme, Look, Typeface and Page width. This app has no theme button or pop-up, so Look is in Preferences and under View. It also has no View, Theme menu.
+- **Parts the Reader has and this app doesn't:** a tab strip, a read-aloud bar, export progress, a command palette and add-on themes, so the finish has nothing to go on there.
+- **Shared colour names not defined**, because this app has no colour of its own for them: `--desk-grain`, `--tabstrip-fill`, `--accent-2`, `--accent-soft`, `--mark`, `--code-bg`, `--code-border`, `--inline-code-bg`, `--inline-code-text`, `--table-head`, `--table-stripe`, `--quote-bar`, `--quote-bg`, `--add-fill`, `--del-fill`, `--add-text` and `--del-text`. The rest are other names for this app's own colours, which keep their names.
+- **Keeping the colours and looks in one shared place** is the *Themes shared across the apps* row in [v3.23](#v323--find-your-way-around), which waits for the owner's go.
+
+**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read. Try each look in light, dark and High Contrast. Open the app at 640, 800, 1000 and 1280 wide, at 1024 by 600, and on a 1280 by 720 screen scaled to 125 and 150 percent: nothing in the top bar overlaps or is cut off, and every command can be reached. Make each list wider and narrower, fold a series and a part, restart, and find them as you left them. Do every right-click action with the mouse and again from the keyboard.
 
 ## v3.12 — Read aloud
 
-🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It matches RT Markdown Reader's read aloud, with the offline voices, so nothing leaves the computer. Issue 41.
+🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It reads with offline voices, so nothing leaves the computer, and it's built into this app, with no other app needed. Read aloud is to come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Issue 41.
 
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 Read aloud | M | Hear a chapter in a natural voice, with each sentence highlighted as it is read, a choice of voice and speed, and a choice of speakers or headphones. |
-| 🙋 Same controls as RT Markdown Reader | S | Play, pause, skip a sentence, speed and voice, as in the Reader, so the two apps feel the same. |
+| 🙋 Same controls across the apps | S | Play, pause, skip a sentence, speed and voice. They're to come with read aloud from the shared code module, so it works the same in each app that has it. |
 
 **Test:** with the computer offline, read a chapter aloud, change the voice and speed, and pause and resume.
 
@@ -325,12 +348,12 @@ attachments. Issues 37 to 40.
 |---|:-:|---|
 | 🙋 Lore pages | M | Free pages, with links both ways. |
 | 🙋 Story ideas | S | Jot it, tag it, and turn it into a book when it's ready. |
-| 🙋 Dictionaries | M | Glossary and invented words, with meanings and a pronunciation guide, including words from other languages. Feeds spell check and read aloud, and RT Markdown Reader's voices through App Link, so a name is taught once. |
+| 🙋 Dictionaries | M | Glossary and invented words, with meanings and a pronunciation guide, including words from other languages. Feeds spell check and read aloud in this app, so a name is taught once. If RT Markdown Reader is linked, its voices can use the pronunciations too, over App Link: a bonus, never needed. |
 | 🙋 Research | M | Sources, notes, pictures and PDFs, attached to what they're for. Clips from Recon Browser become Research records, with the source as the citation. |
-| Citations | M | Bring in sources from BibTeX or Zotero, cite them, and build the list at the end. For research and non-fiction. |
+| Citations | M | Bring in sources from BibTeX or Zotero, cite them, and build the list at the end. For research and non-fiction. Built into this app, and to come from the [shared code module](#ongoing--polish--distribution). |
 | One search | M | Across chapters, records, lore and research. |
-| 🙋 Smart search | M | Search by meaning as well as by word, on your own computer, beside One search. Using RT Markdown Reader's way of doing it. |
-| Check links | S | Finds mentions and links that lead nowhere, across chapters, records and lore, as RT Markdown Reader's link checker does. |
+| 🙋 Smart search | M | Search by meaning as well as by word, on your own computer, beside One search. Built into this app, with no other app needed. Whether its code comes from the shared code module isn't decided. |
+| Check links | S | Finds mentions and links that lead nowhere, across chapters, records and lore. Built into this app, with no other app needed. Whether its code comes from the shared code module isn't decided. |
 
 **Test:** load the Universe Bible, Races and Research Library, and find a fact by search alone.
 
@@ -350,14 +373,15 @@ attachments. Issues 37 to 40.
 
 ## v3.17 — Claude and AI
 
-🙋 Must be in the app, with settings for how far it goes. Follows RT Markdown Reader's AI services. Connecting Claude Desktop and Claude
+🙋 Must be in the app, with settings for how far it goes. The AI services are built into this app, with no other app needed, and are to
+come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Connecting Claude Desktop and Claude
 Code to your projects came earlier, in [v3.13](#v313--connect-claude). AI is an
 add-on: it's off until you turn it on, and the app is complete without it.
 
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 AI assist (optional) | M | Proofread, rewrite, shorten, translate or summarise a selection. You see the change and accept it. |
-| 🙋 Your choice of AI | M | Claude, ChatGPT, Gemini, Mistral, OpenRouter, or a local model through Ollama or LM Studio, with a different model for each task if you like. Your own account and key, as in RT Markdown Reader. |
+| 🙋 Your choice of AI | M | Claude, ChatGPT, Gemini, Mistral, OpenRouter, or a local model through Ollama or LM Studio, with a different model for each task if you like. Your own account and key. |
 | 🙋 Claude Code | S | Use a Claude Code sign-in instead of a key, and Open in Claude Code from a project. |
 
 **Test:** proofread a selection with a local model, with the computer offline.
@@ -415,8 +439,9 @@ add-on: it's off until you turn it on, and the app is complete without it.
 
 ## v3.22 — Hear it and say it
 
-🙋 Read aloud itself moved up to 3.12. This release is the rest: names said right, and dictation, using RT Markdown Reader's offline voices and speech to text, with nothing to install and nothing
-leaving the computer.
+🙋 Read aloud itself moved up to 3.12. This release is the rest: names said right, and dictation, with offline voices and speech to text,
+so nothing leaves the computer. Both are built into this app, with no other app needed. They're to come from the
+[shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -434,13 +459,31 @@ leaving the computer.
 | 🙋 Quick Open | S | Type a few letters to jump to any chapter or record. |
 | 🙋 Command palette | S | Every command, by name, from the keyboard. It opens on Ctrl+K, as in the Reader, so *Look Up a Record*, which has Ctrl+K today, becomes a command in it and takes another key, which can be changed like any other. Changing shortcuts is already in [v3.10](#v310--versions-of-a-record). |
 | 🙋 Customize Theme | M | Change a theme's colours, and share them with RT Markdown Reader. |
+| 🙋 Themes shared across the apps | L | **Waiting for the owner's go. Nothing here is being built.** Three parts, decided for the whole suite. **(1) One shared set:** themes, tokens, looks and the contrast tests live once, in a private repository, instead of a copy in each app. An app takes them in with a script that copies the files at a pinned version and writes a lock file. Both are kept with the app, so building it never needs that repository, and a test fails if the copy no longer matches the lock. **(2) Added themes, kept once:** a theme you make or load is stored once in the App Link folder you and the apps share, so every app offers it. It's checked, and refused if its contrast is too low. **(3) Following:** changing the theme, look or colour-safe in one app switches the linked apps on the same computer too. It needs an addition to App Link, and that protocol decision isn't made yet. This app keeps its extra themes: Slate, Blue/Orange, Plum, Evergreen and Aero. |
 | 🙋 Colour-safe | S | Colours that work for colour-blind readers, in every theme. |
-| 🙋 Metallic look | S | A third look beside Solid and Glass, copied from RT Markdown Reader's 3.13 once it ships there (built, in testing, not released). It works with every theme, together with the shared themes, Glass and Colour-safe, and the contrast test covers it. |
 | 🙋 Tutorial | M | A hands-on tour with a practice chapter, offered the first time the app opens, skippable and resumable, and replayed from Help. People who update from an older version get it too. The Help menu has no Tutorial item until this exists. |
 | 🙋 Help Center guides | M | Numbered, searchable guides kept as plain Markdown files in a `help` folder, like RT Markdown Reader's, each able to jump to the setting it explains. The Help Center in 3.10 is a short page of topics; these replace it. |
 | Adjustable toolbar | S | Hide, reorder and shrink toolbar buttons, with names beside the icons if wanted. Copied from RT Markdown Reader's when it exists, in its v3.13. |
 
-**Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme, with Glass and with Metallic.
+**Test:** run a morning's work from the keyboard alone, and pass the contrast test with a custom theme, with each of the three looks.
+
+## v3.24 — Writing patterns
+
+🙋 **Waiting for the owner's go. Nothing here is being built.** When he says go, it moves up to just after [v3.13](#v313--connect-claude).
+It finds what makes writing sound machine-made or careless, across a whole book or series, so you can correct, edit or keep each one and
+the writing sounds like you. RT Story Tracker and RT Markdown Reader are the first two apps to get it. The suite's description is under
+*Writing patterns in every app that edits text* in
+[docs/app-suite.md](https://github.com/neogentrics/rt-markdown-reader/blob/main/docs/app-suite.md) in the Reader's repository.
+
+| Feature | Size | Details |
+|---|:-:|---|
+| 🙋 A check with no AI | M | **The first layer, built first.** It runs on your computer, offline. It finds repeated words and phrases, repeated sentence openings, sentences that are all very much the same length, stock phrases AI overuses, and phrases from your own banned list. Every flag says why. |
+| 🙋 Your banned phrases | M | The phrases you never want to see, kept once for all the apps in the App Link folder that's yours on this computer, and counted across a whole book or series, so a habit shows. The list can be exported as a *never write these* block to give an AI session. |
+| 🙋 You decide on every flag | S | Flags are marks you accept, reject or ignore. Nothing is ever changed by itself, and each rule can be turned off. It makes no promise to get past AI detectors. |
+| 🙋🛡️ An optional AI pass | M | **The second layer,** for what rules can't see. It uses your own choice of service, or a model on your computer, and is off until you turn it on. Your words stay on your computer: nothing is sent to a service unless you turn this on and choose one. |
+
+**Test:** with the computer offline, check a whole series: each flag says why, a banned phrase is counted across every book, and no word
+of the writing changes until you accept a change. Turn a rule off and its flags go. With the AI pass off, nothing is sent anywhere.
 
 ## v4.0 — The companion
 
@@ -476,6 +519,7 @@ these devices sync with it.
 
 | Feature | Size | Details |
 |---|:-:|---|
+| 🙋 Shared code module | L | **Not created yet. Waiting for the owner's go: nothing moves into it until then.** One private repository, like the one for themes, for the code more than one app needs: read aloud, dictation, your own AI service, citations, document formats and the other overlaps. Each app that needs a piece takes it in, so it works with only that app installed. Hand-offs between apps over App Link stay a bonus. [Decision 31](docs/decisions.md). |
 | Code signing | S | Windows and Mac, as for RT Markdown Reader. |
 | Tutorial & Help Center | M | Built in [v3.23](#v323--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
 | Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. Started in 3.10: one test opens every main screen and checks every control has a name and the main flows work from the keyboard. |

@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const docx = require('docx');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-folder-'));
@@ -51,6 +52,20 @@ const answer = (app, value) => app.evaluate(({ dialog }, folder) => {
   assert.match(await window.textContent('#plan-tree'), /The Long Road/);
   assert.match(await window.textContent('#plan-tree'), /1 earlier version/);
 
+  // What's kept is grouped by section, each file says where it will go, and that can be changed.
+  assert.match(await window.textContent('#plan-summary'), /3 files to keep \(Covers 1, Art 1, Notes 1\)/);
+  const map = window.locator('[aria-label="What to do with map.png"]');
+  assert.equal(await map.inputValue(), 'art');
+  assert.equal(await window.locator('.plan-section[data-section="art"] .plan-section-name').getAttribute('aria-expanded'), 'true');
+  await map.selectOption('notes');
+  await window.waitForSelector('.plan-section[data-section="notes"] [aria-label="What to do with map.png"]');
+  assert.equal(await window.locator('.plan-section[data-section="art"]').count(), 0);
+  await window.locator('.plan-section[data-section="notes"] .plan-section-name').click();
+  await window.waitForSelector('[aria-label="What to do with map.png"]', { state: 'detached' });
+  await window.locator('.plan-section[data-section="notes"] .plan-section-name').click();
+  await window.locator('[aria-label="What to do with map.png"]').selectOption('art');
+  await window.waitForSelector('.plan-section[data-section="art"]');
+
   // Ask me: the unsure file is a chapter.
   await window.locator('.ask-card[data-ask="unsure"] label', { hasText: 'They’re chapters' }).locator('input').check();
   await window.waitForFunction(() => document.querySelector('#plan-tree').textContent.includes('Something Else'));
@@ -84,13 +99,13 @@ const answer = (app, value) => app.evaluate(({ dialog }, folder) => {
   assert.equal(await window.locator('#book-list .row', { hasText: 'Unwanted' }).count(), 0);
 
   // The older file is in the chapter's history.
-  await window.click('.history-button');
+  await tool(window, '.history-button');
   await window.waitForSelector('.history-row');
   assert.match(await window.textContent('.history-row'), /From your files/);
   await window.click('#history-close');
 
   // Attachments show, with a picture's preview.
-  await window.click('.attachments-button');
+  await tool(window, '.attachments-button');
   await window.waitForSelector('#attachments[open]');
   assert.match(await window.textContent('#attachment-list'), /map\.png/);
   await window.waitForFunction(() => document.querySelector('.attachment-thumb')?.src.startsWith('data:image/png'));

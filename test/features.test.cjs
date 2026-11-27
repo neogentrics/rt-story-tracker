@@ -10,7 +10,7 @@ const { Workspace } = require('../src/main/workspace');
 const { findInDocument, matchesIn, replaceInDocument } = require('../src/shared/find');
 const { findNode } = require('../src/shared/outline');
 const { documentFromText, plainText } = require('../src/shared/text');
-const { DEFAULT_SETTINGS, PAGE_FONTS, THEMES, cleanSettings } = require('../src/shared/themes');
+const { DEFAULT_SETTINGS, LOOKS, PAGE_FONTS, THEMES, cleanSettings, surfaceFor } = require('../src/shared/themes');
 
 const tempDirs = [];
 const workspaces = [];
@@ -125,6 +125,43 @@ test('settings survive anything in the file', () => {
   settings.save({ theme: 'sepia', textSize: 20 });
   assert.equal(new Settings(root).values.theme, 'sepia');
   assert.equal(new Settings(root).values.textSize, 20);
+});
+
+test('the old Glass tick box becomes the Look it meant, and the choice is kept', () => {
+  assert.deepEqual(Object.keys(LOOKS), ['solid', 'metallic', 'glass']);
+  assert.equal(cleanSettings({ glass: true }).surface, 'glass');
+  assert.equal(cleanSettings({ glass: false }).surface, 'solid');
+  assert.equal(cleanSettings({}).surface, 'solid');
+  assert.equal(cleanSettings({ surface: 'metallic', glass: true }).surface, 'metallic', 'a Look chosen since wins over the old box');
+  assert.equal(cleanSettings({ surface: 'toString' }).surface, 'solid');
+  assert.equal(Object.hasOwn(cleanSettings({ glass: true }), 'glass'), false);
+
+  // A settings file from 3.10 with the box ticked.
+  const root = tempDir();
+  fs.writeFileSync(path.join(root, 'settings.json'), JSON.stringify({ theme: 'sepia', glass: true }));
+  const settings = new Settings(root);
+  assert.equal(settings.values.surface, 'glass');
+  settings.save({ textSize: 20 });
+  assert.equal(new Settings(root).values.surface, 'glass');
+  settings.save({ surface: 'metallic' });
+  assert.equal(new Settings(root).values.surface, 'metallic');
+});
+
+test('Aero is always Glass and High Contrast always Solid, and the choice comes back with another theme', () => {
+  for (const [name, theme] of Object.entries(THEMES)) {
+    for (const chosen of Object.keys(LOOKS)) assert.equal(surfaceFor(name, chosen), theme.glass ? 'glass' : theme.flat ? 'solid' : chosen, `${name} with ${chosen}`);
+  }
+  assert.equal(surfaceFor('system', 'metallic'), 'metallic');
+  assert.deepEqual([THEMES.light.label, THEMES.dark.label], ['Paper', 'Night']);
+  assert.deepEqual(Object.keys(THEMES).filter((name) => THEMES[name].glass || THEMES[name].flat), ['aero', 'contrast']);
+});
+
+// The names the Recon Towers apps share for their colours. These are the ones this app has a colour for. ROADMAP.md lists the others.
+test('the shared colour names are all there', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'style.css'), 'utf8');
+  for (const name of ['desk', 'desk-fill', 'chrome', 'chrome-border', 'page', 'page-shadow', 'toolbar-fill', 'sidebar-fill', 'text', 'text-soft', 'muted', 'heading', 'link', 'accent', 'on-accent', 'rule', 'rule-strong', 'sel', 'btn-hover', 'inverse-bg', 'inverse-fg']) {
+    assert.ok(new RegExp(`^\\s+--${name}: `, 'm').test(css), `--${name} is defined`);
+  }
 });
 
 test('finding respects case and whole words', () => {

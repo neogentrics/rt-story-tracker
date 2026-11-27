@@ -15,10 +15,10 @@ const ordered = new XMLParser({ ignoreAttributes: false, preserveOrder: true, tr
 const asList = (value) => (value === undefined ? [] : Array.isArray(value) ? value : [value]);
 const titleFromFile = (file) => path.basename(file, path.extname(file)).replace(/[_-]+/g, ' ').trim();
 
-function unzip(file) {
+function unzip(bytes) {
   let total = 0;
   try {
-    return unzipSync(new Uint8Array(fs.readFileSync(file)), {
+    return unzipSync(new Uint8Array(bytes), {
       filter: ({ originalSize }) => {
         total += originalSize;
         if (total > MAX_UNZIPPED) throw new Error('That file unpacks to more than 1 GB.');
@@ -115,9 +115,8 @@ const wordText = (element) => {
   return (element.children ?? []).map(wordText).join('');
 };
 
-async function readDocx(file) {
+async function readDocx(buffer) {
   const mammoth = require('mammoth');
-  const buffer = fs.readFileSync(file);
   let contentsWords = 0;
   const pictures = [];
   const transformDocument = mammoth.transforms.paragraph((paragraph) => {
@@ -170,8 +169,8 @@ function imageSize(data) {
 
 const SKIP_NAMES = /(^|\/)(cover|title|titlepage|copyright|toc|nav|contents)[^/]*\.x?html?$/i;
 
-function readEpub(file) {
-  const files = unzip(file);
+function readEpub(file, bytes) {
+  const files = unzip(bytes);
   const read = (name) => (files[name] ? strFromU8(files[name]) : null);
   const container = xml.parse(read('META-INF/container.xml') ?? '');
   const opfPath = asList(container.container?.rootfiles?.rootfile)[0]?.['full-path'];
@@ -339,8 +338,8 @@ function odtBlocks(nodes, styles, context) {
   return blocks;
 }
 
-function readOdt(file) {
-  const files = unzip(file);
+function readOdt(bytes) {
+  const files = unzip(bytes);
   if (!files['content.xml']) throw new Error("That file doesn't look like OpenDocument.");
   const tree = ordered.parse(strFromU8(files['content.xml']));
   const styles = odtStyles(tree);
@@ -491,8 +490,8 @@ function sentencesIn(bytes) {
   return runs.filter((run) => run.trim().split(/\s+/).length >= 5);
 }
 
-async function readPages(file) {
-  const files = unzip(file);
+async function readPages(bytes) {
+  const files = unzip(bytes);
   const preview = files['QuickLook/Preview.pdf'] ?? files['preview.pdf'];
   if (preview) return { ...(await readPdf(preview)), notes: ['Read from the preview inside this Pages file. Check it against the original.'] };
   const name = Object.keys(files).find((item) => /Index\/Document\.iwa$/.test(item));
@@ -557,45 +556,49 @@ function readScrivener(file) {
   return { title: titleFromFile(binder), details: {}, sections, context };
 }
 
-async function readFormat(file) {
+// `data` is the file's contents where there's no file to open: something kept in a project is read from memory, so no copy of it is
+// ever written out unencrypted. `file` is then only its name. A Scrivener project is a folder, so it can't be read that way.
+async function readFormat(file, data = null) {
   const extension = path.extname(file).slice(1).toLowerCase();
   const title = titleFromFile(file);
+  const bytes = () => data ?? fs.readFileSync(file);
   switch (extension) {
     case 'md':
     case 'markdown':
     case 'mdown': {
-      const text = decodeText(fs.readFileSync(file)).replace(/\r\n?/g, '\n');
+      const text = decodeText(bytes()).replace(/\r\n?/g, '\n');
       return { format: 'Markdown', title, text };
     }
     case 'txt':
     case 'text': {
-      const text = decodeText(fs.readFileSync(file)).replace(/\r\n?/g, '\n');
+      const text = decodeText(bytes()).replace(/\r\n?/g, '\n');
       return { format: 'Plain text', title, text, plain: true };
     }
     case 'rtf': {
-      const { blocks, pictures } = parseRtf(fs.readFileSync(file));
+      const { blocks, pictures } = parseRtf(bytes());
       return { format: 'Rich text', title, blocks, context: { ...newContext(), pictures } };
     }
     case 'html':
     case 'htm':
     case 'xhtml': {
-      const parsed = htmlToBlocks(decodeText(fs.readFileSync(file)));
+      const parsed = htmlToBlocks(decodeText(bytes()));
       return { format: 'Web page', ...parsed, title: parsed.title || title };
     }
     case 'docx':
-      return { format: 'Word', title, ...(await readDocx(file)) };
+      return { format: 'Word', title, ...(await readDocx(bytes())) };
     case 'doc':
       throw new Error('That’s the old Word format. In Word, choose Save As and pick Word Document (.docx), then import that.');
     case 'epub':
-      return { format: 'E-book', ...readEpub(file) };
+      return { format: 'E-book', ...readEpub(file, bytes()) };
     case 'odt':
-      return { format: 'OpenDocument', title, ...readOdt(file) };
+      return { format: 'OpenDocument', title, ...readOdt(bytes()) };
     case 'pdf':
-      return { format: 'PDF', title, ...(await readPdf(fs.readFileSync(file))) };
+      return { format: 'PDF', title, ...(await readPdf(bytes())) };
     case 'pages':
-      return { format: 'Pages', title, ...(await readPages(file)) };
+      return { format: 'Pages', title, ...(await readPages(bytes())) };
     case 'scrivx':
     case 'scriv':
+      if (data) throw new Error('A Scrivener project is a folder, so it has to be imported from where it is.');
       return { format: 'Scrivener', ...readScrivener(file) };
     default:
       throw new Error("That kind of file can't be imported yet.");

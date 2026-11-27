@@ -45,6 +45,8 @@ async function typeOnPage(window, text) {
   await typeOnPage(window, 'The first line of the book');
   await window.waitForFunction(() => document.querySelector('.word-count').textContent.startsWith('6 words in this chapter'));
   assert.match(await window.textContent('#project-words'), /^6 words/);
+  // Every count in the sidebar says what it counts, so a book's isn't read as a number of files, and it follows the typing.
+  for (const list of ['#book-list', '#chapter-list']) assert.equal(await window.locator(`${list} .row-words`).first().textContent(), '6 words', `${list} says words`);
   await saved(window);
 
   // Formatting, by the toolbar and by Markdown shortcuts.

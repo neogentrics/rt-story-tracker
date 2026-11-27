@@ -1,5 +1,5 @@
 // The door to a locked project, or a locked project file. It only ever asks: the app decides whether an answer is right.
-import { el } from './dom.js';
+import { el, fill } from './dom.js';
 import { icon } from './icons.js';
 
 function secretInput(id, label, type = 'password') {
@@ -36,7 +36,8 @@ export function renderLock(root, { title, computer, open, onBack }) {
 
   function show(content, focus) {
     problem.hidden = true;
-    body.replaceChildren(...content);
+    // Not replaceChildren: a part that isn't there would be written as the word "null".
+    fill(body, ...content);
     focus?.focus();
   }
 

@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { PDFDocument } = require('pdf-lib');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-export-'));
@@ -46,7 +47,7 @@ const answer = (app, file) => app.evaluate(({ dialog }, value) => {
   await window.waitForFunction(() => !document.querySelector('#details'));
 
   // Every format, through the real dialog.
-  await window.click('.export-button');
+  await tool(window, '.export-button');
   await window.waitForSelector('#export[open]');
   for (const format of ['docx', 'pdf', 'epub', 'md', 'html', 'odt', 'rtf', 'txt', 'xml']) {
     const file = out(`book.${format}`);

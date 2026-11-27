@@ -2,14 +2,23 @@
 const { Menu } = require('electron');
 const { HELP_MENU } = require('../shared/family');
 const { resolveKeys } = require('../shared/shortcuts');
+const { LOOKS, THEMES, surfaceFor } = require('../shared/themes');
 
 // There's no Reload here on purpose: it would throw away whatever hasn't saved yet.
 // The Help menu is RT Markdown Reader's: Help Center, Keyboard Shortcuts, Check for Updates and About with the version in its label.
 // Its Tutorial and Find a Command aren't here yet.
+// `settings` are the author's, for what's ticked under View, Look, and `setLook` changes it.
 // `keys` is the key each command has now, by its name in ../shared/shortcuts.js: the author's own where they've changed one. A command
 // with no key has none shown and none taken.
-function buildMenu({ send, checkForUpdates, about, version, updateReady = null, keys = resolveKeys({}, process.platform) }) {
+function buildMenu({ send, checkForUpdates, about, version, updateReady = null, keys = resolveKeys({}, process.platform), settings = {}, setLook = () => {} }) {
   const isMac = process.platform === 'darwin';
+  // Aero and High Contrast are drawn only one way, so with them the other looks can't be chosen. With the theme that follows the
+  // computer, either of the two it can be takes any look.
+  const theme = THEMES[settings.theme] ?? THEMES.light;
+  const shown = surfaceFor(settings.theme, settings.surface);
+  const looks = Object.entries(LOOKS).map(([id, look]) => ({
+    id: `look-${id}`, label: look.label, type: 'radio', checked: shown === id, enabled: !(theme.glass || theme.flat) || shown === id, click: () => setLook(id),
+  }));
   const key = (id) => keys[id] || undefined;
   const aboutLabel = HELP_MENU.about(version);
   const help = [
@@ -54,7 +63,8 @@ function buildMenu({ send, checkForUpdates, about, version, updateReady = null, 
             { label: 'Import…', accelerator: key('import'), click: () => send('import') },
             { type: 'separator' },
             { label: 'Find My Files…', accelerator: key('findFiles'), click: () => send('find-files') },
-            { label: 'Attachments…', accelerator: key('attachments'), click: () => send('attachments') },
+            { label: 'Check Folder for Changes…', accelerator: key('folderChanges'), click: () => send('folder-changes') },
+            { label: 'Files…', accelerator: key('attachments'), click: () => send('attachments') },
             { label: 'Book Details…', accelerator: key('details'), click: () => send('details') },
             { label: 'Earlier Versions of This Chapter…', accelerator: key('history'), click: () => send('history') },
             { label: 'Trash', accelerator: key('trash'), click: () => send('trash') },
@@ -103,6 +113,7 @@ function buildMenu({ send, checkForUpdates, about, version, updateReady = null, 
         { type: 'separator' },
         { label: 'Focus Mode', accelerator: key('focus'), click: () => send('focus') },
         { type: 'separator' },
+        { label: 'Look', submenu: looks },
         { label: 'Zoom', submenu: [{ role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'resetZoom' }] },
         { type: 'separator' },
         { role: 'togglefullscreen' },

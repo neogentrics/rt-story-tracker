@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'rtst-features-'));
@@ -59,13 +60,13 @@ async function typeOnPage(window, text) {
   assert.ok(loaded, 'the carried font loads');
 
   // Glass goes with any theme, and High Contrast stays solid.
-  await window.check('#pref-glass');
+  await window.selectOption('#pref-surface', 'glass');
   await window.waitForFunction(() => document.documentElement.dataset.surface === 'glass');
   await window.selectOption('#pref-theme', 'contrast');
   await window.waitForFunction(() => document.documentElement.dataset.surface === 'solid');
   await window.selectOption('#pref-theme', 'slate');
   await window.waitForFunction(() => document.documentElement.dataset.surface === 'glass');
-  await window.uncheck('#pref-glass');
+  await window.selectOption('#pref-surface', 'solid');
   await window.selectOption('#pref-theme', 'plum');
   await window.waitForFunction(() => document.documentElement.dataset.theme === 'plum');
 
@@ -79,15 +80,17 @@ async function typeOnPage(window, text) {
   await window.click('#pref-close');
 
   // Goals.
-  await window.click('.goals-button');
+  await tool(window, '.goals-button');
   await window.fill('#goal-daily', '100');
   await window.fill('#goal-chapter', '50');
   await window.click('#goals-save');
-  await window.waitForFunction(() => document.querySelector('#today-words').textContent.includes('of 100 words today'));
+  // In a narrow window the count is shortened, "0/100 today", and it's whole on hover.
+  await window.waitForFunction(() => /(of 100 words|\/100) today$/.test(document.querySelector('#today-words').textContent));
+  assert.match(await window.getAttribute('.bar-words', 'title'), /of 100 words today/);
   await window.waitForFunction(() => document.querySelector('.word-count').textContent.includes('of 50 words in this chapter'));
 
   // Focus mode.
-  await window.click('.focus-button');
+  await tool(window, '.focus-button');
   assert.equal(await window.isVisible('#book-list'), false, 'focus hides the lists');
   assert.equal(await window.isVisible('.toolbar'), false);
   assert.ok(await window.isVisible('.ProseMirror'));
@@ -181,7 +184,7 @@ async function typeOnPage(window, text) {
   await row(window, 'Chapter 2').locator('.row-main').click();
   await titleIs(window, 'Chapter 2');
   assert.equal(await window.textContent('.ProseMirror'), 'Marit came back. From the right side.');
-  assert.match(await window.textContent('#today-words'), /of 100 words today/);
+  assert.match(await window.getAttribute('.bar-words', 'title'), /of 100 words today/);
   await app.close();
 
   fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5 });

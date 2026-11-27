@@ -103,7 +103,7 @@ that isn't running**, which version 1 leaves out. The draft doesn't describe thi
 | **StoryTracker's `accepts`** | `markdown`, `text` | Everything else converts before sending |
 | **What gets sent** | `name`, and `text` or `path` | |
 | **Pictures** | Not covered | A chapter with pictures. Add optional `attachments`, as a list of `{ name, path }` on this computer. Same-computer only, so paths work and the 8 MB line limit stays. |
-| **What kind of thing it is** | Not covered | Add optional `kind`: `chapter`, `record`, `page`, `note`, `research`. A hint; the person still chooses. |
+| **What kind of thing it is** | Not covered | Add optional `kind`: `chapter`, `record`, `page`, `note`, `research`. A hint; the person still chooses. From 3.11, `hello` says which kinds an app does something special with, as `kinds`. For this app that's `research` alone. |
 | **Word files** | Not needed | RT Markdown Reader already turns Word into Markdown, so it sends Markdown. One format on the wire. |
 | **What comes back** | `{ opened: true }` | Enough for version 1. Later, add optional `placed` with a title, so the sender can say where it went. Never the content. |
 | **Locked things** | `not_allowed` | Same rule both ways. A locked project or `.mdlock` is never sent. |
