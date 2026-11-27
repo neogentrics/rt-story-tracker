@@ -269,7 +269,7 @@ another app, and check that the panel says the same in words.
 ## v3.11 — Files you bring in
 
 🙋 From the owner's own test of Find my files on a 1,952-file stories folder: nearly everything came in as one flat pile of
-attachments. Issues 37 to 40, and 42 to 44.
+attachments. Issues 37 to 40, and 42 to 45.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -278,11 +278,12 @@ attachments. Issues 37 to 40, and 42 to 44.
 | 🙋 Audio, art and cover sections | M | A place for audio files, art and covers in each book, so they are sorted on the way in and browsed afterwards. |
 | The number means words | S | The count beside a book, part or chapter says *words*, so it is not read as a file count. |
 | 🙋🛡️ Check the folder for changes | M | A book remembers the folder Find my files read it from, because files get changed there outside the app. *Check folder for changes*, and a check when the project opens, list files that changed, are new or are gone. Nothing is applied by itself: a changed file can be taken from the folder, left as it is in the app, or kept as both, a new one is sorted into a section, and a missing one is only reported. Where a chapter changed in both places both are kept, and replaced text goes into its earlier versions. A locked project reads nothing until it's unlocked. Watching the folder and editing in both places stay in [v3.20](#v320--files-kept-in-step). |
+| 🙋 Works at any window size | M | The app works in a small window and on a small screen, including Windows with the display scaled to 125 or 150 percent. In the top bar the title is shortened rather than running into the word counts, which shorten and then hide, and buttons that don't fit move into a *More* menu, the least used first, each still reachable from the keyboard and named for screen readers. Long headings wrap. The window never opens larger than the screen, and where room runs out things scroll rather than going out of reach. |
 | 🙋 A readable apps window | S | The Recon Towers apps window is as wide and readable as Preferences, with larger text and buttons and every app shown, with no scrolling box inside it. |
 | 🙋 A Look choice | S | *Look* takes the place of the Glass tick box: **Solid**, **Metallic** or **Glass**, in Preferences under Appearance, directly below the theme, as in RT Markdown Reader, and in the View menu. Anyone who had Glass ticked keeps Glass, everyone else keeps Solid, and Aero is always Glass. |
 | 🙋 Metallic look | S | A brushed-metal finish on the app's toolbar, columns, windows and Find bar, copied from RT Markdown Reader's 3.13, on top of any theme. The page you write on stays flat, and High Contrast, forced colours, increased contrast and printing are left alone. A test measures the contrast of text in every theme. |
 
-**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read. Try each look in light, dark and High Contrast.
+**Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read. Try each look in light, dark and High Contrast. Open the app at 640, 800, 1000 and 1280 wide, at 1024 by 600, and on a 1280 by 720 screen scaled to 125 and 150 percent: nothing in the top bar overlaps or is cut off, and every command can be reached.
 
 ## v3.12 — Read aloud
 
