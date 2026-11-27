@@ -298,7 +298,7 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('inbox:drop', (id) => inbox().drop(id));
 }
 
-function registerIpc({ status, aboutApp, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
+function registerIpc({ status, aboutApp, menuKeys, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
   const busy = (work) => busyWhile(workspace, work);
   const unlocked = (work) => (...args) => {
     security().needExportPass();
@@ -308,6 +308,7 @@ function registerIpc({ status, aboutApp, workspace, updater, settings, backups, 
   registerLinking({ linking, inbox, workspace });
   sweepTemporaryFiles();
   handle('app:status', status);
+  handle('shortcuts:pause', (paused) => menuKeys.pause(paused === true));
   handle('app:about', () => aboutApp.info());
   handle('app:openLink', (id) => aboutApp.open(id));
   handle('app:copyDetails', () => aboutApp.copy());
@@ -362,7 +363,9 @@ function registerIpc({ status, aboutApp, workspace, updater, settings, backups, 
   handle('find:undo', () => workspace().undoReplace());
   handle('settings:get', () => settings().values);
   handle('settings:save', (changes) => {
+    const before = JSON.stringify(settings().values.shortcuts);
     const saved = settings().save(changes);
+    if (JSON.stringify(saved.shortcuts) !== before) menuKeys.changed();
     session.defaultSession.setSpellCheckerEnabled(saved.spellcheck);
     return saved;
   });

@@ -1,7 +1,7 @@
 import { el } from './dom.js';
 import { applyLook } from './look.js';
 import { openAbout } from './about-dialog.js';
-import { openHelp } from './help-dialog.js';
+import { openHelp, stopShortcutCapture } from './help-dialog.js';
 import { openPreferences } from './prefs.js';
 import { renderFailure, renderHome } from './home.js';
 import { renderLock } from './lock-screen.js';
@@ -67,6 +67,7 @@ async function lockProject() {
     return;
   }
   if (!(await api.lockNow())) return;
+  stopShortcutCapture();
   document.querySelectorAll('dialog').forEach((dialog) => dialog.remove());
   room.leave();
   room = null;
@@ -262,6 +263,7 @@ function showUpdate(status) {
 }
 
 function onMenu(command) {
+  stopShortcutCapture();
   if (command === 'library') leaveRoom();
   if (command === 'new-chapter') room?.newChapterFromMenu();
   if (command === 'new-book') room?.newBookFromMenu();
@@ -272,8 +274,8 @@ function onMenu(command) {
   if (command === 'find-previous') room?.findStep(-1);
   if (command === 'restart-to-update') document.getElementById('update-restart')?.click();
   if (command === 'about') openAbout(api);
-  if (command === 'help-center') openHelp({ page: 'center' });
-  if (command === 'shortcuts') openHelp({ page: 'shortcuts' });
+  if (command === 'help-center') openHelp({ page: 'center', api });
+  if (command === 'shortcuts') openHelp({ page: 'shortcuts', api });
   if (command === 'focus') room?.toggleFocus();
   if (command === 'show-write') room?.showMode('write');
   if (command === 'show-records') room?.showMode('records');

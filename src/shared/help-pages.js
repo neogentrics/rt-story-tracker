@@ -16,8 +16,8 @@ const HELP_TOPICS = [
     id: 'records',
     title: 'Records and the story bible',
     body: [
-      'Records hold the things you keep track of: characters, places, objects, or any kind you make up. Each kind has the fields you choose. Open Records from the View menu, or press Ctrl+2.',
-      'Type @ in a chapter to link a record by name. Ctrl or Cmd and click on a name looks the record up beside the page, and Ctrl+K looks up any record.',
+      'Records hold the things you keep track of: characters, places, objects, or any kind you make up. Each kind has the fields you choose. Open Records from the View menu.',
+      'Type @ in a chapter to link a record by name. Ctrl or Cmd and click on a name looks the record up beside the page, and Look Up a Record in the View menu finds any record.',
     ],
   },
   {
@@ -47,58 +47,11 @@ const HELP_TOPICS = [
     title: 'More help',
     body: [
       'Choose Help, then About, for a link to report a problem or suggest something. Copy Version Details there puts what a bug report needs on the clipboard, and nothing about you or your writing.',
+      'Keyboard Shortcuts, also in the Help menu, lists every key. Choose Change beside any command and press the keys you would rather use. Reset puts it back.',
     ],
   },
 ];
 
-// `keys` is the menu's own accelerator text, so a test can compare the two.
-const SHORTCUTS = [
-  {
-    group: 'Writing',
-    items: [
-      { keys: 'CmdOrCtrl+N', does: 'New chapter' },
-      { keys: 'CmdOrCtrl+Shift+N', does: 'New book' },
-      { keys: 'CmdOrCtrl+F', does: 'Find' },
-      { keys: 'Ctrl+H', macKeys: 'Cmd+Alt+F', does: 'Replace' },
-      { keys: 'F3', does: 'Find the next match' },
-      { keys: 'Shift+F3', does: 'Find the previous match' },
-      { keys: 'CmdOrCtrl+Shift+F', does: 'Focus mode' },
-    ],
-  },
-  {
-    group: 'Views',
-    items: [
-      { keys: 'CmdOrCtrl+1', does: 'Write' },
-      { keys: 'CmdOrCtrl+2', does: 'Records' },
-      { keys: 'CmdOrCtrl+K', does: 'Look up a record' },
-      { keys: 'CmdOrCtrl+Shift+L', does: 'Library' },
-    ],
-  },
-  {
-    group: 'Projects',
-    items: [
-      { keys: 'CmdOrCtrl+O', does: 'Open a project file' },
-      { keys: 'CmdOrCtrl+Shift+S', does: 'Save a copy of this project' },
-      { keys: 'CmdOrCtrl+Shift+I', does: 'Import' },
-      { keys: 'CmdOrCtrl+E', does: 'Export' },
-      { keys: 'CmdOrCtrl+P', does: 'Print' },
-      { keys: 'CmdOrCtrl+L', does: 'Lock the project' },
-    ],
-  },
-  {
-    group: 'The app',
-    items: [
-      { keys: 'Ctrl+,', macKeys: 'Cmd+,', does: 'Preferences' },
-      { keys: 'F1', does: 'Help Center' },
-    ],
-  },
-];
-
-// How a shortcut reads on this computer. A Mac has no Ctrl, and spells its keys the way a Mac does.
-function showKeys(item, platform = process.platform) {
-  const mac = platform === 'darwin';
-  const keys = mac && item.macKeys ? item.macKeys : item.keys;
-  return keys.replace('CmdOrCtrl', mac ? 'Cmd' : 'Ctrl');
-}
+const { SHORTCUTS, showKeys } = require('./shortcuts');
 
 module.exports = { HELP_TOPICS, SHORTCUTS, showKeys };

@@ -2759,7 +2759,38 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
 }
 
 .shortcut-group dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 0.8rem;
   margin: 0;
+}
+
+.shortcut-actions {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.shortcut-none,
+.shortcut-listening {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.shortcut-listening {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.shortcut-note,
+.shortcut-message {
+  margin: 0.3rem 0;
+}
+
+.shortcut-message {
+  min-height: 1.4em;
+  font-weight: 600;
 }
 
 kbd {

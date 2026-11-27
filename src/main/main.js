@@ -13,6 +13,7 @@ const { registerIpc } = require('./ipc');
 const { launchPathFor } = require('./installed');
 const { Linking } = require('./linking');
 const { buildMenu } = require('./menu');
+const { ITEMS, resolveKeys } = require('../shared/shortcuts');
 const { Security } = require('./security');
 const { runSelfTest, writeInWindow } = require('./self-test');
 const { Settings } = require('./settings');
@@ -44,9 +45,20 @@ let quitting = false;
 // Once an update is ready the Help menu says so, as RT Markdown Reader's does, so the menu is built again.
 const updater = new Updater((status) => {
   mainWindow?.webContents.send('update:status', status);
-  if (menuHooks) Menu.setApplicationMenu(buildMenu({ ...menuHooks, updateReady: status.state === 'ready' ? status.version : null }));
+  readyVersion = status.state === 'ready' ? status.version : null;
+  rebuildMenu();
 });
 let menuHooks = null;
+let readyVersion = null;
+// While the Keyboard Shortcuts page is listening for a new key, the menu keys are off, so pressing one reaches the page and doesn't run.
+let keysPaused = false;
+
+// The menu is built again when an update is ready, when the author changes a shortcut, and when the page starts and stops listening.
+function rebuildMenu() {
+  if (!menuHooks) return;
+  const keys = resolveKeys(keysPaused ? { ...Object.fromEntries(ITEMS.map((item) => [item.id, ''])) } : settings?.values.shortcuts, process.platform);
+  Menu.setApplicationMenu(buildMenu({ ...menuHooks, keys, updateReady: readyVersion }));
+}
 
 // The system's own encrypted storage. On Linux with no keyring Electron falls back to a fixed password, which is no
 // protection at all, so that counts as having none.
@@ -186,6 +198,11 @@ function windowSize() {
 }
 
 function createWindow({ show = true } = {}) {
+  // A window that closed while it was listening for a new shortcut can't give the menu its keys back, so a new one does.
+  if (keysPaused) {
+    keysPaused = false;
+    rebuildMenu();
+  }
   const window = new BrowserWindow({
     ...windowSize(),
     minWidth: 900,
@@ -397,6 +414,14 @@ if (!app.requestSingleInstanceLock()) {
     openLibrary();
     registerIpc({
       status,
+      menuKeys: {
+        // A shortcut was changed: the menu is built again with it.
+        changed: () => rebuildMenu(),
+        pause: (paused) => {
+          keysPaused = paused === true;
+          rebuildMenu();
+        },
+      },
       aboutApp: {
         info: aboutInfo,
         // The window names a link, never an address: the addresses are the shared file's.
@@ -436,7 +461,7 @@ if (!app.requestSingleInstanceLock()) {
       about: showAbout,
       version: app.getVersion(),
     };
-    Menu.setApplicationMenu(buildMenu(menuHooks));
+    rebuildMenu();
     mainWindow = createWindow({ show: !selfTestFile });
     // A locked project shouldn't stay open behind a locked screen or a sleeping laptop.
     for (const event of ['lock-screen', 'suspend']) powerMonitor.on(event, () => mainWindow?.webContents.send('menu:command', 'auto-lock'));

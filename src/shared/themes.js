@@ -3,6 +3,8 @@
 // app's, plus Slate. Every theme but High Contrast has panels that run from one colour to another, with a bar that
 // contrasts with them. A theme with dark panels and a light page sets onPanel for the text on its panels.
 
+const { cleanShortcuts } = require('./shortcuts');
+
 const LIGHT_ALERT = { danger: '#b3261e', dangerBg: '#fbe9e7' };
 const DARK_ALERT = { danger: '#ffb4ab', dangerBg: '#4a1c18' };
 
@@ -144,6 +146,7 @@ const DEFAULT_SETTINGS = {
   backupKeep: 10,
   lockAfter: 15,
   appLink: false,
+  shortcuts: {},
 };
 
 const LIMITS = { textSize: [14, 28], pageWidth: [32, 64], backupKeep: [1, 100] };
@@ -172,6 +175,7 @@ function cleanSettings(input) {
     backupKeep: Math.round(within('backupKeep')),
     lockAfter: Object.hasOwn(LOCK_AFTER, source.lockAfter) ? Number(source.lockAfter) : DEFAULT_SETTINGS.lockAfter,
     appLink: source.appLink === true,
+    shortcuts: cleanShortcuts(source.shortcuts),
   };
 }
 

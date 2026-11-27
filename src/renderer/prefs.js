@@ -135,7 +135,7 @@ export async function openPreferences(api) {
       'section',
       {},
       el('h3', {}, 'Backups'),
-      el('p', { class: 'quiet-note' }, 'Each project is saved as a closed .rtstory file, which is safe in OneDrive or Dropbox. To bring one back, use File, then Open Project File.'),
+      el('p', { class: 'quiet-note' }, 'Each project is saved as a closed .rtstory file, which is safe in OneDrive or Dropbox. To bring one back, use File, then Open.'),
       el('div', { class: 'word-form' }, folder, el('button', { id: 'backup-choose', onclick: chooseFolder }, 'Choose folder…')),
       field('How often', select('pref-backup-every', BACKUP_EVERY, settings.backupEvery, (value) => change('backupEvery', value))),
       field('Keep the newest', el('input', {

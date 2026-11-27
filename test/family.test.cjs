@@ -8,7 +8,8 @@ const os = require('node:os');
 const path = require('node:path');
 const Module = require('node:module');
 const { ABOUT, APP_NAME, BLURB, HELP_MENU, LINKS, REPO, WEBSITE, copyright, detailsText, versionWords } = require('../src/shared/family');
-const { HELP_TOPICS, SHORTCUTS, showKeys } = require('../src/shared/help-pages');
+const { HELP_TOPICS } = require('../src/shared/help-pages');
+const { ITEMS, SHORTCUTS, defaultKey, showKeys } = require('../src/shared/shortcuts');
 
 function menuFor({ platform = 'linux', version = '3.10.0', updateReady = null } = {}) {
   const sent = [];
@@ -172,25 +173,52 @@ test('the window can only ask for a link by its name, and the addresses never co
   assert.equal(/https?:\/\//.test(renderer), false, 'the dialog holds no address of its own');
 });
 
-test('every shortcut the Shortcuts page lists is one the menu has, and every one the menu has is listed', () => {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'main', 'menu.js'), 'utf8');
-  const inMenu = new Set();
-  for (const [, text] of source.matchAll(/accelerator: (.*?), click/g)) for (const [, key] of text.matchAll(/'([^']+)'/g)) inMenu.add(key);
-  inMenu.add(HELP_MENU.center.accelerator);
-  const listed = new Set(SHORTCUTS.flatMap((group) => group.items.flatMap((item) => [item.keys, item.macKeys].filter(Boolean))));
-  assert.deepEqual([...inMenu].filter((key) => !listed.has(key)), [], 'a menu shortcut missing from the page');
-  assert.deepEqual([...listed].filter((key) => !inMenu.has(key)), [], 'a shortcut on the page that the menu doesn’t have');
+test('every shortcut the Shortcuts page lists is one the menu has, with its key and its command, and the other way round', () => {
+  for (const platform of ['linux', 'darwin']) {
+    const { template, sent } = menuFor({ platform });
+    const found = [];
+    const walk = (items) => {
+      for (const item of items) {
+        if (item.submenu) walk(item.submenu);
+        else if (item.click && !item.role) found.push(item);
+      }
+    };
+    walk(template.flatMap((menu) => menu.submenu));
+    for (const item of ITEMS) {
+      const hit = found.filter((entry) => {
+        entry.click();
+        return sent.at(-1) === item.command;
+      });
+      assert.equal(hit.length, 1, `${item.does} (${item.command}) is one menu item on ${platform}`);
+      assert.equal(hit[0].accelerator, defaultKey(item, platform) || undefined, `${item.does} has its key on ${platform}`);
+    }
+    const commands = new Set(ITEMS.map((item) => item.command));
+    for (const entry of found) {
+      sent.length = 0;
+      entry.click();
+      const command = sent[0];
+      if (command === 'check' || command === 'about-box' || command === 'restart-to-update') continue;
+      assert.ok(commands.has(command), `${entry.label} (${command}) is on the Shortcuts page`);
+    }
+    // An accelerator the menu has but the page doesn't list would be a key the author can't see or change.
+    const lastKeys = found.map((entry) => entry.accelerator).filter(Boolean);
+    const listed = ITEMS.map((item) => defaultKey(item, platform)).filter(Boolean);
+    assert.deepEqual([...lastKeys].sort(), [...listed].sort(), `${platform}: the keys in the menu are the keys on the page`);
+  }
 });
 
 test('shortcuts read the way this computer says them, and the pages have words in them', () => {
-  const save = SHORTCUTS.flatMap((group) => group.items).find((item) => item.does === 'Export');
-  assert.equal(showKeys(save, 'win32'), 'Ctrl+E');
-  assert.equal(showKeys(save, 'darwin'), 'Cmd+E');
-  const replace = SHORTCUTS.flatMap((group) => group.items).find((item) => item.does === 'Replace');
-  assert.deepEqual([showKeys(replace, 'linux'), showKeys(replace, 'darwin')], ['Ctrl+H', 'Cmd+Alt+F']);
+  assert.equal(showKeys('CmdOrCtrl+E', 'win32'), 'Ctrl+E');
+  assert.equal(showKeys('CmdOrCtrl+E', 'darwin'), 'Cmd+E');
+  const replace = ITEMS.find((item) => item.does === 'Replace');
+  assert.deepEqual([showKeys(defaultKey(replace, 'linux'), 'linux'), showKeys(defaultKey(replace, 'darwin'), 'darwin')], ['Ctrl+H', 'Cmd+Option+F']);
   assert.ok(HELP_TOPICS.length >= 5);
   for (const topic of HELP_TOPICS) assert.ok(topic.title && topic.body.length && topic.body.every((text) => text.length > 40), topic.id);
   assert.equal(new Set(HELP_TOPICS.map((topic) => topic.id)).size, HELP_TOPICS.length);
+});
+
+test('the Help Center doesn’t name a key, because a key can be changed', () => {
+  assert.equal(/\b(Ctrl|Cmd)\+\w/.test(JSON.stringify(HELP_TOPICS)), false);
 });
 
 test('nothing in the help words names anyone’s book, or reads like it was written for one author', () => {
