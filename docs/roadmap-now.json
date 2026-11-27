@@ -1,11 +1,11 @@
 {
   "now": {
-    "title": "3.7.2 is merged, 3.9 and 3.10 are built",
-    "note": "3.7.2 fixes a bug that hid OneDrive files from Find my files, and a Print folder wrongly counted as a second manuscript, and it widens Preferences and puts a Preferences button on the library screen. It is merged and tagged, and its download isn’t published yet. 3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
+    "title": "3.7.2 is out, 3.9 and 3.10 are built",
+    "note": "3.7.2 fixes a bug that hid OneDrive files from Find my files, and a Print folder wrongly counted as a second manuscript, and it widens Preferences and puts a Preferences button on the library screen. It’s released. 3.9 (Records with the suite) and 3.10 (versions of a record, and web clips from Recon Browser) are built and in review.",
     "items": [
       {
         "title": "3.7.2: patch",
-        "text": "Find my files now sees OneDrive files on Windows. A full copy in a Print folder is a finished copy, not a second manuscript. Preferences opens wide, in two columns, and the library screen has a Preferences button so the themes can be found. Merged and tagged. The download isn’t published yet."
+        "text": "Find my files now sees OneDrive files on Windows. A full copy in a Print folder is a finished copy, not a second manuscript. Preferences opens wide, in two columns, and the library screen has a Preferences button so the themes can be found. Released."
       },
       {
         "title": "Records",
@@ -41,7 +41,7 @@
       },
       {
         "title": "Released before this",
-        "text": "3.7.1 is the latest release: the new name, and RT Markdown Reader on this computer."
+        "text": "3.7.2 is the latest release. Before it, 3.7.1 brought the new name, and 3.7.0 RT Markdown Reader on this computer."
       },
       {
         "title": "Next, from your own testing",

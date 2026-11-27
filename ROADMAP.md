@@ -34,7 +34,7 @@ losing anything, and pass its automated tests on Windows, Mac and Linux.
 | [v3.4](#v34--bring-it-in) | Bring it in | ✅ Released ([3.4.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.4.0)) |
 | [v3.5](#v35--find-my-files) | Find my files | ✅ Released ([3.5.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.5.0)) |
 | [v3.6](#v36--password-lock) | Password lock | ✅ Released ([3.6.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.6.0)) |
-| [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), then [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1)); 3.7.2 patch merged and tagged; its download isn’t published yet |
+| [v3.7](#v37--rt-markdown-reader-on-this-computer) | RT Markdown Reader, on this computer | ✅ Released ([3.7.0](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.0), [3.7.1](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.1), then [3.7.2](https://github.com/neogentrics/rt-story-tracker/releases/tag/v3.7.2)) |
 | [v3.8](#v38--the-recon-towers-suite) | The Recon Towers suite | Folded into 3.9, [built there](docs/design/the-suite.md) |
 | [v3.9](#v39--records) | Records, with the suite | 🚧 Built and tested on the VM, not released |
 | [v3.10](#v310--versions-of-a-record) | Versions of a record | 🚧 Versions and clips built and tested, not released |
