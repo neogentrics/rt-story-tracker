@@ -3,6 +3,45 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [3.9.0] - 2026-11-27
+
+Records, where the story bible lives, and the apps finding each other. It includes the suite half that used to be 3.8,
+described in [docs/design/the-suite.md](docs/design/the-suite.md).
+
+### Added
+- **Records.** A new **Records** side beside **Write**, at the top of every project. Make your own kinds of record, such as
+  Character, Place or Weapon, with any fields you like: text, long text, number, choice, date, yes or no, or a link to other
+  records. Or start from a template: a single novel, a series, or a shared universe.
+- **Links both ways.** Link one record to another, follow a link, and see everything that links back to a record.
+- **@ in a chapter.** Type `@` and a name to link a record. The name stays in the text as ordinary words. A record shows
+  every chapter it's mentioned in, and a click goes to the chapter.
+- **Look up while writing.** Ctrl or Cmd and click a linked name, or choose Look Up a Record from the View menu, to see a
+  record beside the page without leaving it.
+- **Tables, cards and saved views.** Filter by any field, sort, choose columns, and save the way you've set it up as a
+  named view.
+- **Numbering.** Number a kind of record with a prefix like `W-001`, with the next free number offered. Ranges keep each
+  series in its own set of numbers. A number can't be used twice.
+- **Bring in records** from spreadsheets (CSV) or Markdown files, or a folder of them. You see where each column or
+  `Label: value` line would go before anything is written, new fields and kinds can be made from the files, and a failure
+  leaves the project as it was.
+- **Export everything** now includes every record, as a Markdown file each and a spreadsheet for each kind, in a form that
+  reads back in.
+- The sample project has two characters, linked from its first chapters.
+- **Apps**, in Preferences, replaces Linked apps. It lists the other Recon Towers apps on this computer, whether each is
+  installed, running or linked, and offers Open, Link and Remove. Finding an app never links it. An installed app can be
+  started from here, but only the Recon Towers apps, and only the program itself.
+- **Installed list.** The app now says it's installed, so others can find it while it's closed. The Windows installer does
+  the same and removes it when you uninstall. The file holds no secrets.
+- **What it's doing.** A linked app can ask for a short line, such as *Editing “Chapter 3” in “Salt Road”*, and for a book's
+  word and chapter counts. Never any writing. A project with a password says nothing at all, the same as no project.
+- **Publish Chapter with RT Markdown Reader**, in the File menu. It sends the chapter with a note that it's for publishing.
+  Until RT Markdown Reader reads that note, it opens as usual and you choose Publish there.
+
+### Changed
+- Exports remove the link behind an `@` name, as they do comments, so a name is just words in the file.
+- Every project gets a table for links the first time it's opened. Nothing is lost or changed, and a project from an
+  earlier version opens as it did.
+
 ## [3.7.2] - 2026-11-27
 
 ### Changed

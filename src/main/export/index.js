@@ -5,6 +5,7 @@ const path = require('node:path');
 const { EXPORT_FORMATS: FORMATS, cleanLayout } = require('../../shared/details');
 const { PAGE_FONTS } = require('../../shared/themes');
 const { buildModel, checkBook } = require('./model');
+const { exportRecords } = require('./records');
 const { documentMarkdown, toHtml, toMarkdown, toRtf, toText, toXml } = require('./text-formats');
 
 async function exportToBuffer(model, format, layout) {
@@ -57,7 +58,8 @@ function freeName(dir, name) {
   return candidate;
 }
 
-// The way out with nothing held back: every book as Markdown files, plus covers, comments and word counts as CSV.
+// The way out with nothing held back: every book as Markdown files, plus covers, comments and word counts as CSV, and every
+// record as Markdown with a spreadsheet for each kind.
 async function exportEverything(project, folder) {
   const outline = project.outline();
   const root = path.join(folder, safeName(outline.title));
@@ -100,6 +102,7 @@ async function exportEverything(project, folder) {
     await project.attachments.saveTo(project.attachment(attachment.id).file, freeName(dir, safeName(attachment.name)));
     files += 1;
   }
+  files += exportRecords(project, root);
   return { folder: root, files: files + 2 };
 }
 

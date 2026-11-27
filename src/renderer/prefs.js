@@ -89,18 +89,41 @@ export async function openPreferences(api) {
   const showLinks = (status) => {
     linkOn.checked = status.on;
     linkNote.textContent = status.error ?? (status.on && !status.safe ? 'This computer has no safe place to keep a link, so links last until the app closes.' : '');
+    const states = (item) => [item.installed && 'installed', item.running && 'running', item.linked && 'linked'].filter(Boolean).join(', ') || 'not running';
+    const start = (item) => {
+      linkNote.textContent = `Starting ${item.name}…`;
+      changeLink(() => api.openApp(item.id));
+      // An app takes a few seconds to come up, so look again.
+      setTimeout(() => {
+        if (linkedApps.isConnected) changeLink(() => api.linkStatus());
+      }, 4000);
+    };
     const row = (item) => el(
       'li',
-      { class: 'word-row' },
-      el('span', {}, item.running ? item.name : `${item.name} (not running)`),
-      item.linked
-        ? el('button', { class: 'quiet', 'aria-label': `Remove the link to ${item.name}`, onclick: () => changeLink(() => api.unlinkApp(item.id)) }, 'Remove')
-        : el('button', { 'aria-label': `Link ${item.name}`, onclick: () => {
-          linkNote.textContent = `Answer in ${item.name}.`;
-          changeLink(() => api.pairApp(item.id));
-        } }, 'Link'),
+      { class: 'word-row app-row', dataset: { app: item.id } },
+      el(
+        'span',
+        { class: 'app-info' },
+        el('strong', {}, item.name),
+        item.version ? el('small', {}, ` ${item.version}`) : null,
+        el('small', { class: 'app-states' }, ` · ${states(item)}`),
+        item.line ? el('small', { class: 'app-line' }, item.line) : null,
+      ),
+      el(
+        'span',
+        { class: 'app-buttons' },
+        item.canOpen ? el('button', { 'aria-label': `Open ${item.name}`, onclick: () => start(item) }, 'Open') : null,
+        item.linked
+          ? el('button', { class: 'quiet', 'aria-label': `Remove the link to ${item.name}`, onclick: () => changeLink(() => api.unlinkApp(item.id)) }, 'Remove')
+          : item.running && status.on
+            ? el('button', { 'aria-label': `Link ${item.name}`, onclick: () => {
+              linkNote.textContent = `Answer in ${item.name}.`;
+              changeLink(() => api.pairApp(item.id));
+            } }, 'Link')
+            : null,
+      ),
     );
-    const empty = status.on ? [el('li', { class: 'quiet-note' }, 'No other Recon Towers app is running with App Link on.')] : [];
+    const empty = [el('li', { class: 'quiet-note' }, 'No other Recon Towers app was found on this computer.')];
     linkedApps.replaceChildren(...(status.apps.length ? status.apps.map(row) : empty));
   };
   const changeLink = async (work) => {
@@ -183,9 +206,10 @@ export async function openPreferences(api) {
     el(
       'section',
       {},
-      el('h3', {}, 'Linked apps'),
-      el('label', { class: 'check' }, linkOn, 'Let Recon Towers apps on this computer find this one'),
-      el('p', { class: 'quiet-note' }, 'A linked app can send you documents, and you choose where each one goes. It can’t read anything here. A locked project is never sent.'),
+      el('h3', {}, 'Apps'),
+      el('p', { class: 'quiet-note' }, 'The other Recon Towers apps on this computer. Finding one never links it: you link once, and answer in the app being asked.'),
+      el('label', { class: 'check' }, linkOn, 'Let Recon Towers apps on this computer find this one and link with it'),
+      el('p', { class: 'quiet-note' }, 'A linked app can send you documents, and you choose where each one goes. It can see a short line about what’s open, and ask for a book’s word count. It can’t read your writing. A project with a password is never described or sent.'),
       linkedApps,
       linkNote,
     ),

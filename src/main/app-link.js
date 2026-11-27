@@ -104,9 +104,10 @@ function call(endpoint, method, params, timeout = CALL_MS) {
 
 class AppLink {
   // load and save keep { id: { name, key } }. ask({ id, name }) resolves true or false. open({ from, name, text, path,
-  // attachments, kind }) takes a document.
-  constructor({ folder, dataDir, version, load, save, ask, open, platform = process.platform, id = APP_ID, name = APP_NAME }) {
-    Object.assign(this, { folder, dataDir, version, load, save, ask, open, platform, id, name });
+  // attachments, kind, intent }) takes a document. status() says what the app is doing, as { state, line }, and facts is
+  // { list(), get(name, params) } for what the app can tell a linked app. All three are optional.
+  constructor({ folder, dataDir, version, load, save, ask, open, status = null, facts = null, platform = process.platform, id = APP_ID, name = APP_NAME }) {
+    Object.assign(this, { folder, dataDir, version, load, save, ask, open, status, facts, platform, id, name });
     this.server = null;
     this.asking = false;
     this.declined = new Map();
@@ -183,6 +184,9 @@ class AppLink {
     if (method === 'pair') return this.pairRequest(params);
     if (method === 'open_document') return this.openRequest(params);
     if (method === 'unlink') return this.unlinkRequest(params);
+    if (method === 'status') return this.statusRequest(params);
+    if (method === 'facts') return this.factsRequest(params);
+    if (method === 'get_fact') return this.factRequest(params);
     throw new LinkError('unknown_method', `${this.name} doesn’t have that method.`);
   }
 
@@ -224,10 +228,33 @@ class AppLink {
   async openRequest(params) {
     const from = this.caller(params);
     const { name, text, path: file, attachments, kind } = params;
-    if (typeof file === 'string' && file) await this.open({ from: from.name, path: file, attachments, kind });
-    else if (typeof text === 'string') await this.open({ from: from.name, name: documentName(name), text, attachments, kind });
+    // A hint that the person is sending this to be published. An app that doesn't know it opens the document as usual.
+    const intent = params.intent === 'publish' ? 'publish' : undefined;
+    if (typeof file === 'string' && file) await this.open({ from: from.name, path: file, attachments, kind, intent });
+    else if (typeof text === 'string') await this.open({ from: from.name, name: documentName(name), text, attachments, kind, intent });
     else throw new LinkError('bad_request', 'Give the document’s text or its path.');
     return { opened: true };
+  }
+
+  // What this app is doing, for a linked app. Always a short line and never any writing. An app that can't say answers idle.
+  statusRequest(params) {
+    this.caller(params);
+    const answer = this.status ? this.status() : null;
+    const state = ['idle', 'open', 'busy'].includes(answer?.state) ? answer.state : 'idle';
+    const line = state === 'idle' ? '' : cleanName(answer?.line, '');
+    return line ? { state, line } : { state };
+  }
+
+  factsRequest(params) {
+    this.caller(params);
+    return { facts: this.facts ? this.facts.list() : [] };
+  }
+
+  factRequest(params) {
+    this.caller(params);
+    const wanted = typeof params.fact === 'string' ? params.fact : '';
+    if (!this.facts || !this.facts.list().includes(wanted)) throw new LinkError('not_found', `${this.name} doesn’t have that.`);
+    return { fact: wanted, value: this.facts.get(wanted, params.params && typeof params.params === 'object' ? params.params : {}) };
   }
 
   unlinkRequest(params) {
@@ -285,12 +312,31 @@ class AppLink {
     return { name: other.name };
   }
 
-  async send(id, { name, text }) {
+  async send(id, { name, text, intent }) {
     const link = this.load()[id];
     if (!link) throw new LinkError('not_linked', 'That app isn’t linked.');
     const other = await this.reach(id);
-    await call(other.endpoint, 'open_document', { app: this.id, key: link.key, name: documentName(name), text }, SEND_MS);
+    await call(other.endpoint, 'open_document', { app: this.id, key: link.key, name: documentName(name), text, ...(intent === 'publish' ? { intent } : {}) }, SEND_MS);
     return { name: link.name };
+  }
+
+  // What a linked app that's running says it's doing, or nothing if it can't say.
+  async statusOf(id) {
+    const link = this.load()[id];
+    if (!link) throw new LinkError('not_linked', 'That app isn’t linked.');
+    const other = await this.reach(id);
+    const answer = await call(other.endpoint, 'status', { app: this.id, key: link.key }, 2500);
+    const state = ['idle', 'open', 'busy'].includes(answer?.state) ? answer.state : 'idle';
+    return { state, line: cleanName(answer?.line, '') };
+  }
+
+  // A fact another app owns, by name. The names an app answers to are in docs/app-link.md.
+  async askFact(id, fact, params = {}) {
+    const link = this.load()[id];
+    if (!link) throw new LinkError('not_linked', 'That app isn’t linked.');
+    const other = await this.reach(id);
+    const answer = await call(other.endpoint, 'get_fact', { app: this.id, key: link.key, fact, params }, CALL_MS);
+    return answer?.value;
   }
 
   // Forgets a link here, and tells the other app if it's there to hear it.
@@ -309,4 +355,4 @@ class AppLink {
   }
 }
 
-module.exports = { APP_ID, AppLink, LinkError, PROTOCOL, call, cleanName, documentName, endpointFor, sharedFolder, validEndpoint, validId };
+module.exports = { APP_ID, APP_NAME, AppLink, LinkError, PROTOCOL, call, cleanName, documentName, endpointFor, sharedFolder, validEndpoint, validId };

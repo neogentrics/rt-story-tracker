@@ -18,7 +18,7 @@ const launch = async (...extra) => {
   const app = await electron.launch({
     executablePath: require('electron'),
     args: [root, ...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...extra],
-    env: { ...process.env, RTST_USER_DATA: profile, NMR_LINK_DIR: shared },
+    env: { ...process.env, RTST_USER_DATA: profile, NMR_LINK_DIR: shared, RTST_INSTALLED_LAUNCH: process.execPath },
   });
   const window = await app.firstWindow();
   await window.waitForSelector('body[data-state="ready"]');
@@ -55,14 +55,36 @@ const answerYes = (app) => app.evaluate(({ dialog }) => { dialog.showMessageBox 
 
   // Off until it's turned on: there's nothing to find.
   assert.equal(fs.existsSync(path.join(shared, 'rt-story-tracker.json')), false);
+  // It says it's installed, which connects to nothing, so that's there already. Another app that's installed shows up too.
+  const own = JSON.parse(fs.readFileSync(path.join(shared, 'installed', 'rt-story-tracker.json'), 'utf8'));
+  assert.deepEqual([own.id, own.launch, own.protocol], ['rt-story-tracker', process.execPath, 1]);
+  fs.writeFileSync(path.join(shared, 'installed', 'rt-press.json'), JSON.stringify({ protocol: 1, id: 'rt-press', name: 'RT Press', version: '1.0.0', launch: process.execPath }));
   await menu(app, 'preferences');
   await window.waitForSelector('#preferences[open]');
+  await window.waitForSelector('.app-row[data-app="rt-press"] [aria-label="Open RT Press"]');
+  assert.equal(await window.locator('.app-row[data-app="rt-press"] [aria-label^="Link"]').count(), 0, 'finding an app never links it, and it can’t be linked while it isn’t running');
   await window.check('#pref-link');
   await window.waitForSelector('[aria-label="Link RT Markdown Reader"]');
   assert.ok(fs.existsSync(path.join(shared, 'rt-story-tracker.json')));
+  assert.match(await window.textContent('.app-row[data-app="rt-markdown-reader"]'), /running/);
   await window.click('[aria-label="Link RT Markdown Reader"]');
   await window.waitForSelector('[aria-label="Remove the link to RT Markdown Reader"]');
   await window.click('#pref-close');
+
+  // A linked app can ask what's open, and gets a line and no writing.
+  const status = await reader.statusOf('rt-story-tracker');
+  assert.equal(status.state, 'open');
+  assert.match(status.line, /“The Long Road”/);
+  assert.ok(!JSON.stringify(status).includes('It began'));
+  await menu(app, 'show-records');
+  await window.waitForSelector('#mode-records.active');
+  await window.waitForFunction(() => true);
+  assert.match((await reader.statusOf('rt-story-tracker')).line, /Looking at records in “The Long Road”/);
+  const facts = await reader.askFact('rt-story-tracker', 'book.progress');
+  assert.equal(facts.project, 'The Long Road');
+  assert.equal(facts.books[0].chapters, 1);
+  await menu(app, 'show-write');
+  await window.waitForSelector('#mode-write.active');
 
   // RT Markdown Reader sends a document, and it's offered, not filed.
   await reader.send('rt-story-tracker', { name: 'Chapter 12.md', text: '# Chapter 12\n\nThe tide came in.\n' });
@@ -139,6 +161,8 @@ const answerYes = (app) => app.evaluate(({ dialog }) => { dialog.showMessageBox 
 
   await menu(app, 'lock');
   await window.waitForSelector('#lock-screen');
+  assert.deepEqual(await reader.statusOf('rt-story-tracker'), { state: 'idle', line: '' }, 'behind the lock it says nothing');
+  await assert.rejects(() => reader.askFact('rt-story-tracker', 'book.progress'), /No project is open/);
   await reader.send('rt-story-tracker', { name: 'For the locked one.md', text: 'Held in memory.' });
   await new Promise((resolve) => { setTimeout(resolve, 500); });
   assert.equal(await window.locator('#inbox').count(), 0, 'nothing is offered behind the lock');

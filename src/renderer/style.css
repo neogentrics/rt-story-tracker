@@ -320,6 +320,7 @@ textarea {
   height: 100%;
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
 }
 
 .room-header {
@@ -1823,4 +1824,876 @@ html[data-theme='contrast'] :is(button, input, select, textarea) {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
+}
+
+/* Records */
+
+.mode-tabs {
+  display: inline-flex;
+  margin-left: 0.5rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--on-bar) 38%, transparent);
+  border-radius: 8px;
+}
+
+.mode-tab {
+  border: 0;
+  border-radius: 0;
+  padding: 0.28rem 0.85rem;
+  color: var(--on-bar);
+}
+
+.mode-tab.active {
+  background: color-mix(in srgb, var(--on-bar) 24%, transparent);
+  font-weight: 700;
+}
+
+.room[data-mode='records'] .write-only {
+  display: none;
+}
+
+.records-room {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+}
+
+.records-main {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 10%, transparent) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.records-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.7rem 1.25rem 0;
+  max-width: 76rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.records-pane {
+  flex: 1;
+  padding: 1rem 1.25rem 2rem;
+}
+
+.record-browser,
+.record-page,
+.records-empty {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 1.1rem 1.4rem 1.4rem;
+  border-radius: 14px;
+  background: var(--sheet);
+  color: var(--sheet-ink);
+  box-shadow: var(--soft-shadow);
+  --ink: var(--sheet-ink);
+  --ink-soft: var(--sheet-ink-soft);
+}
+
+.record-page {
+  max-width: 54rem;
+}
+
+.records-empty {
+  max-width: 44rem;
+  text-align: center;
+}
+
+.records-empty > .icon {
+  width: 36px;
+  height: 36px;
+  color: var(--ink-soft);
+}
+
+.template-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.template-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 12px;
+}
+
+.template-card .use-template {
+  flex: none;
+  white-space: nowrap;
+}
+
+.template-card p {
+  margin: 0.2rem 0;
+}
+
+.template-types {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.back-button {
+  border-color: transparent;
+}
+
+/* Browsing */
+
+.browser-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  align-items: center;
+}
+
+.browser-head h2 {
+  margin: 0;
+  font: 600 1.45rem/1.2 var(--ui-font);
+}
+
+.browser-count {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.browser-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.view-tabs,
+.browser-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.view-tabs {
+  margin: 0.9rem 0 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.view-tab {
+  border-color: transparent;
+}
+
+.view-tab.active,
+.mode-button.active,
+.filter-toggle.active {
+  background: var(--selected);
+  font-weight: 700;
+}
+
+.view-spacer {
+  flex: 1;
+}
+
+.view-name {
+  width: 11rem;
+}
+
+.browser-controls {
+  margin-bottom: 0.7rem;
+}
+
+.browser-search {
+  width: 15rem;
+}
+
+.sort-box {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.badge {
+  min-width: 1.3rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.75rem;
+  line-height: 1.3rem;
+  text-align: center;
+}
+
+.mode-toggle {
+  display: inline-flex;
+}
+
+.mode-toggle .mode-button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.mode-toggle .mode-button:last-child {
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.column-picker {
+  position: relative;
+}
+
+.column-picker summary {
+  cursor: pointer;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  font-weight: 500;
+  list-style: none;
+}
+
+.column-menu {
+  position: absolute;
+  z-index: 30;
+  display: grid;
+  gap: 0.25rem;
+  min-width: 12rem;
+  margin-top: 0.3rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  background: var(--sheet);
+  box-shadow: var(--soft-shadow);
+}
+
+.filter-panel {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+  padding: 0.7rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+}
+
+.filter-panel .quiet-note {
+  margin: 0;
+}
+
+.filter-row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.filter-panel .add-filter {
+  justify-self: start;
+}
+
+.record-table-wrap {
+  overflow: auto;
+}
+
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.record-table th,
+.record-table td {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--panel-edge);
+  text-align: left;
+  vertical-align: top;
+}
+
+.sort-head {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.record-row {
+  cursor: pointer;
+}
+
+.record-row:hover,
+.record-row:focus-visible {
+  background: var(--hover);
+}
+
+.name-cell {
+  font-weight: 600;
+}
+
+.record-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.8rem;
+}
+
+.record-card {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.15rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.card-number {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.record-card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.1rem 0.6rem;
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.record-card dt {
+  color: var(--ink-soft);
+}
+
+.record-card dd {
+  margin: 0;
+}
+
+.browser-empty {
+  padding: 2.5rem 1rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--panel-edge);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.chip button {
+  padding: 0.12rem 0.45rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-weight: 500;
+}
+
+.chip .chip-remove {
+  padding: 0.12rem 0.3rem 0.12rem 0.05rem;
+  color: var(--ink-soft);
+}
+
+.chip .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.chip.small {
+  margin: 0 0.25rem 0.15rem 0;
+  padding: 0 0.5rem;
+  font-size: 0.85rem;
+}
+
+.chip.trashed {
+  font-style: italic;
+  opacity: 0.65;
+}
+
+/* One record */
+
+.record-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.type-chip {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--selected);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.record-title {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.1rem 0.2rem !important;
+  border: 0 !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font: 600 1.55rem/1.3 var(--ui-font);
+}
+
+.record-title:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--accent) !important;
+}
+
+.record-number-box {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.record-number {
+  width: 8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.record-fields {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 0.65rem 1rem;
+  align-items: start;
+}
+
+.record-field {
+  display: contents;
+}
+
+.record-field > :first-child {
+  padding-top: 0.42rem;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.record-field > :last-child {
+  min-width: 0;
+}
+
+.record-field select,
+.record-field input[type='text'],
+.record-field input[type='number'],
+.record-field input[type='date'],
+.record-field textarea {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.record-field textarea {
+  min-height: 4.6rem;
+  max-width: none;
+  resize: vertical;
+}
+
+.choice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  padding-top: 0.35rem;
+}
+
+.link-list {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.chip-add {
+  padding: 0.12rem 0.55rem;
+  border-style: dashed;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.chip-add .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.record-notes,
+.record-backlinks {
+  margin-top: 1.4rem;
+}
+
+.record-page h3,
+.record-page h4 {
+  margin: 0 0 0.4rem;
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.record-page h4 {
+  margin-top: 0.8rem;
+}
+
+.record-notes-text {
+  min-height: 8rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  font: 1rem/1.6 var(--page-font);
+}
+
+.record-notes-text:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.record-notes-text p {
+  margin: 0 0 0.6em;
+}
+
+.backlink-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.backlink {
+  width: 100%;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 0;
+  text-align: left;
+}
+
+.backlink-title {
+  font-weight: 600;
+}
+
+.backlink-note {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.record-page.compact .record-fields {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.2rem;
+}
+
+.record-page.compact .record-field > :first-child {
+  padding-top: 0.5rem;
+}
+
+.record-page.compact {
+  padding: 0.8rem 0.9rem 1.2rem;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.record-page.compact .record-title {
+  font-size: 1.25rem;
+}
+
+/* Mentions, and the box for choosing a record */
+
+.mention-mark {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 17%, transparent);
+}
+
+.mention-pop,
+.record-picker {
+  z-index: 60;
+  width: 19rem;
+  max-height: 17rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0.3rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  background: var(--sheet);
+  color: var(--sheet-ink);
+  box-shadow: var(--soft-shadow);
+  list-style: none;
+}
+
+.mention-pop {
+  position: fixed;
+}
+
+.record-picker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  --ink: var(--sheet-ink);
+  --ink-soft: var(--sheet-ink-soft);
+}
+
+.picker-input {
+  width: 100%;
+  margin-bottom: 0.3rem;
+}
+
+.picker-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mention-row,
+.picker-row {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mention-row.active,
+.picker-row.active,
+.mention-row:hover,
+.picker-row:hover {
+  background: var(--selected);
+}
+
+.picker-title {
+  font-weight: 600;
+}
+
+.picker-note {
+  color: var(--sheet-ink-soft);
+  font-size: 0.8rem;
+}
+
+.picker-empty {
+  padding: 0.4rem 0.6rem;
+  color: var(--sheet-ink-soft);
+  font-size: 0.88rem;
+  list-style: none;
+}
+
+/* The look-up panel beside the page */
+
+/* The two lists, the look-up panel (25rem) and a page that can still be read need about 82rem. In a narrower window, such as the
+   smallest one the app allows or a hosted 1024 by 768 screen, the lists step aside while the panel is open and come back when it
+   closes, so the page is never squeezed to nothing or covered. */
+@container (max-width: 82rem) {
+  .room:has(.lookup-pane:not([hidden])) .column:not(.page-column) {
+    display: none;
+  }
+
+  .room:has(.lookup-pane:not([hidden])) .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lookup-pane {
+  flex: 0 0 25rem;
+  overflow: auto;
+  background: var(--sheet);
+  color: var(--sheet-ink);
+  --ink: var(--sheet-ink);
+  --ink-soft: var(--sheet-ink-soft);
+}
+
+.lookup-pane:not([hidden]) {
+  display: flex;
+}
+
+.lookup-head {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.lookup-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.lookup-results {
+  margin: 0;
+  padding: 0.3rem 0.5rem;
+  list-style: none;
+}
+
+.lookup-pane.has-record .lookup-results {
+  max-height: 8rem;
+  overflow: auto;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.lookup-pane:not(.has-record) .lookup-body {
+  display: none;
+}
+
+.lookup-result {
+  width: 100%;
+  justify-content: space-between;
+  border: 0;
+  text-align: left;
+}
+
+/* Making a kind of record */
+
+.field-editor {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.field-item {
+  margin-bottom: 0.65rem;
+}
+
+.field-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem auto auto auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.field-extra {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.35rem 0 0 0.4rem;
+}
+
+.field-extra textarea {
+  width: 100%;
+}
+
+.numbering-line {
+  display: flex;
+  gap: 1rem;
+  margin: 0.4rem 0;
+}
+
+.numbering-line input[type='number'] {
+  width: 5rem;
+}
+
+.range-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5rem auto 5.5rem auto;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.dialog-error {
+  margin: 0.8rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  background: var(--on-danger-bg);
+  color: var(--danger);
+}
+
+.empty-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.import-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.6rem 0 0.8rem;
+}
+
+.import-table-wrap {
+  max-height: 22rem;
+  overflow: auto;
+  margin-bottom: 0.8rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+}
+
+.import-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.import-table th,
+.import-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--panel-edge);
+  text-align: left;
+  vertical-align: top;
+}
+
+.import-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--sheet);
+  color: var(--sheet-ink-soft);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.import-count {
+  color: var(--sheet-ink-soft);
+}
+
+.import-samples {
+  max-width: 18rem;
+  overflow: hidden;
+  color: var(--sheet-ink-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-problems {
+  max-height: 14rem;
+  overflow: auto;
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+}
+
+/* The Apps panel in Preferences */
+
+.app-row {
+  align-items: flex-start;
+}
+
+.app-info small {
+  color: var(--sheet-ink-soft);
+}
+
+.app-info .app-line {
+  display: block;
+}
+
+.app-buttons {
+  display: flex;
+  gap: 0.4rem;
 }

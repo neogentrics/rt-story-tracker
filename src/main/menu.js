@@ -43,6 +43,7 @@ function buildMenu({ send, checkForUpdates, about }) {
         { type: 'separator' },
         { label: 'Open Chapter in RT Markdown Reader', click: () => send('reader-chapter') },
         { label: 'Open Book in RT Markdown Reader', click: () => send('reader-book') },
+        { label: 'Publish Chapter with RT Markdown Reader…', click: () => send('reader-publish') },
         { label: 'Documents Sent Here…', click: () => send('inbox') },
         { type: 'separator' },
         { label: 'Earlier Versions of This Chapter…', click: () => send('history') },
@@ -79,6 +80,10 @@ function buildMenu({ send, checkForUpdates, about }) {
     {
       label: 'View',
       submenu: [
+        { label: 'Write', accelerator: 'CmdOrCtrl+1', click: () => send('show-write') },
+        { label: 'Records', accelerator: 'CmdOrCtrl+2', click: () => send('show-records') },
+        { label: 'Look Up a Record', accelerator: 'CmdOrCtrl+K', click: () => send('lookup') },
+        { type: 'separator' },
         { label: 'Focus Mode', accelerator: 'CmdOrCtrl+Shift+F', click: () => send('focus') },
         { type: 'separator' },
         { role: 'zoomIn' },

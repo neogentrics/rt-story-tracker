@@ -8,6 +8,7 @@ import { el, formatCount, words } from './dom.js';
 import { FindBar } from './find-bar.js';
 import { FindHighlight } from './find-plugin.js';
 import { icon } from './icons.js';
+import { MentionMark, mentionSuggestions } from './mentions.js';
 
 const COUNT_DELAY_MS = 250;
 
@@ -68,12 +69,13 @@ const TOOLS = [
 ];
 
 export class Page {
-  constructor(root, { api, onWords, onTitle, onError, onSaved, onClose, onNewChapter, find }) {
+  constructor(root, { api, onWords, onTitle, onError, onSaved, onClose, onNewChapter, onLookUp, find }) {
     this.api = api;
     this.onWords = onWords;
     this.onTitle = onTitle;
     this.onError = onError;
     this.onSaved = onSaved;
+    this.onLookUp = onLookUp;
     this.editor = null;
     this.chapterId = null;
     this.countTimer = null;
@@ -216,6 +218,8 @@ export class Page {
         StarterKit.configure({ code: false, codeBlock: false, link: false, heading: { levels: [1, 2, 3] } }),
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
         CommentMark,
+        MentionMark.configure({ onOpen: (id) => this.onLookUp?.(id) }),
+        mentionSuggestions({ api: this.api, onError: this.onError }),
         FindHighlight,
       ],
       content: toDocument(chapter.body),

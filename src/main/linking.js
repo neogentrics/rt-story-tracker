@@ -6,8 +6,9 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { AppLink, LinkError, sharedFolder, validId } = require('./app-link');
+const { APP_ID, APP_NAME, AppLink, LinkError, sharedFolder, validId } = require('./app-link');
 const { exportFile, safeName } = require('./export');
+const { launchInstalled, readInstalled, writeInstalled } = require('./installed');
 const { writeFileSafely } = require('./storage/keys');
 
 const READER_ID = 'rt-markdown-reader';
@@ -34,9 +35,13 @@ function launchReader(app, file, { platform = process.platform, start = spawn } 
   start(command, args, { detached: true, stdio: 'ignore' }).unref();
 }
 
+const nodesOf = (node, kind) => (node.kind === kind ? [node] : node.children.flatMap((child) => nodesOf(child, kind)));
+
 class Linking {
-  constructor({ workspace, settings, vault, inbox, root, home, dataDir, version, ask, places = readerPlaces, launch = launchReader, tempDir = os.tmpdir() }) {
-    Object.assign(this, { workspace, settings, vault, inbox, root, home, dataDir, version, ask, places, launch, tempDir });
+  // launchPath is where this app starts from, for the installed list, and is null when it isn't an installed copy.
+  // startApp starts another installed app.
+  constructor({ workspace, settings, vault, inbox, root, home, dataDir, version, ask, places = readerPlaces, launch = launchReader, launchPath = null, startApp = launchInstalled, tempDir = os.tmpdir() }) {
+    Object.assign(this, { workspace, settings, vault, inbox, root, home, dataDir, version, ask, places, launch, launchPath, startApp, tempDir });
     this.file = path.join(root, LINKS_FILE);
     // Links made under this app's old App Link id can't work, so they go, and the app offers to link again.
     fs.rmSync(path.join(root, OLD_LINKS_FILE), { force: true });
@@ -80,6 +85,8 @@ class Linking {
       save: (links) => this.save(links),
       ask: this.ask,
       open: (document) => this.inbox.take(document),
+      status: () => this.describe(),
+      facts: this.factProvider(),
     });
     await server.start();
     this.server = server;
@@ -102,8 +109,93 @@ class Linking {
     }
   }
 
+  sharedFolder() {
+    return sharedFolder({ home: this.home });
+  }
+
+  // Says this app is installed, so other apps can find it while it's closed. It holds no secrets, so it's written whether or
+  // not App Link is on. Nothing connects to anything because of it.
+  registerInstalled() {
+    if (!this.launchPath) return false;
+    try {
+      return writeInstalled(this.sharedFolder(), { id: APP_ID, name: APP_NAME, version: this.version, launch: this.launchPath });
+    } catch {
+      return false;
+    }
+  }
+
+  // What the person sees: every suite app installed here or running or linked, whether it's linked, and a line about what
+  // a linked app that's running is doing. Finding an app never links it.
+  async apps() {
+    const rows = new Map();
+    const row = (id, name) => {
+      if (!rows.has(id)) rows.set(id, { id, name, version: '', installed: false, running: false, linked: false, known: false, canOpen: false, line: '' });
+      return rows.get(id);
+    };
+    for (const item of readInstalled(this.sharedFolder())) {
+      if (item.id !== APP_ID) Object.assign(row(item.id, item.name), { installed: true, version: item.version, known: item.known });
+    }
+    const running = this.server ? await this.server.found() : [];
+    for (const item of running) row(item.id, item.name).running = true;
+    for (const [id, link] of Object.entries(this.load())) {
+      const found = row(id, link.name);
+      found.linked = true;
+      found.name = link.name || found.name;
+    }
+    const list = [...rows.values()];
+    for (const item of list) item.canOpen = item.installed && item.known && !item.running;
+    await Promise.all(list.filter((item) => item.linked && item.running && this.server).map(async (item) => {
+      try {
+        item.line = (await this.server.statusOf(item.id)).line;
+      } catch {
+        // It didn't say, which is no reason to hide it.
+      }
+    }));
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   async status() {
-    return { on: this.settings.values.appLink, safe: this.vault.available(), apps: this.server ? await this.server.list() : [] };
+    return { on: this.settings.values.appLink, safe: this.vault.available(), apps: await this.apps() };
+  }
+
+  async openApp(id) {
+    if (!validId(id)) throw new Error('That app isn’t known.');
+    const entry = readInstalled(this.sharedFolder()).find((item) => item.id === id);
+    if (!entry) throw new Error('That app isn’t installed here.');
+    if (!this.server || !(await this.server.found()).some((item) => item.id === id)) this.startApp(entry);
+    return this.status();
+  }
+
+  // What this app tells a linked app about itself. A project with a password says nothing, open or not, and says the same
+  // as no project at all, so the answer can't be used to find out that one exists.
+  describe() {
+    const space = this.workspace;
+    if (!space.project || space.locked) return { state: 'idle' };
+    if (space.busy > 0) return { state: 'busy', line: 'Busy with a long job' };
+    const title = space.project.title();
+    const { mode, chapterId } = space.activity;
+    if (mode === 'records') return { state: 'open', line: `Looking at records in “${title}”` };
+    const chapter = chapterId ? space.project.getItem(chapterId) : null;
+    if (chapter?.kind === 'chapter' && !chapter.trashedAt) return { state: 'open', line: `Editing “${chapter.title}” in “${title}”` };
+    return { state: 'open', line: `Open: “${title}”` };
+  }
+
+  // Numbers a linked app can ask for. Only the project that's open, and only if it has no password. No writing.
+  factProvider() {
+    const names = ['book.progress'];
+    return {
+      list: () => names,
+      get: (name) => {
+        const space = this.workspace;
+        if (name !== 'book.progress') throw new LinkError('not_found', 'This app doesn’t have that.');
+        if (!space.project || space.locked) throw new LinkError('not_found', 'No project is open.');
+        const books = nodesOf(space.outline(), 'book');
+        return {
+          project: space.project.title(),
+          books: books.map((book) => ({ title: book.title, words: book.words, chapters: nodesOf(book, 'chapter').length })),
+        };
+      },
+    };
   }
 
   async pair(id) {
@@ -131,7 +223,7 @@ class Linking {
 
   // Through the link if there is one and the app's running. If not, the same way as Open With, so no link is needed and it
   // starts the app if it's closed.
-  async openInReader({ scope, id }) {
+  async openInReader({ scope, id, publish = false }) {
     if (this.workspace.locked) throw new Error(LOCKED_WORDS);
     const project = this.workspace.open();
     const item = project.getItem(id);
@@ -140,7 +232,7 @@ class Linking {
     const name = `${safeName(item.title)}.md`;
     if (this.server && Object.hasOwn(this.load(), READER_ID)) {
       try {
-        await this.server.send(READER_ID, { name, text });
+        await this.server.send(READER_ID, { name, text, ...(publish === true ? { intent: 'publish' } : {}) });
         return { how: 'link' };
       } catch (error) {
         if (!(error instanceof LinkError) || !['not_running', 'not_linked', 'timed_out'].includes(error.code)) throw error;

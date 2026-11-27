@@ -266,6 +266,9 @@ function onMenu(command) {
   if (command === 'find') room?.find();
   if (command === 'replace') room?.find({ replacing: true });
   if (command === 'focus') room?.toggleFocus();
+  if (command === 'show-write') room?.showMode('write');
+  if (command === 'show-records') room?.showMode('records');
+  if (command === 'lookup') room?.toggleLookup();
   if (command === 'history') room?.showHistory();
   if (command === 'trash') {
     if (room) room.showTrash();
@@ -282,6 +285,7 @@ function onMenu(command) {
   if (command === 'security') showSecurity();
   if (command === 'reader-chapter') room?.openInReader('chapter');
   if (command === 'reader-book') room?.openInReader('book');
+  if (command === 'reader-publish') room?.openInReader('chapter', { publish: true });
   if (command === 'inbox') room?.showInbox();
   if (command === 'lock') {
     if (lockedOpen) lockProject();

@@ -12,6 +12,11 @@ export function el(tag, props = {}, ...children) {
   return node;
 }
 
+// Like replaceChildren, but a missing child is skipped. replaceChildren would write the word "null".
+export function fill(node, ...children) {
+  node.replaceChildren(...children.flat(Infinity).filter((child) => child !== null && child !== undefined && child !== false));
+}
+
 const NUMBER = new Intl.NumberFormat();
 
 export function formatCount(count) {
