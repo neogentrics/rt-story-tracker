@@ -242,6 +242,23 @@ function sources() {
       assert.equal(await window.evaluate(() => document.activeElement.classList.contains('more-button')), true);
     }
 
+    // More stays open while the counts in the bar change under it, as they do each time the page saves, and the bar catches up after.
+    if (inMore.length) {
+      await window.focus('.ProseMirror');
+      await window.keyboard.press('End');
+      await window.keyboard.type(' and then a few more words');
+      await window.focus('.more-button');
+      await window.keyboard.press('Enter');
+      const chosen = await window.evaluate(() => document.activeElement.getAttribute('aria-label'));
+      await window.waitForSelector('.save-state[data-state="saved"]', { timeout: 15000 });
+      await new Promise((resolve) => { setTimeout(resolve, 600); });
+      assert.equal(await window.locator('.more-menu').isHidden(), false, `More is still open after the page saved, at ${at}`);
+      assert.equal(await window.evaluate(() => document.activeElement.getAttribute('aria-label')), chosen, 'with the keyboard where it was');
+      await window.keyboard.press('Escape');
+      await settle(window);
+      assert.deepEqual(await window.evaluate(barProblems), [], `and the bar is right again once it closes, at ${at}`);
+    }
+
     // A command works wherever it is, from the keyboard: Preferences.
     const press = async (command) => {
       if ((await window.evaluate(whereCommands, [command]))[command] === 'more') {
@@ -345,6 +362,8 @@ function sources() {
       await window.keyboard.press('Escape');
       await window.waitForSelector('#records-import', { state: 'detached' });
       await window.click('#mode-write');
+      await window.waitForFunction(() => document.querySelector('.room').dataset.mode === 'write');
+      await settle(window);
 
       // A password: both steps, the screen after, the lock screen and its other ways in.
       await press('security-button');

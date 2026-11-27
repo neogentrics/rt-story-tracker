@@ -19,12 +19,15 @@ export function createBarFit({ header, title, bar, tools, leaving, core, showWor
   menu.append(counts);
 
   const items = () => [...menu.querySelectorAll('[role="menuitem"]')].filter((node) => node.offsetParent !== null);
+  // Set when the bar should be fitted again but the menu is open.
+  let owed = false;
 
   function close() {
     if (menu.hidden) return;
     menu.hidden = true;
     more.setAttribute('aria-expanded', 'false');
     document.removeEventListener('pointerdown', outside, true);
+    if (owed) soon();
   }
 
   function outside(event) {
@@ -92,9 +95,17 @@ export function createBarFit({ header, title, bar, tools, leaving, core, showWor
   const tooNarrow = () => header.scrollWidth > header.clientWidth + 1 || title.clientWidth < TITLE_ROOM;
   const leaveOrder = leaving.map((name) => tools.find((button) => button.classList.contains(name))).filter(Boolean);
 
-  function fit() {
+  // `resized` is the window changing width, which moves the buttons even under an open menu. Anything else, such as the counts growing
+  // when the page saves, waits for the menu to be closed, so it doesn't vanish while someone is choosing from it.
+  function fit({ resized = false } = {}) {
     if (!header.isConnected || header.clientWidth === 0) return;
+    if (!menu.hidden && !resized) {
+      owed = true;
+      if (!counts.hidden) counts.textContent = showWords('none');
+      return;
+    }
     const hadFocus = document.activeElement;
+    owed = false;
     close();
     moved.clear();
     tools.forEach(inBar);
@@ -128,7 +139,7 @@ export function createBarFit({ header, title, bar, tools, leaving, core, showWor
   const watch = new ResizeObserver(([entry]) => {
     if (Math.round(entry.contentRect.width) === width) return;
     width = Math.round(entry.contentRect.width);
-    fit();
+    fit({ resized: true });
   });
   watch.observe(header);
   document.fonts?.ready.then(soon);

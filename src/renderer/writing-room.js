@@ -221,6 +221,8 @@ export class WritingRoom {
       await this.flush();
       this.mode = mode;
       this.room.dataset.mode = mode;
+      // The other view has other buttons, so the menu doesn't stay open over it.
+      this.barFit.close();
       this.barFit.fit();
       this.reportActivity();
       this.columns.hidden = mode === 'records';
