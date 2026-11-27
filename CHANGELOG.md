@@ -3,6 +3,13 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Files you bring in. This will be 3.11.
+
+### Changed
+- **Word counts say so.** The number beside a book, part or chapter now reads *226 words*, so it isn't taken for a number of files.
+
 ## [3.10.0] - 2026-11-27
 
 Versions of a record, for authors who need to say what a record said as of each book. Web clips from Recon Browser. And an app that

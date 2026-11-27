@@ -602,7 +602,7 @@ export class WritingRoom {
       },
       icon(KIND_ICONS[node.kind]),
       title,
-      el('span', { class: 'row-words', dataset: { wordsFor: node.id } }, formatCount(node.words)),
+      el('span', { class: 'row-words', dataset: { wordsFor: node.id } }, words(node.words)),
     );
     const item = el(
       'li',
@@ -728,7 +728,7 @@ export class WritingRoom {
     for (let at = entry; at; at = at.parent && index.get(at.parent.id)) {
       at.node.words += change;
       const label = document.querySelector(`[data-words-for="${at.node.id}"]`);
-      if (label) label.textContent = formatCount(at.node.words);
+      if (label) label.textContent = words(at.node.words);
     }
     this.projectWords.textContent = words(this.outline.words);
     this.showCounts();
