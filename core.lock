@@ -1,0 +1,21 @@
+{
+  "source": "neogentrics/recon-core",
+  "tag": "v0.1.0",
+  "commit": "39ab0d0ef3c876b51a380fdcb6bbbce1b3b68c7a",
+  "into": "src/main/core",
+  "pieces": {
+    "read-aloud": {
+      "dependencies": {
+        "onnxruntime-web": "^1.31.1"
+      },
+      "files": {
+        "supertonic.js": "9e6a7888f157e4a28e3ebf0facffa920d742e34010202c4e7be5b2df8d1aa982",
+        "voice-text.js": "ca388b6874d23a93abf4f6be4c857e6f4fe8e73f6b6df3c449186a9630af95d3",
+        "voice-tone.js": "7e65d67fddefef0b891c48f9c1c51c19cd66d50e67096935b2fff7ee5a18fca3",
+        "voice-worker.js": "c96c0f35d0d9005aacd9ac6c6ce0847c2fb970137bfc68e015f28e04c3dc7115",
+        "voices.js": "629f0487b2afe28c617d05712ef8891df04bb223760481189011a63a77fc4016"
+      }
+    }
+  },
+  "hash": "4bc94e72e5848ecbb4c9f4914fea362e64e1668055a0ca839cceeb7c67accddf"
+}

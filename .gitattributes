@@ -64,3 +64,8 @@
 
 # The old app is kept for reference, so it does not count towards the language GitHub shows.
 legacy-wpf/** linguist-vendored
+
+# Code shared with other Recon Towers apps is checked against core.lock byte for byte, so it keeps the line endings it came with,
+# on Windows too. The same goes for the lock itself.
+src/main/core/** text eol=lf
+core.lock text eol=lf

@@ -51,6 +51,7 @@ const engineLine = (info) => `Electron ${info.electron} · Chromium ${info.chrom
 // What Copy Version Details puts on the clipboard, for a bug report. Nothing about the person or the project is in it.
 const detailsText = (info) => [versionLine(info), engineLine(info), info.os].join('\n');
 const copyright = (year) => `© ${year} ${COMPANY}. All rights reserved.`;
+const LAME_NOTICE = 'MP3 export uses the LAME encoder (as lamejs), © 1999–2008 Mark Taylor, Gabriel Bouvigne, Naoki Shibata, Robert Hegemann and others, under the GNU Lesser General Public License, version 3. The licence texts come with the app, and Open-source notices says where.';
 const versionWords = (info) => (info.portable ? `Version ${info.version} (portable)` : `Version ${info.version}`);
 
-module.exports = { ABOUT, APP_NAME, BLURB, COMPANY, HELP_MENU, LINKS, REPO, WEBSITE, copyright, detailsText, engineLine, versionLine, versionWords };
+module.exports = { ABOUT, APP_NAME, BLURB, COMPANY, HELP_MENU, LAME_NOTICE, LINKS, REPO, WEBSITE, copyright, detailsText, engineLine, versionLine, versionWords };

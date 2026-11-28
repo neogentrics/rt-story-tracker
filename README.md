@@ -107,6 +107,8 @@ open the app from *System Settings → Privacy & Security*.
 | **Focus mode** | Just the page, until you press Esc |
 | **Goals** | Words a day and words for a chapter |
 | **Comments** | Notes on a selection, kept out of the book and its word count |
+| **Read aloud** | Hear a chapter with your computer’s own voices, or with natural voices you can download once. Each sentence is underlined as it’s read, you can step by sentence or paragraph, and teach it how names sound. Works offline |
+| **Audio export** | A chapter or a book as an MP3, or on Windows and Mac an audiobook with chapters, read by the natural voices |
 | **Highlighting and letter colours** | A few colours, or any other. On screen each one's shade shifts with the theme and the Look so the words stay easy to read, the chapter keeps the colour you chose, and exports use a shade that reads on paper. Markdown and plain text can't carry colours, and the app says so |
 | **Split view** | Two chapters side by side |
 | **Import** | Word, Markdown, plain text, RTF, HTML, EPUB, OpenDocument, PDF text, Scrivener and Pages, split into chapters, with word counts compared. Your original file is never changed |

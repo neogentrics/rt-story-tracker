@@ -11,6 +11,7 @@ import { FindBar } from './find-bar.js';
 import { FindHighlight } from './find-plugin.js';
 import { icon } from './icons.js';
 import { MentionMark, mentionSuggestions } from './mentions.js';
+import { ReadingMark } from './reading-mark.js';
 
 const COUNT_DELAY_MS = 250;
 
@@ -71,13 +72,15 @@ const TOOLS = [
 ];
 
 export class Page {
-  constructor(root, { api, onWords, onTitle, onError, onSaved, onClose, onNewChapter, onLookUp, find }) {
+  constructor(root, { api, onWords, onTitle, onError, onSaved, onClose, onNewChapter, onLookUp, onRead, onEditor, find }) {
     this.api = api;
     this.onWords = onWords;
     this.onTitle = onTitle;
     this.onError = onError;
     this.onSaved = onSaved;
     this.onLookUp = onLookUp;
+    // Told when this page shows another chapter, or none.
+    this.onEditor = onEditor;
     this.editor = null;
     this.chapterId = null;
     this.countTimer = null;
@@ -94,6 +97,20 @@ export class Page {
       'div',
       { class: 'toolbar', role: 'toolbar', 'aria-label': 'Formatting' },
       this.buildTools(this.colourTools.root),
+      onRead
+        ? el(
+          'div',
+          { class: 'tool-group' },
+          el('button', {
+            class: 'tool read-aloud-button',
+            type: 'button',
+            title: 'Read aloud',
+            'aria-label': 'Read aloud',
+            onmousedown: (event) => event.preventDefault(),
+            onclick: () => onRead(this),
+          }, icon('speaker')),
+        )
+        : null,
       el(
         'div',
         { class: 'tool-group' },
@@ -233,6 +250,7 @@ export class Page {
         HighlightMark,
         TextColourMark,
         FindHighlight,
+        ReadingMark,
       ],
       content: toDocument(chapter.body),
       editorProps: {
@@ -266,6 +284,7 @@ export class Page {
     this.goal = chapter.goal;
     this.titleInput.value = chapter.title;
     this.buildEditor(chapter);
+    this.onEditor?.(this);
     this.showEditor(true);
     this.saveState.textContent = STATUS.saved;
     this.saveState.dataset.state = 'saved';
@@ -284,6 +303,7 @@ export class Page {
     await this.flush();
     this.editor?.destroy();
     this.editor = null;
+    this.onEditor?.(this);
     this.chapterId = null;
     this.showEditor(false);
   }

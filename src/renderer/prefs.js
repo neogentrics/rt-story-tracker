@@ -4,6 +4,7 @@ import { el } from './dom.js';
 import { openHelp } from './help-dialog.js';
 import { icon } from './icons.js';
 import { applyLook } from './look.js';
+import { readingSection } from './reading-prefs.js';
 import { createShortcutsEditor, stopShortcutCapture } from './shortcuts-editor.js';
 
 function field(label, control) {
@@ -114,6 +115,18 @@ export async function openPreferences(api, { section = 'general' } = {}) {
   };
 
   const apps = createAppsPanel(api);
+  const problem = el('p', { class: 'dialog-error', role: 'alert', hidden: true });
+  const reading = readingSection({
+    api,
+    get: () => settings,
+    save: async (changes) => {
+      settings = await api.saveSettings({ readAloud: changes });
+    },
+    onError: (text) => {
+      problem.textContent = text;
+      problem.hidden = false;
+    },
+  });
 
   const themes = { system: { label: 'Same as this computer' }, ...THEMES };
   const check = (id, checked, label, onChange) => el(
@@ -164,6 +177,7 @@ export async function openPreferences(api, { section = 'general' } = {}) {
         words,
       ],
     },
+    { id: 'reading', label: 'Reading Aloud', body: () => [...reading.body(), problem], shown: reading.shown },
     {
       id: 'backups',
       label: 'Backups',
@@ -187,7 +201,7 @@ export async function openPreferences(api, { section = 'general' } = {}) {
       label: 'Password lock',
       body: () => [
         field('Lock a project that has a password', select('pref-lock-after', LOCK_AFTER, String(settings.lockAfter), (value) => change('lockAfter', Number(value)))),
-        note('Counts time away from this app. A project with a password also locks when you close it, and when this computer locks or sleeps.'),
+        note('Counts time away from this app. Reading aloud and making audio count as using it, so it doesn’t lock while either is going. A project with a password also locks when you close it, and when this computer locks or sleeps.'),
         note('To set or change a project’s password, open the project and choose File, then This Project, then Password and Lock.'),
       ],
     },

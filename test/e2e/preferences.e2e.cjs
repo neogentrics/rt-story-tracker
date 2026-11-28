@@ -16,6 +16,7 @@ const SECTIONS = [
   ['general', 'General', ['#pref-reopen', '#pref-check-updates', '#pref-releases']],
   ['appearance', 'Appearance', ['#pref-theme', '#pref-surface', '#pref-page-font', '#pref-ui-font', '#pref-text-size', '#pref-page-width']],
   ['editing', 'Editing', ['#pref-spellcheck', '#new-word', '#dictionary-words']],
+  ['reading', 'Reading Aloud', ['#pref-voice', '#pref-speed', '#pref-carry-on', '#pref-natural', '#pref-pace', '#pref-quality', '#pref-warmth', '#pref-breathing', '#pref-output']],
   ['backups', 'Backups', ['#backup-folder', '#backup-choose', '#pref-backup-every', '#pref-backup-keep', '#backup-now', '#backup-note']],
   ['lock', 'Password lock', ['#pref-lock-after']],
   ['apps', 'Linked Apps', ['#pref-link', '#linked-apps', '#apps-refresh']],
@@ -247,7 +248,7 @@ const openSection = async (window, id) => {
   assert.equal(await window.isChecked('#pref-reopen'), false);
   assert.deepEqual(errors, []);
   await app.close();
-  console.log('preferences e2e passed (7 sections at 1024x768 and 900x560)');
+  console.log('preferences e2e passed (8 sections at 1024x768 and 900x560)');
 })().catch((error) => {
   console.error(error);
   process.exit(1);

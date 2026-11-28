@@ -95,6 +95,11 @@ setting, and the author can pick that.
   exists.
 - **Opening:** a lock screen. On a trusted computer it can open straight away, or ask for a code, as the author chooses.
 - **Locking:** by hand, on closing the project or the app, after a set idle time, and when the computer locks or sleeps.
+- **Reading aloud and audio export count as using the app** (the owner's decision, 28 November 2026): the idle time doesn't
+  run while either is going, and starts again when it stops. Paused reading doesn't count, and nor does reading or an export
+  that hasn't moved on for 15 minutes, so a voice that hangs can't hold a project open. Locking by hand, and the computer
+  locking or sleeping, aren't affected. The cost: someone who walks away from a reading without locking the computer leaves the
+  project open until the reading ends.
 - **Forgot your password?** A link on the lock screen lists whichever ways this project has.
 - **Security settings:** the list of ways in, with add and remove.
 

@@ -83,7 +83,7 @@ test('File stays short, as the Reader’s does: the project’s own commands are
   const file = menuFor().template.find((menu) => menu.label === 'File').submenu;
   const project = file.find((item) => item.label === 'This Project').submenu;
   assert.deepEqual(REAL(project).map((item) => item.label), [
-    'Import…', 'Find My Files…', 'Check Folder for Changes…', 'Files…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
+    'Import…', 'Export as Audio…', 'Find My Files…', 'Check Folder for Changes…', 'Files…', 'Book Details…', 'Earlier Versions of This Chapter…', 'Trash',
     'Documents Sent Here…', 'Open Chapter in RT Markdown Reader', 'Open Book in RT Markdown Reader', 'Publish Chapter with RT Markdown Reader…',
     'Password and Lock…', 'Lock Project',
   ]);

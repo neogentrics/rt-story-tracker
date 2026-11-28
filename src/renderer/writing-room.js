@@ -3,6 +3,8 @@ import { canHold, findNode, holdersOf, indexTree, resolveDrop, resolveStep, visi
 import { el, formatCount, shortCount, words } from './dom.js';
 import { openDetails } from './details-dialog.js';
 import { openExport } from './export-dialog.js';
+import { AudioExport } from './audio-export.js';
+import { ReadAloud } from './read-aloud.js';
 import { openHistory } from './history.js';
 import { createBarFit } from './bar-fit.js';
 import { openFiles } from './files-dialog.js';
@@ -46,7 +48,7 @@ function booksOf(node) {
 }
 
 export class WritingRoom {
-  constructor(root, opened, { api, onLibrary, onPreferences, onSecurity, remember }) {
+  constructor(root, opened, { api, onLibrary, onPreferences, onSecurity, remember, onUsed }) {
     this.api = api;
     this.onLibrary = onLibrary;
     this.remember = remember;
@@ -177,6 +179,20 @@ export class WritingRoom {
       header, title: barTitle, bar: barRight, tools, leaving: LEAVE_ORDER, core: STAY_LONGEST,
       showWords: (level) => this.renderBarWords(level),
     });
+    // Made before the first page, which tells it when its chapter changes.
+    this.reading = new ReadAloud({
+      api,
+      room: {
+        activePage: () => this.activePage,
+        bookOf: (id) => this.bookOf(id)?.id ?? null,
+        chapterAfter: (id) => this.chapterAfter(id),
+        openToRead: (page, id) => this.openToRead(page, id),
+      },
+      onMessage: (text, action) => this.showInfo(text, action),
+      onPreferences: () => onPreferences('reading'),
+      onUsed,
+    });
+    this.audio = new AudioExport({ api, onMessage: (text, action) => this.showInfo(text, action), onPreferences: () => onPreferences('reading'), onUsed });
     this.page = this.makePage(this.pageRoot);
     this.activePage = this.page;
     this.pageRoot.addEventListener('focusin', () => {
@@ -203,6 +219,8 @@ export class WritingRoom {
       onSaved: ({ progress }) => this.setProgress(progress),
       onNewChapter: () => this.addChapter(),
       onLookUp: (id) => this.lookUp(id),
+      onRead: (page) => this.readAloud(page),
+      onEditor: (page) => this.reading?.pageChanged(page),
       find: {
         scopeBook: () => this.bookId,
         onFlush: () => this.flush(),
@@ -215,6 +233,9 @@ export class WritingRoom {
 
   leave() {
     this.left = true;
+    // Whatever was being read or made into audio stops with the project.
+    this.reading.destroy();
+    this.audio.destroy();
     document.removeEventListener('keydown', this.keys);
     this.apps.destroy();
     this.barFit?.destroy();
@@ -229,6 +250,8 @@ export class WritingRoom {
     if (mode === this.mode) return;
     await this.attempt(async () => {
       await this.flush();
+      // The reading bar is on the page, so reading waits while the page is out of sight.
+      if (mode !== 'write' && this.reading.playing) this.reading.pause();
       this.mode = mode;
       this.room.dataset.mode = mode;
       // The other view has other buttons, so the menu doesn't stay open over it.
@@ -394,6 +417,7 @@ export class WritingRoom {
 
   closeBeside() {
     return this.attempt(async () => {
+      if (this.reading.page && this.reading.page === this.secondPage) this.reading.stop();
       await this.secondPage?.flush();
       this.secondPage?.editor?.destroy();
       this.secondPage = null;
@@ -495,7 +519,7 @@ export class WritingRoom {
       const { target, ...rest } = options;
       const node = target && findNode(this.outline, target);
       const scopes = node ? this.exportScopes(node.kind === 'chapter' ? node.id : null, node.kind === 'book' ? node.id : this.bookOf(node.id)?.id) : this.exportScopes();
-      openExport({ api: this.api, scopes, scope: node?.kind ?? 'book', onError: (text) => this.showMessage(text), ...rest });
+      openExport({ api: this.api, scopes, scope: node?.kind ?? 'book', onError: (text) => this.showMessage(text), onAudio: () => this.showAudioExport(), ...rest });
     });
   }
 
@@ -651,6 +675,55 @@ export class WritingRoom {
     await this.secondPage?.flush();
     await this.lookup.flush();
     await this.records?.flush();
+  }
+
+  // Whether something is going on that counts as using the app, though nobody is touching it.
+  inUse() {
+    return this.reading.inUse || this.audio.inUse;
+  }
+
+  // The button on a page's formatting bar, the menu and the shortcut. The button on the other side reads that side instead.
+  readAloud(page = null) {
+    return this.attempt(async () => {
+      if (this.mode !== 'write') await this.showMode('write');
+      if (page) {
+        this.activePage = page;
+        if (this.reading.reading && this.reading.page !== page) this.reading.stop();
+      }
+      await this.reading.toggle();
+    });
+  }
+
+  // The chapter that follows one in its book, parts and all, or nothing at the book's end.
+  chapterAfter(id) {
+    const book = this.bookOf(id);
+    const ids = book ? chaptersOf(book).map((node) => node.id) : [];
+    return ids[ids.indexOf(id) + 1] ?? null;
+  }
+
+  // Shows a chapter on the page that's being read, without taking the keyboard from the author.
+  async openToRead(page, id) {
+    if (page === this.page) await this.openChapter(id);
+    else {
+      await page.open(id);
+      this.showSelection();
+      this.showCounts();
+    }
+    if (page.chapterId !== id) throw new Error('The next chapter couldn’t be opened, so reading stopped.');
+  }
+
+  async showAudioExport() {
+    await this.attempt(async () => {
+      await this.flush();
+      if (!(await ensurePass(this.api, 'Audio files aren’t protected: anyone can play them.'))) return;
+      const chapterId = this.activePage.chapterId;
+      const chapter = chapterId && findNode(this.outline, chapterId);
+      const book = this.bookId && findNode(this.outline, this.bookId);
+      const scopes = [];
+      if (chapter) scopes.push({ label: `This chapter: ${chapter.title}`, title: chapter.title, chapters: [chapter.id], bookId: this.bookOf(chapter.id).id });
+      if (book && chaptersOf(book).length) scopes.push({ label: `This book: ${book.title}`, title: book.title, chapters: chaptersOf(book).map((node) => node.id), bookId: book.id });
+      await this.audio.open(scopes);
+    });
   }
 
   bookOf(id) {

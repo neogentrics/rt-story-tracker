@@ -1,9 +1,11 @@
+import { IdleClock } from '../shared/idle.js';
 import { el } from './dom.js';
 import { applyLook } from './look.js';
 import { openAbout } from './about-dialog.js';
 import { openHelp } from './help-dialog.js';
 import { stopShortcutCapture } from './shortcuts-editor.js';
 import { openPreferences, settingsChanged } from './prefs.js';
+import { listenForVoiceDownload } from './reading-prefs.js';
 import { renderFailure, renderHome } from './home.js';
 import { renderLock } from './lock-screen.js';
 import { askNewPassword, openSecurity } from './security-dialog.js';
@@ -20,10 +22,10 @@ const remember = {
 };
 
 const IDLE_CHECK_MS = 15000;
+const idle = new IdleClock();
 
 let room = null;
 let lockedOpen = false;
-let lastActive = Date.now();
 
 function ready() {
   document.body.dataset.state = 'ready';
@@ -32,8 +34,8 @@ function ready() {
 async function enterRoom(opened) {
   remember.set(LAST_PROJECT, opened.id);
   lockedOpen = Boolean(opened.locked);
-  lastActive = Date.now();
-  room = new WritingRoom(root, opened, { api, onLibrary: leaveRoom, onPreferences: () => openPreferences(api), onSecurity: showSecurity, remember });
+  idle.used();
+  room = new WritingRoom(root, opened, { api, onLibrary: leaveRoom, onPreferences: (section) => openPreferences(api, section ? { section } : {}), onSecurity: showSecurity, remember, onUsed: () => idle.used() });
   await room.start();
   ready();
   await room.showInbox();
@@ -77,12 +79,13 @@ async function lockProject() {
 }
 
 function watchForIdle() {
-  const active = () => { lastActive = Date.now(); };
+  const active = () => idle.used();
   for (const event of ['keydown', 'pointerdown', 'pointermove', 'wheel']) document.addEventListener(event, active, { passive: true, capture: true });
   setInterval(async () => {
     if (!room || !lockedOpen) return;
     const { lockAfter } = await api.settings();
-    if (lockAfter && Date.now() - lastActive >= lockAfter * 60000) await lockProject();
+    // Reading aloud and audio being made count as using the app (../shared/idle.js).
+    if (room && idle.due(lockAfter, room.inUse())) await lockProject();
   }, IDLE_CHECK_MS);
 }
 
@@ -295,6 +298,8 @@ function onMenu(command) {
   }
   if (command === 'export') exportProject();
   if (command === 'export-book') room?.showExport();
+  if (command === 'export-audio') room?.showAudioExport();
+  if (command === 'read-aloud') room?.readAloud();
   if (command === 'import') room?.showImport();
   if (command === 'find-files') room?.findFiles();
   if (command === 'folder-changes') room?.checkFolder();
@@ -320,6 +325,7 @@ async function start() {
   api.onMenu(onMenu);
   api.onOpenFile((file) => openProjectFile(file));
   api.onInbox(() => documentsChanged());
+  listenForVoiceDownload(api);
   watchForIdle();
   await run(async () => {
     const settings = await api.settings();

@@ -3,6 +3,7 @@
 // app's, plus Slate. Every theme but High Contrast has panels that run from one colour to another, with a bar that
 // contrasts with them. A theme with dark panels and a light page sets onPanel for the text on its panels.
 
+const { cleanReadAloud, DEFAULT_READ_ALOUD } = require('./reading');
 const { cleanShortcuts } = require('./shortcuts');
 
 const LIGHT_ALERT = { danger: '#b3261e', dangerBg: '#fbe9e7' };
@@ -148,6 +149,7 @@ const DEFAULT_SETTINGS = {
   appLink: false,
   shortcuts: {},
   reopenLast: true,
+  readAloud: DEFAULT_READ_ALOUD,
 };
 
 // A finish for the app's own panels, on top of any theme. The names and the setting, `surface`, are RT Markdown Reader's.
@@ -191,6 +193,7 @@ function cleanSettings(input) {
     appLink: source.appLink === true,
     shortcuts: cleanShortcuts(source.shortcuts),
     reopenLast: source.reopenLast !== false,
+    readAloud: cleanReadAloud(source.readAloud),
   };
 }
 

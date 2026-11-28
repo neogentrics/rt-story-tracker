@@ -1,6 +1,7 @@
 'use strict';
 const crypto = require('node:crypto');
 const { canHold } = require('../../shared/outline');
+const { cleanPronunciations } = require('../../shared/reading');
 const { parseRecord, parseType } = require('../../shared/records');
 const { countWords, mentionsIn, plainText } = require('../../shared/text');
 const { copyDatabase, databaseInfo } = require('./database');
@@ -502,6 +503,28 @@ class Project {
       .prepare(`SELECT id, root, state, status, started_at AS startedAt, finished_at AS finishedAt FROM folder_imports
                 WHERE status = 'done' ORDER BY started_at DESC, rowid DESC`)
       .all();
+  }
+
+  // Read aloud's pronunciation list. It holds character names, so it lives inside the project, encrypted with the rest of it. Its table
+  // is made when a list is first saved, outside the numbered steps in schema.js on purpose: version 3.11 ignores a table it doesn't
+  // know, where a new step would stop it opening the project at all. So a later step must not take this name for something else.
+  pronunciations() {
+    if (!this.db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'read_aloud'").get()) return [];
+    const row = this.db.prepare("SELECT value FROM read_aloud WHERE name = 'pronunciations'").get();
+    try {
+      return cleanPronunciations(JSON.parse(row?.value ?? '[]'));
+    } catch {
+      return [];
+    }
+  }
+
+  savePronunciations(list) {
+    const clean = cleanPronunciations(list);
+    this.db.exec('CREATE TABLE IF NOT EXISTS read_aloud (name TEXT PRIMARY KEY, value TEXT NOT NULL)');
+    this.db
+      .prepare("INSERT INTO read_aloud (name, value) VALUES ('pronunciations', ?) ON CONFLICT (name) DO UPDATE SET value = excluded.value")
+      .run(JSON.stringify(clean));
+    return clean;
   }
 
   setFolderRoot(id, root) {
