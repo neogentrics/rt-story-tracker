@@ -19,6 +19,7 @@ const GROUPS = [
       { id: 'findNext', command: 'find-next', does: 'Find the next match', keys: 'F3' },
       { id: 'findPrevious', command: 'find-previous', does: 'Find the previous match', keys: 'Shift+F3' },
       { id: 'focus', command: 'focus', does: 'Focus mode', keys: 'CmdOrCtrl+Shift+F' },
+      { id: 'readAloud', command: 'read-aloud', does: 'Read aloud, or pause', keys: 'CmdOrCtrl+Shift+U' },
     ],
   },
   {
@@ -38,6 +39,7 @@ const GROUPS = [
       { id: 'saveCopy', command: 'export', does: 'Save a copy of this project', keys: 'CmdOrCtrl+Shift+S' },
       { id: 'import', command: 'import', does: 'Import', keys: 'CmdOrCtrl+Shift+I' },
       { id: 'exportBook', command: 'export-book', does: 'Export', keys: 'CmdOrCtrl+E' },
+      { id: 'exportAudio', command: 'export-audio', does: 'Export as audio', keys: '' },
       { id: 'print', command: 'print', does: 'Print', keys: 'CmdOrCtrl+P' },
       { id: 'lock', command: 'lock', does: 'Lock the project', keys: 'CmdOrCtrl+L' },
       { id: 'security', command: 'security', does: 'Password and lock', keys: '' },

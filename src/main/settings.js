@@ -20,7 +20,9 @@ class Settings {
   }
 
   save(changes) {
-    this.values = cleanSettings({ ...this.values, ...changes });
+    // Read aloud's settings are several, and a change names only the ones it changes.
+    const readAloud = changes?.readAloud ? { readAloud: { ...this.values.readAloud, ...changes.readAloud } } : {};
+    this.values = cleanSettings({ ...this.values, ...changes, ...readAloud });
     writeFileSafely(this.file, `${JSON.stringify(this.values, null, 2)}\n`);
     return this.values;
   }

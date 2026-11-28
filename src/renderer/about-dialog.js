@@ -1,7 +1,7 @@
 // Help, then About RT Story Tracker: what the app is, its version, where it lives on the web, and the details a bug report needs,
 // copied in one click. It's laid out like RT Markdown Reader's, from the same words (../shared/family.js). Nothing about the
 // person or the project is in it.
-import { ABOUT, APP_NAME, BLURB, copyright, engineLine, versionWords } from '../shared/family.js';
+import { ABOUT, APP_NAME, BLURB, LAME_NOTICE, copyright, engineLine, versionWords } from '../shared/family.js';
 import { el } from './dom.js';
 import { icon } from './icons.js';
 
@@ -25,6 +25,8 @@ export async function openAbout(api) {
     el('ul', { class: 'about-links' }, ABOUT.rows.map((row) => el('li', {}, link(row.id, row.label), el('span', {}, row.note)))),
     el('p', { id: 'about-tech', class: 'about-tech' }, `${engineLine(info)} · ${info.os}`),
     el('p', { class: 'about-legal' }, el('span', { id: 'about-copyright' }, copyright(info.year)), ' · ', link('license', ABOUT.license), ' · ', link('notices', ABOUT.notices)),
+    // The MP3 encoder's licence asks that its notice is shown wherever the app shows copyright notices.
+    el('p', { id: 'about-lame', class: 'about-legal' }, LAME_NOTICE),
     status,
     el(
       'div',

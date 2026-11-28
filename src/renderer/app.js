@@ -4,6 +4,7 @@ import { openAbout } from './about-dialog.js';
 import { openHelp } from './help-dialog.js';
 import { stopShortcutCapture } from './shortcuts-editor.js';
 import { openPreferences, settingsChanged } from './prefs.js';
+import { listenForVoiceDownload } from './reading-prefs.js';
 import { renderFailure, renderHome } from './home.js';
 import { renderLock } from './lock-screen.js';
 import { askNewPassword, openSecurity } from './security-dialog.js';
@@ -33,7 +34,7 @@ async function enterRoom(opened) {
   remember.set(LAST_PROJECT, opened.id);
   lockedOpen = Boolean(opened.locked);
   lastActive = Date.now();
-  room = new WritingRoom(root, opened, { api, onLibrary: leaveRoom, onPreferences: () => openPreferences(api), onSecurity: showSecurity, remember });
+  room = new WritingRoom(root, opened, { api, onLibrary: leaveRoom, onPreferences: (section) => openPreferences(api, section ? { section } : {}), onSecurity: showSecurity, remember });
   await room.start();
   ready();
   await room.showInbox();
@@ -295,6 +296,8 @@ function onMenu(command) {
   }
   if (command === 'export') exportProject();
   if (command === 'export-book') room?.showExport();
+  if (command === 'export-audio') room?.showAudioExport();
+  if (command === 'read-aloud') room?.readAloud();
   if (command === 'import') room?.showImport();
   if (command === 'find-files') room?.findFiles();
   if (command === 'folder-changes') room?.checkFolder();
@@ -320,6 +323,7 @@ async function start() {
   api.onMenu(onMenu);
   api.onOpenFile((file) => openProjectFile(file));
   api.onInbox(() => documentsChanged());
+  listenForVoiceDownload(api);
   watchForIdle();
   await run(async () => {
     const settings = await api.settings();

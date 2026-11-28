@@ -28,6 +28,80 @@ app's [licence](LICENSE) limits your rights under them.
 | [PDF.js](https://mozilla.github.io/pdf.js/) (pdfjs-dist) | Reading text from PDFs | Apache 2.0, below |
 | [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) | The picture an authenticator app scans | MIT, below |
 | Inter, Literata, Lora, EB Garamond, Atkinson Hyperlegible and Courier Prime, through [Fontsource](https://fontsource.org/) | Fonts for the page and the app | SIL Open Font License 1.1, below |
+| [ONNX Runtime Web](https://onnxruntime.ai/), with onnxruntime-common | Running the natural voices | MIT, below |
+| [Supertonic sample code](https://github.com/supertone-inc/supertonic), adapted | Read aloud's speech engine | MIT, below |
+| **[LAME](https://lame.sourceforge.io/), as [lamejs](https://github.com/zhuker/lamejs) 1.2.1** | Making MP3 files | **GNU Lesser General Public License, version 3,** below |
+
+## The MP3 encoder (LAME, as lamejs)
+
+**RT Story Tracker uses the LAME MP3 encoder, in its JavaScript form, lamejs 1.2.1. LAME and lamejs, and their use here, are
+covered by the GNU Lesser General Public License (LGPL), version 3.** Copyright © 1999–2008 Mark Taylor, Gabriel Bouvigne, Naoki
+Shibata, Robert Hegemann and the other LAME authors. lamejs is a JavaScript port by its authors.
+
+- **The licence texts** come with the app, as [`licences/LGPL-3.0.txt`](licences/LGPL-3.0.txt) and
+  [`licences/GPL-3.0.txt`](licences/GPL-3.0.txt), which the LGPL builds on. In an installed copy they're in
+  `resources/app.asar.unpacked/licences/`.
+- **It's separate, and unchanged.** The app loads it only to write an MP3, from one file of its own, `lame.min.js`, exactly as
+  published in the `lamejs` 1.2.1 package. Its readable source, `lame.all.js` from the same package, is beside it. In an installed
+  copy both are in `resources/app.asar.unpacked/dist/renderer/` (inside the app's bundle on a Mac). The source is also at
+  <https://github.com/zhuker/lamejs> and, for LAME itself, <https://lame.sourceforge.io/>.
+- **You can replace it.** Put your own build, with the same interface, in place of `lame.min.js`, and the app uses yours. On a Mac,
+  changing a file inside the app can mean the system asks you to allow the app again. An update puts the app's own file back.
+- **Your rights with it.** Whatever else this app's [licence](LICENSE) says, you may modify the MP3 encoder, use your modified
+  version with this app by replacing that file, and reverse engineer the app as far as you need to in order to debug your changes to
+  the encoder.
+
+## Read aloud's voices
+
+**The voice model isn't part of the app, and isn't in the installer.** Supertonic 3 by Supertone Inc. is downloaded only if you ask
+for the natural voices and agree to its terms, from Supertone's published repository
+([supertone-oss-archive/supertonic-3](https://huggingface.co/supertone-oss-archive/supertonic-3), revision
+`aafc6e32416a594460b32413efc49d7fe4ce6d46`). It's used under its own licence, the
+[BigScience Open RAIL-M License](https://huggingface.co/supertone-oss-archive/supertonic-3/blob/aafc6e32416a594460b32413efc49d7fe4ce6d46/LICENSE),
+including the use restrictions in its Attachment A. One of them is that sound you share must say clearly that a computer made it. A
+copy of the licence is downloaded with the voices.
+
+The speech engine, ONNX Runtime Web, is bundled into `dist/voice-worker.cjs`, with its WebAssembly files in `dist/voice/`. Those
+files include other open-source libraries, listed in
+[ONNX Runtime's third-party notices](https://github.com/microsoft/onnxruntime/blob/main/ThirdPartyNotices.txt).
+
+### ONNX Runtime Web and onnxruntime-common
+
+MIT License
+
+Copyright (c) Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### Supertonic sample code
+
+Parts of the speech engine are adapted from Supertone's Node.js example (`nodejs/helper.js`, revision `aafc6e3`).
+
+MIT License
+
+Copyright (c) 2025 Supertone Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## better-sqlite3-multiple-ciphers
 

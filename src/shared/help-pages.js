@@ -21,6 +21,15 @@ const HELP_TOPICS = [
     ],
   },
   {
+    id: 'reading',
+    title: 'Hearing it read',
+    body: [
+      'Read Aloud, on the formatting bar and in the View menu, reads from the sentence the cursor is in and draws a line under each sentence as it goes. The bar has pause, back and on by a sentence or a paragraph, the speed and the voice. Escape stops it. At the end of a chapter it carries on into the next, unless you switch that off.',
+      'It can read with your computer’s own voices, or with natural voices that you download once, if you ask for them, under Preferences, Reading Aloud. Both work offline, and nothing that’s read is sent anywhere. There you can also teach it how a name sounds, with a pronunciation list kept inside each project.',
+      'Export as Audio, under File then This Project, makes an MP3 of a chapter or a book, and on Windows and Mac an audiobook with chapters. It uses the natural voices and can take a long while. If you share the audio, say clearly that a computer made the voice: the voices’ licence requires it.',
+    ],
+  },
+  {
     id: 'safe',
     title: 'Keeping your work safe',
     body: [

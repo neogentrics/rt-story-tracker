@@ -1467,6 +1467,138 @@ mark,
   color: var(--on-accent);
 }
 
+/* Read aloud. The bar is in the page's opposite colours, so it's plainly not part of the writing, and its names are the suite's
+   (.speak-bar, .speak-play, .speak-status, .audio-job, with .tb-btn on its buttons). It sits under the page, covering nothing. */
+.speak-bar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 0.3rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--inverse-bg);
+  color: var(--inverse-fg);
+  font-size: 0.85rem;
+}
+
+.speak-bar .tb-btn,
+.audio-job .tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.4rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 1.15rem;
+}
+
+.speak-bar .tb-btn:hover:not(:disabled),
+.audio-job .tb-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, currentcolor 18%, transparent);
+}
+
+.speak-bar .tb-btn.speak-play {
+  border-radius: 50%;
+  background: var(--inverse-fg);
+  color: var(--inverse-bg);
+}
+
+.speak-bar .tb-btn.speak-play:hover:not(:disabled) {
+  background: var(--inverse-fg);
+  filter: brightness(0.94);
+}
+
+.speak-bar :focus-visible,
+.audio-job :focus-visible {
+  outline: 2px solid var(--inverse-fg);
+  outline-offset: 1px;
+}
+
+.speak-bar select {
+  max-width: 11rem;
+  min-width: 0;
+  padding: 0.2rem 0.35rem;
+  /* The page and its ink, which are measured to be readable together in every theme. */
+  background: var(--sheet);
+  color: var(--sheet-ink);
+  font-size: 0.82rem;
+}
+
+.speak-status {
+  min-width: 8.5rem;
+  padding: 0 0.3rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* The sentence being read: a thick line under it. Not a coloured background, which is what the author's own highlighting is. */
+.page-text .reading-sentence,
+.chapter-title.reading-sentence {
+  text-decoration-line: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.22em;
+  text-decoration-skip-ink: none;
+}
+
+/* Audio being made, in the corner while the author works. */
+.audio-job {
+  position: fixed;
+  right: 0.9rem;
+  bottom: 2.6rem;
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: calc(100vw - 1.8rem);
+  padding: 0.45rem 0.8rem;
+  border-radius: 12px;
+  background: var(--inverse-bg);
+  color: var(--inverse-fg);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 30%);
+  font-size: 0.85rem;
+}
+
+.audio-job progress {
+  width: 7rem;
+}
+
+.audio-job .tb-btn {
+  border: 1px solid currentcolor;
+  font-size: 0.82rem;
+}
+
+.pronunciation-rows {
+  max-height: 15rem;
+  overflow: auto;
+  margin: 0.6rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pronunciation-rows li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
+}
+
+.pronunciation-rows input {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.reading-pane progress {
+  width: 100%;
+  margin: 0.3rem 0;
+}
+
 /* Comments */
 
 .comment-mark {

@@ -96,9 +96,10 @@ function audit() {
   await window.waitForSelector('#preferences[open]');
   assert.ok(await window.evaluate(() => document.querySelector('#preferences').contains(document.activeElement)), 'focus moved into the dialog');
   // Every section, reached with the arrow keys alone.
-  for (const section of ['General', 'Appearance', 'Editing', 'Backups', 'Password lock', 'Linked Apps', 'Shortcuts']) {
+  for (const section of ['General', 'Appearance', 'Editing', 'Reading Aloud', 'Backups', 'Password lock', 'Linked Apps', 'Shortcuts']) {
     await window.waitForFunction((wanted) => document.activeElement?.textContent === wanted, section);
     if (section === 'Linked Apps') await window.waitForSelector('#linked-apps .app-row');
+    if (section === 'Reading Aloud') await window.waitForSelector('#pref-output');
     if (section === 'Shortcuts') await window.waitForSelector('#shortcuts-page dd[data-shortcut]');
     await check(`Preferences, ${section}`);
     if (section !== 'Shortcuts') await window.keyboard.press('ArrowDown');

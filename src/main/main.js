@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, safeStorage, screen, session, shell } = require('electron');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, net, powerMonitor, safeStorage, screen, session, shell, utilityProcess } = require('electron');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -18,6 +18,9 @@ const { buildMenu } = require('./menu');
 const { sizeFrom, windowBounds } = require('./window-size');
 const { ITEMS, resolveKeys } = require('../shared/shortcuts');
 const { Security } = require('./security');
+const { AudioFiles } = require('./read-aloud/audio-files');
+const { checkEngine } = require('./read-aloud/engine-check');
+const { ReadAloud, workerIn } = require('./read-aloud');
 const { runSelfTest, writeInWindow } = require('./self-test');
 const { Settings } = require('./settings');
 const { Library } = require('./storage/library');
@@ -37,6 +40,8 @@ else if (process.env.RTST_USER_DATA) app.setPath('userData', process.env.RTST_US
 let workspace = null;
 let settings = null;
 let folderLinks = null;
+let readAloud = null;
+let audioFiles = null;
 let backups = null;
 let security = null;
 let linking = null;
@@ -123,6 +128,22 @@ function openLibrary() {
     workspace = new Workspace(new Library(root));
     settings = new Settings(root);
     folderLinks = new FolderLinks(app.getPath('userData'));
+    readAloud = new ReadAloud({
+      // The voices are downloaded to here, if the author asks for them. They're never part of the app.
+      root: path.join(app.getPath('userData'), 'voices'),
+      worker: workerIn(app.getAppPath()),
+      fetch: (url, options) => net.fetch(url, options),
+      fork: forkVoice,
+      open: () => Boolean(workspace.project),
+      // Only a test, running from the source, can have a voice that plays a tone and a download that downloads nothing.
+      fake: !app.isPackaged && process.env.RTST_FAKE_VOICES === '1',
+    });
+    audioFiles = new AudioFiles();
+    // Closing or locking a project ends the voice, which holds its words in memory, and any audio export with it.
+    workspace.whenClosed(() => {
+      readAloud.hush();
+      audioFiles.abandonAll();
+    });
     backups = new Backups(workspace, settings);
     security = new Security({
       workspace,
@@ -251,6 +272,37 @@ function createWindow({ show = true } = {}) {
   return window;
 }
 
+// The process that speaks (read-aloud/index.js). It's Electron's own kind of child, so a sentence being made never holds up the window.
+function forkVoice(script) {
+  return utilityProcess.fork(script, [], { serviceName: 'RT Story Tracker voices', stdio: 'ignore' });
+}
+
+// The speech engine and the MP3 encoder both load from inside the installed app, so this is only proven by doing it from there. The
+// encoder has to be a file of its own outside the app's archive, so that it can be replaced.
+async function voiceFromHere() {
+  const engine = await checkEngine({ fork: forkVoice, worker: workerIn(app.getAppPath()) });
+  if (engine !== 'ready') return engine;
+  const encoded = await mainWindow.webContents.executeJavaScript(`new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'lame.min.js';
+    script.onload = () => {
+      const encoder = new window.lamejs.Mp3Encoder(1, 44100, 64);
+      const tone = Int16Array.from({ length: 44100 }, (_, at) => Math.round(8000 * Math.sin(at / 20)));
+      resolve(encoder.encodeBuffer(tone).length + encoder.flush().length);
+    };
+    script.onerror = () => resolve(0);
+    document.head.append(script);
+  })`);
+  if (!(encoded > 1000)) return 'the MP3 encoder made nothing';
+  if (app.isPackaged) {
+    const outside = (...parts) => path.join(process.resourcesPath, 'app.asar.unpacked', ...parts);
+    const missing = [['dist', 'renderer', 'lame.min.js'], ['dist', 'renderer', 'lame.all.js'], ['licences', 'LGPL-3.0.txt'], ['licences', 'GPL-3.0.txt']]
+      .filter((parts) => !fs.existsSync(outside(...parts)));
+    if (missing.length) return `not beside the app, as the MP3 encoder’s licence needs: ${missing.map((parts) => parts.at(-1)).join(', ')}`;
+  }
+  return 'ready';
+}
+
 function timeout(ms, value) {
   return new Promise((resolve) => setTimeout(resolve, ms, value));
 }
@@ -331,6 +383,8 @@ async function selfTest() {
     console.log(`Self-test: import is ${imported}`);
     const locked = await Promise.race([lockFromHere().catch((error) => error.message), timeout(60000, 'timed out')]);
     console.log(`Self-test: lock is ${locked}`);
+    const voice = await Promise.race([voiceFromHere().catch((error) => error.message), timeout(90000, 'timed out')]);
+    console.log(`Self-test: voice is ${voice}`);
     workspace.closeProject();
     mainWindow.destroy();
     report = runSelfTest(path.join(scratch, 'work'), { withMeasure });
@@ -339,7 +393,8 @@ async function selfTest() {
     report.checks.push({ name: 'exports a print PDF, an e-book and a Word file', passed: printed === 'exported', detail: printed });
     report.checks.push({ name: 'reads those three files back in, and keeps an attachment', passed: imported === 'imported', detail: imported });
     report.checks.push({ name: 'locks a project with a password and opens it again', passed: locked === 'locked', detail: locked });
-    report.ok = report.ok && state === 'ready' && writing === 'saved' && printed === 'exported' && imported === 'imported' && locked === 'locked';
+    report.checks.push({ name: 'starts the speech engine, and encodes MP3 with an encoder that can be replaced', passed: voice === 'ready', detail: voice });
+    report.ok = report.ok && state === 'ready' && writing === 'saved' && printed === 'exported' && imported === 'imported' && locked === 'locked' && voice === 'ready';
   } catch (error) {
     report = { ok: false, error: error.stack };
   }
@@ -450,6 +505,8 @@ if (!app.requestSingleInstanceLock()) {
       },
       updater,
       folderLinks: () => folderLinks,
+      readAloud: () => readAloud,
+      audioFiles: () => audioFiles,
       backups: () => backups,
       security: () => security,
       linking: () => linking,

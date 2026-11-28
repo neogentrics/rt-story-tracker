@@ -4,6 +4,7 @@ import { el } from './dom.js';
 import { openHelp } from './help-dialog.js';
 import { icon } from './icons.js';
 import { applyLook } from './look.js';
+import { readingSection } from './reading-prefs.js';
 import { createShortcutsEditor, stopShortcutCapture } from './shortcuts-editor.js';
 
 function field(label, control) {
@@ -114,6 +115,18 @@ export async function openPreferences(api, { section = 'general' } = {}) {
   };
 
   const apps = createAppsPanel(api);
+  const problem = el('p', { class: 'dialog-error', role: 'alert', hidden: true });
+  const reading = readingSection({
+    api,
+    get: () => settings,
+    save: async (changes) => {
+      settings = await api.saveSettings({ readAloud: changes });
+    },
+    onError: (text) => {
+      problem.textContent = text;
+      problem.hidden = false;
+    },
+  });
 
   const themes = { system: { label: 'Same as this computer' }, ...THEMES };
   const check = (id, checked, label, onChange) => el(
@@ -164,6 +177,7 @@ export async function openPreferences(api, { section = 'general' } = {}) {
         words,
       ],
     },
+    { id: 'reading', label: 'Reading Aloud', body: () => [...reading.body(), problem], shown: reading.shown },
     {
       id: 'backups',
       label: 'Backups',

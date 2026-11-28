@@ -85,9 +85,15 @@ class Workspace {
     return { id, title: this.project.title(), outline: this.project.outline(), progress: this.progress(), locked: this.locked };
   }
 
+  // For anything that has to let go of a project's words when it closes or locks.
+  whenClosed(letGo) {
+    (this.closers ??= []).push(letGo);
+  }
+
   closeProject() {
     // Anything else holding words from the project lets go of them.
     this.onClose?.();
+    for (const letGo of this.closers ?? []) letGo();
     this.project?.close();
     this.project = null;
     this.key?.fill(0);

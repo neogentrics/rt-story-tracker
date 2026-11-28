@@ -6,6 +6,22 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
 ## [Unreleased]
 
 ### Added
+- **Read aloud** ([issue 41](https://github.com/neogentrics/rt-story-tracker/issues/41)). A button on the formatting bar, *View, Read
+  Aloud* and Ctrl+Shift+U read the chapter from the sentence the cursor is in, with a line under each sentence as it's read. The bar
+  under the page has pause, back and on by a sentence or a paragraph, speed and voice. At the end of a chapter it carries on into the
+  next, unless you switch that off. Side by side, each page's button reads that page. It stops when the project closes or locks.
+- **Two kinds of voice, both offline.** Your computer's own voices, only ones installed on it, never online ones. And nineteen natural
+  voices, about 400 MB, downloaded only if you ask and agree to the voice model's terms. The model isn't part of the app. Nothing that's
+  read is sent anywhere.
+- ***Preferences, Reading Aloud:*** voice, speed, pace, quality, warmth, breathing, which speakers or headphones, and removing the
+  download.
+- **A pronunciation list** for each project, to say how a name or an invented word sounds, with *Listen* beside each one. It's kept
+  inside the project, so it's encrypted and travels with the project file. Version 3.11 still opens the project.
+- **Export as audio:** a chapter or a book as an MP3, or, on Windows and Mac, as an audiobook (`.m4b`) with a chapter for each of the
+  book's. It runs while you write. Every file says that a computer made its voice, and the app tells you to say so if you share it.
+- **For developers:** read aloud's speech engine comes from the shared code module, `recon-core` v0.1.0, copied in and checked against
+  `core.lock`. MP3 files are made with LAME (as lamejs), under the GNU LGPL: it's a separate file that can be replaced, and
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) says how.
 - **Highlighting and letter colours** ([issue 54](https://github.com/neogentrics/rt-story-tracker/issues/54)). Two buttons on the
   formatting bar colour the background behind the selected words, or the letters themselves. Each has a few colours, any other through
   your system's colour picker, and a way back to none. Undo and redo work for them, and word counts and Find don't change.

@@ -10,6 +10,7 @@ const { FolderCheck } = require('./folder/recheck');
 const { IMPORT_EXTENSIONS, Importer } = require('./import');
 const { RecordImporter } = require('./records-import');
 const { Files } = require('./files');
+const { registerReadAloud } = require('./read-aloud/ipc');
 
 const MAX_COVER = 50 * 1024 * 1024;
 const importer = new Importer();
@@ -301,7 +302,7 @@ function registerLinking({ linking, inbox, workspace }) {
   handle('inbox:drop', (id) => inbox().drop(id));
 }
 
-function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, folderLinks, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
+function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, folderLinks, readAloud, audioFiles, workspace, updater, settings, backups, security, linking, inbox, window, takeFile }) {
   const busy = (work) => busyWhile(workspace, work);
   const unlocked = (work) => (...args) => {
     security().needExportPass();
@@ -391,6 +392,7 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, folderLinks,
   handle('export:everything', busy(unlocked(() => everything(workspace, window))));
   handle('export:preview', busy(unlocked((input) => preview(workspace, input))));
   handle('export:reveal', (file) => shell.showItemInFolder(String(file)));
+  registerReadAloud({ handle, unlocked, readAloud, audioFiles, workspace, dialog, shell, window, safeName });
   const folderProgress = (data) => window()?.webContents.send('folder:progress', data);
   handle('folder:choose', () => chooseFolder(window));
   handle('folder:scan', () => {

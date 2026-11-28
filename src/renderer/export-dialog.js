@@ -27,7 +27,7 @@ function tick(id, label, checked) {
 }
 
 // `scopes` is what can be exported from where the author is, nearest first.
-export function openExport({ api, scopes, scope: first = 'book', format: wanted, preview = false, onError }) {
+export function openExport({ api, scopes, scope: first = 'book', format: wanted, preview = false, onError, onAudio }) {
   document.getElementById('export')?.remove();
   const layout = savedLayout();
 
@@ -165,6 +165,10 @@ export function openExport({ api, scopes, scope: first = 'book', format: wanted,
     },
     'Export everything to a folder',
   );
+  // Sound has a window of its own, because it's made with a voice and can take a long while.
+  const audio = onAudio
+    ? el('button', { id: 'export-audio', class: 'link', onclick: () => { dialog.close(); onAudio(); } }, 'Export as audio…')
+    : null;
 
   const dialog = el(
     'dialog',
@@ -175,7 +179,7 @@ export function openExport({ api, scopes, scope: first = 'book', format: wanted,
     layoutBox,
     warnings,
     result,
-    el('div', { class: 'dialog-actions spread' }, everything, el('span', { class: 'action-group' }, el('button', { id: 'export-close', onclick: () => dialog.close() }, 'Close'), previewButton, exportButton)),
+    el('div', { class: 'dialog-actions spread' }, everything, audio, el('span', { class: 'action-group' }, el('button', { id: 'export-close', onclick: () => dialog.close() }, 'Close'), previewButton, exportButton)),
   );
   dialog.addEventListener('close', () => dialog.remove());
   document.body.append(dialog);
