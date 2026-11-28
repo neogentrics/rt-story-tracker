@@ -315,27 +315,29 @@ What it means here:
   Word, PDF and EPUB exports are to come from the module. The exports are this app's own code today.
 - **Not settled by this:** which print PDF engine the shared package uses, and who owns book layouts.
 
-### 32. Publishing is built into this app too
+### 32. Publishing to blogs and wikis joins the shared module
 
-✅ **Chosen by the owner, 27 November 2026.** Asked whether publishing to WordPress, Ghost and Discord should be built into RT Story
-Tracker too, instead of only into RT Markdown Reader, the owner said yes. It's planned for v3.25, and nothing is being built yet.
+✅ **Chosen by the owner, 27 November 2026: it joins the shared code module,** so this app can publish to blogs and wikis itself.
 
-- **From inside this app:** publish a chapter or post to WordPress, Ghost and Discord, with no other app needed.
+This is the owner's direct answer to the question: does publishing to blogs and wikis stay in RT Markdown Reader only, or join the
+shared code module? An earlier version of this entry rested on a yes that may not have been about publishing. It also named Discord and
+left wikis out.
+
+- **From inside this app:** publish to blogs and wikis, with no other app needed. It's planned as v3.25, *Publish from this app*, and
+  nothing is being built yet.
+- **It depends on the shared code module.** The publishing code comes from there. That module isn't created yet, and nothing moves into
+  it until the owner says go.
 - **The sign-ins stay inside the Lock.**
 - **RT Markdown Reader can still do it** over App Link.
 
-How it fits [decision 31](#31-apps-stand-alone-and-shared-features-are-one-module):
+How it fits [decision 31](#31-apps-stand-alone-and-shared-features-are-one-module): apps stand alone, so publishing can't depend on the
+Reader being installed. A feature two apps have is one shared module, not a second copy, and handing over by App Link is a bonus.
 
-- **Apps stand alone,** so publishing to these three can't depend on the Reader being installed.
-- **It's now a feature two apps have,** so by decision 31 it's to come from the shared code module, not a second copy. That module
-  isn't created yet, and nothing moves into it until the owner says go.
-- **The App Link hand-off is a bonus,** as decision 31 says of all of them.
-
-What it changes: from 3.9, publishing here has meant handing the chapter to the Reader, and this app built none of it. That stays the
-only way until v3.25. The decision names WordPress, Ghost and Discord. Wikis, and anywhere else the Reader sends, aren't part of it.
+Until v3.25 ships, publishing from this app still means handing the chapter to the Reader, as it has since 3.9.
 
 **To settle before it's built:** the Lock is a password a project may or may not have. What keeps a sign-in safe where there's no
 password, whether sign-ins belong to a project or to the app, and whether a project with a password may publish at all, are still open.
+So is Discord: the Reader sends there too, but it's neither a blog nor a wiki, and this answer doesn't cover it.
 
 ## The order, and where to start
 
