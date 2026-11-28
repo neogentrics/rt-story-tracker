@@ -45,7 +45,7 @@
       },
       {
         "title": "Next, from your own testing",
-        "text": "Read aloud, built into this app, with highlighting and letter colours like Word’s that shift their shade so they stay easy to read, and a safer way to pick up an unfinished import (3.12), then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go. Publishing to blogs and wikis from inside this app is on the roadmap as 3.25, as you decided. It comes from the shared code module, so it depends on that module, which isn’t created yet and waits for your go. Your sign-ins are to be kept inside the Lock, and RT Markdown Reader can still publish over App Link. Nothing is being built yet."
+        "text": "Read aloud, built into this app, with highlighting and letter colours like Word’s that shift their shade so they stay easy to read, and a safer way to pick up an unfinished import (3.12). After read aloud, still in 3.12, this app’s Solid, Metallic and Glass looks are to come from the suite’s shared theme repository, with the Look choice and the colour behaviour kept. Then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go. Publishing to blogs and wikis from inside this app is on the roadmap as 3.25, as you decided. It comes from the shared code module, so it depends on that module, which isn’t created yet and waits for your go. Your sign-ins are to be kept inside the Lock, and RT Markdown Reader can still publish over App Link. Nothing is being built yet."
       }
     ]
   },
@@ -72,7 +72,7 @@
     },
     {
       "q": "Does it use the same themes as RT Markdown Reader?",
-      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, with a Look of Solid, Metallic or Glass. A theme added to one app doesn't reach the other by itself yet. Sharing themes across the apps is planned for later, and waits for your go-ahead. From 3.11 it has the same Look choice as RT Markdown Reader. Colour-safe and Customize Theme come later, in v3.23."
+      "a": "The same set, as copies. It has all of RT Markdown Reader's themes, the old app's Plum, Evergreen, Blue/Orange and Aero, and a new one, Slate, with a Look of Solid, Metallic or Glass. A theme added to one app doesn't reach the other by itself yet. In 3.12, after read aloud, the three looks are to come from one shared theme repository. The rest of sharing themes, such as a theme you add once showing up in every app, is planned for later and waits for your go-ahead. From 3.11 it has the same Look choice as RT Markdown Reader. Colour-safe and Customize Theme come later, in v3.23."
     },
     {
       "q": "Will it read text aloud?",

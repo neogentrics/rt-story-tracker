@@ -301,7 +301,7 @@ attachments. Issues 37 to 40, and 42 to 49.
 - **One theme button on the main screen**, holding Theme, Look, Typeface and Page width. This app has no theme button or pop-up, so Look is in Preferences and under View. It also has no View, Theme menu.
 - **Parts the Reader has and this app doesn't:** a tab strip, a read-aloud bar, export progress, a command palette and add-on themes, so the finish has nothing to go on there.
 - **Shared colour names not defined**, because this app has no colour of its own for them: `--desk-grain`, `--tabstrip-fill`, `--accent-2`, `--accent-soft`, `--mark`, `--code-bg`, `--code-border`, `--inline-code-bg`, `--inline-code-text`, `--table-head`, `--table-stripe`, `--quote-bar`, `--quote-bg`, `--add-fill`, `--del-fill`, `--add-text` and `--del-text`. The rest are other names for this app's own colours, which keep their names.
-- **Keeping the colours and looks in one shared place** is the *Themes shared across the apps* row in [v3.23](#v323--find-your-way-around), which waits for the owner's go.
+- **Keeping the colours and looks in one shared place** was left to the *Themes shared across the apps* row in [v3.23](#v323--find-your-way-around). The owner has since allowed the shared looks in [3.12](#v312--read-aloud). The rest of that row still waits.
 
 **Test:** run Find my files on a large folder with pictures and audio. Cover art and audio land in their own sections, and a file wrongly marked as an attachment can be changed afterwards. Then change, add and remove files in the folder, edit one of the same chapters in the app, and check the folder: nothing changes without your choice, and no text is lost. At 1024 by 768 every app in the apps window can be read. Try each look in light, dark and High Contrast. Open the app at 640, 800, 1000 and 1280 wide, at 1024 by 600, and on a 1280 by 720 screen scaled to 125 and 150 percent: nothing in the top bar overlaps or is cut off, and every command can be reached. Make each list wider and narrower, fold a series and a part, restart, and find them as you left them. Do every right-click action with the mouse and again from the keyboard.
 
@@ -310,7 +310,8 @@ attachments. Issues 37 to 40, and 42 to 49.
 🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It reads with offline voices, so nothing leaves the computer, and it's built into this app, with no other app needed. Read aloud is to come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Issue 41.
 
 Also in 3.12: highlighting and letter colours ([issue 54](https://github.com/neogentrics/rt-story-tracker/issues/54)), and a fix to *Pick up where it stopped*
-([issue 50](https://github.com/neogentrics/rt-story-tracker/issues/50)).
+([issue 50](https://github.com/neogentrics/rt-story-tracker/issues/50)). After read aloud comes *Themes from recon-theme*, which the
+owner allowed in 3.12. Read aloud stays first.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -319,6 +320,7 @@ Also in 3.12: highlighting and letter colours ([issue 54](https://github.com/neo
 | 🙋 Highlighting and letter colours | M | As in Word: colour the background behind selected words, or the letters themselves, and take either off again. A few colours that read well, and a way to pick another. They're saved with the chapter. Undo and redo work for them, and word counts and Find don't change. |
 | 🙋 Colours that stay easy to read | M | Decided by the owner on 27 November 2026: on screen each colour's shade shifts with the Look, and with light or dark, so words are always easy to read. A colour keeps its meaning: a red stays a red, and a yellow highlight stays a yellow highlight. The saved file keeps the colour you chose. Every colour is measured in every theme and Look, and read aloud's mark on the sentence being read looks different from your own highlighting. |
 | 🙋 Colours in exports | M | Exports use a version of each colour that reads on paper or a white page. Word, PDF, e-book, web page, OpenDocument, rich text and XML exports are to carry them. Plain text, Markdown and *Export everything*, which writes Markdown, can't, and the export says so. Opening or publishing a chapter in RT Markdown Reader sends Markdown too, so colours don't go with it, and the app says so. |
+| 🙋 Themes from recon-theme | M | After read aloud. This app's own code for the Solid, Metallic and Glass looks is replaced by the shared looks in recon-theme, the suite's private theme repository. The Look choice stays. So does what issue 54 does: on screen each colour's shade shifts so words stay easy to read, the saved file keeps the colour you chose, and every colour is measured in every theme and Look. The shared looks style RT Markdown Reader's class names, so this app's names are added to recon-theme first, with [the list of ours](docs/design/looks-selectors.md). This app takes its copy after that, from the version that has them. |
 | 🛡️ Pick up where it stopped, safely | S | Picking up an unfinished Find my files run reads only a folder chosen on this computer, as checking a folder for changes does. The folder's path saved in a project isn't trusted by itself: anywhere else, you choose the folder again. |
 
 **What was checked about colour in exports,** on 27 November 2026, with no colour feature built yet. *Word:* the export's library can
@@ -334,7 +336,9 @@ way in.
 
 **Test:** with the computer offline, read a chapter aloud, change the voice and speed, and pause and resume. Highlight and colour
 words, then read them in every Look, light and dark. Export to each format, and find the colours there or a notice that it can't
-carry them. Pick up an unfinished import in a project brought from another computer: it asks for the folder.
+carry them. Pick up an unfinished import in a project brought from another computer: it asks for the folder. With the shared looks,
+choose each Look in every theme: the text on every part can be read, the highlight and letter colours too, and the app's copy matches
+its lock file.
 
 ## v3.13 — Connect Claude
 
@@ -480,7 +484,7 @@ so nothing leaves the computer. Both are built into this app, with no other app 
 | 🙋 Quick Open | S | Type a few letters to jump to any chapter or record. |
 | 🙋 Command palette | S | Every command, by name, from the keyboard. It opens on Ctrl+K, as in the Reader, so *Look Up a Record*, which has Ctrl+K today, becomes a command in it and takes another key, which can be changed like any other. Changing shortcuts is already in [v3.10](#v310--versions-of-a-record). |
 | 🙋 Customize Theme | M | Change a theme's colours, and share them with RT Markdown Reader. |
-| 🙋 Themes shared across the apps | L | **Waiting for the owner's go. Nothing here is being built.** Three parts, decided for the whole suite. **(1) One shared set:** themes, tokens, looks and the contrast tests live once, in a private repository, instead of a copy in each app. An app takes them in with a script that copies the files at a pinned version and writes a lock file. Both are kept with the app, so building it never needs that repository, and a test fails if the copy no longer matches the lock. **(2) Added themes, kept once:** a theme you make or load is stored once in the App Link folder you and the apps share, so every app offers it. It's checked, and refused if its contrast is too low. **(3) Following:** changing the theme, look or colour-safe in one app switches the linked apps on the same computer too. It needs an addition to App Link, and that protocol decision isn't made yet. This app keeps its extra themes: Slate, Blue/Orange, Plum, Evergreen and Aero. |
+| 🙋 Themes shared across the apps | L | **Waiting for the owner's go, apart from the shared looks, which are now in [3.12](#v312--read-aloud). Nothing else here is being built.** Three parts, decided for the whole suite. **(1) One shared set:** themes, tokens, looks and the contrast tests live once, in a private repository, instead of a copy in each app. An app takes them in with a script that copies the files at a pinned version and writes a lock file. Both are kept with the app, so building it never needs that repository, and a test fails if the copy no longer matches the lock. **(2) Added themes, kept once:** a theme you make or load is stored once in the App Link folder you and the apps share, so every app offers it. It's checked, and refused if its contrast is too low. **(3) Following:** changing the theme, look or colour-safe in one app switches the linked apps on the same computer too. It needs an addition to App Link, and that protocol decision isn't made yet. This app keeps its extra themes: Slate, Blue/Orange, Plum, Evergreen and Aero. |
 | 🙋 Colour-safe | S | Colours that work for colour-blind readers, in every theme. |
 | 🙋 Tutorial | M | A hands-on tour with a practice chapter, offered the first time the app opens, skippable and resumable, and replayed from Help. People who update from an older version get it too. The Help menu has no Tutorial item until this exists. |
 | 🙋 Help Center guides | M | Numbered, searchable guides kept as plain Markdown files in a `help` folder, like RT Markdown Reader's, each able to jump to the setting it explains. The Help Center in 3.10 is a short page of topics; these replace it. |
