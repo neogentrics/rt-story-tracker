@@ -7,6 +7,10 @@ updates:
       interval: monthly
     # Each pull request runs the whole of CI on three systems, so only a few are open at a time.
     open-pull-requests-limit: 3
+    ignore:
+      # Its version is set by the shared code this app takes in (core.lock), and a test fails if the two differ. It moves when the
+      # shared code does.
+      - dependency-name: onnxruntime-web
     groups:
       editor:
         patterns: ['@tiptap/*']
