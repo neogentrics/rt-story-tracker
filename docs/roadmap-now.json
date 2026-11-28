@@ -45,7 +45,7 @@
       },
       {
         "title": "Next, from your own testing",
-        "text": "Read aloud, built into this app, with highlighting and letter colours like Word’s that shift their shade so they stay easy to read, and a safer way to pick up an unfinished import (3.12). After read aloud, still in 3.12, this app’s Solid, Metallic and Glass looks are to come from the suite’s shared theme repository, with the Look choice and the colour behaviour kept. Then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs, such as read aloud and your own AI service, are to come from one shared code module. It isn’t created yet and waits for your go. Publishing to blogs and wikis from inside this app is on the roadmap as 3.25, as you decided. It comes from the shared code module, so it depends on that module, which isn’t created yet and waits for your go. Your sign-ins are to be kept inside the Lock, and RT Markdown Reader can still publish over App Link. Nothing is being built yet."
+        "text": "Read aloud, built into this app, with highlighting and letter colours like Word’s that shift their shade so they stay easy to read, and a safer way to pick up an unfinished import (3.12). After read aloud, still in 3.12, this app’s Solid, Metallic and Glass looks are to come from the suite’s shared theme repository, with the Look choice and the colour behaviour kept. Then Connect Claude (3.13), with your choice of how much it may do and a record of every change it makes. Writing patterns, a check across a book or series for repeated words, stock phrases AI overuses and your own banned phrases, is on the roadmap as 3.24 and waits for your go. When you give it, it moves up to just after 3.13. Features more than one app needs come from one shared code module, recon-core. So far it holds the engine for read aloud, which 3.12 takes in, with this app’s own controls. Anything else, such as your own AI service, moves in only on your go. Publishing to blogs and wikis from inside this app is on the roadmap as 3.25, as you decided. It comes from the shared code module, so it depends on the publishing code moving in there, which waits for your go. Your sign-ins are to be kept inside the Lock, and RT Markdown Reader can still publish over App Link. Nothing is being built yet."
       }
     ]
   },
@@ -76,7 +76,7 @@
     },
     {
       "q": "Will it read text aloud?",
-      "a": "Yes, in v3.12, with offline voices. It’s built into this app, so no other app is needed. Names said right, from the dictionary, and dictation follow in v3.22. All of it is to come from a shared code module, which isn’t created yet and waits for your go. If you also use RT Markdown Reader, you can send a chapter there and have it read, as a bonus."
+      "a": "Yes, in v3.12, with offline voices. It’s built into this app, so no other app is needed. Names said right, from the dictionary, and dictation follow in v3.22. In 3.12 the engine that makes the speech comes from the shared code module, recon-core, and the controls and screens are this app’s own. The code for names said right and dictation isn’t in the module yet, and moves in only on your go. If you also use RT Markdown Reader, you can send a chapter there and have it read, as a bonus."
     },
     {
       "q": "Will the dictionary know how to say words?",
@@ -88,7 +88,7 @@
     },
     {
       "q": "Were these features taken from RT Markdown Reader?",
-      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17. Since 27 November 2026, a feature more than one app needs is to come from one shared code module, not a copy in each. The module isn’t created yet and waits for your go. Nobody has to install the Reader to use this app."
+      "a": "Partly. Most came from what you said you need. In November the two roadmaps were compared feature by feature, and what this app was missing was added: v3.8, v3.21 to v3.23, and wider v3.15 and v3.17. Since 27 November 2026, a feature more than one app needs is to come from one shared code module, so no app builds its own. The module now exists, as recon-core. So far it holds the engine for read aloud, and each further piece waits for your go. Nobody has to install the Reader to use this app."
     },
     {
       "q": "How do I hand an AI a chapter as Markdown?",
@@ -100,7 +100,7 @@
     },
     {
       "q": "Will it make EPUBs that KDP accepts?",
-      "a": "It makes EPUBs that pass EPUBCheck, the official validator, with no errors or warnings. The test that counts is uploading one to KDP’s previewer, which is yours to do. The EPUB, Word and PDF exports are built into this app, so it makes them on its own. They’re to come from the shared code module once it exists."
+      "a": "It makes EPUBs that pass EPUBCheck, the official validator, with no errors or warnings. The test that counts is uploading one to KDP’s previewer, which is yours to do. The EPUB, Word and PDF exports are built into this app, so it makes them on its own. They’re to come from the shared code module once they move into it, which waits for your go."
     }
   ]
 }

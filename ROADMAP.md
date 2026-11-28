@@ -128,7 +128,7 @@ Comes before import, because the first thing people will trust it with is years 
 that can't come out.
 
 Every export is built into this app, so with only RT Story Tracker installed you can make all of them. The Word, PDF and EPUB exports
-are this app's own code today. They're to come from the [shared code module](#ongoing--polish--distribution) once it exists, and stay built in
+are this app's own code today. They're to come from the [shared code module](#ongoing--polish--distribution) once they move into it, and stay built in
 ([decision 31](docs/decisions.md)).
 
 | Feature | Size | Details |
@@ -307,7 +307,7 @@ attachments. Issues 37 to 40, and 42 to 49.
 
 ## v3.12 — Read aloud
 
-🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It reads with offline voices, so nothing leaves the computer, and it's built into this app, with no other app needed. Read aloud is to come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Issue 41.
+🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It reads with offline voices, so nothing leaves the computer, and it's built into this app, with no other app needed. The engine that makes the speech comes from the [shared code module](#ongoing--polish--distribution), `recon-core`. The controls, highlighting, audio export, saved settings and pronunciation list are this app's own. Issue 41.
 
 Also in 3.12: highlighting and letter colours ([issue 54](https://github.com/neogentrics/rt-story-tracker/issues/54)), and a fix to *Pick up where it stopped*
 ([issue 50](https://github.com/neogentrics/rt-story-tracker/issues/50)). After read aloud comes *Themes from recon-theme*, which the
@@ -316,7 +316,7 @@ owner allowed in 3.12. Read aloud stays first.
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 Read aloud | M | Hear a chapter in a natural voice, with each sentence highlighted as it is read, a choice of voice and speed, and a choice of speakers or headphones. |
-| 🙋 Same controls across the apps | S | Play, pause, skip a sentence, speed and voice. They're to come with read aloud from the shared code module, so it works the same in each app that has it. |
+| 🙋 Same controls across the apps | S | Play, pause, skip a sentence, speed and voice, working as they do in RT Markdown Reader. The apps share the engine that makes the speech, not the controls: each app builds its own. |
 | 🙋 Highlighting and letter colours | M | As in Word: colour the background behind selected words, or the letters themselves, and take either off again. A few colours that read well, and a way to pick another. They're saved with the chapter. Undo and redo work for them, and word counts and Find don't change. |
 | 🙋 Colours that stay easy to read | M | Decided by the owner on 27 November 2026: on screen each colour's shade shifts with the Look, and with light or dark, so words are always easy to read. A colour keeps its meaning: a red stays a red, and a yellow highlight stays a yellow highlight. The saved file keeps the colour you chose. Every colour is measured in every theme and Look, and read aloud's mark on the sentence being read looks different from your own highlighting. |
 | 🙋 Colours in exports | M | Exports use a version of each colour that reads on paper or a white page. Word, PDF, e-book, web page, OpenDocument, rich text and XML exports are to carry them. Plain text, Markdown and *Export everything*, which writes Markdown, can't, and the export says so. Opening or publishing a chapter in RT Markdown Reader sends Markdown too, so colours don't go with it, and the app says so. |
@@ -399,7 +399,7 @@ its lock file.
 ## v3.17 — Claude and AI
 
 🙋 Must be in the app, with settings for how far it goes. The AI services are built into this app, with no other app needed, and are to
-come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Connecting Claude Desktop and Claude
+come from the [shared code module](#ongoing--polish--distribution), though these pieces aren't in it yet: they move in only on the owner's go. Connecting Claude Desktop and Claude
 Code to your projects came earlier, in [v3.13](#v313--connect-claude). AI is an
 add-on: it's off until you turn it on, and the app is complete without it.
 
@@ -466,7 +466,7 @@ add-on: it's off until you turn it on, and the app is complete without it.
 
 🙋 Read aloud itself moved up to 3.12. This release is the rest: names said right, and dictation, with offline voices and speech to text,
 so nothing leaves the computer. Both are built into this app, with no other app needed. They're to come from the
-[shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go.
+[shared code module](#ongoing--polish--distribution), though these pieces aren't in it yet: they move in only on the owner's go.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -513,8 +513,8 @@ of the writing changes until you accept a change. Turn a rule off and its flags 
 ## v3.25 — Publish from this app
 
 🙋 Publishing to blogs and wikis won't need a second app. The owner decided on 27 November 2026 that it joins the
-[shared code module](#ongoing--polish--distribution) ([decision 32](docs/decisions.md)). **It depends on that module,** which isn't
-created yet and waits for the owner's go. Nothing is being built yet.
+[shared code module](#ongoing--polish--distribution) ([decision 32](docs/decisions.md)). **It depends on that module.** The module
+exists now, but no publishing code is in it, and that moves in only on the owner's go. Nothing is being built yet.
 
 | Feature | Size | Details |
 |---|:-:|---|
@@ -557,7 +557,7 @@ these devices sync with it.
 
 | Feature | Size | Details |
 |---|:-:|---|
-| 🙋 Shared code module | L | **Not created yet. Waiting for the owner's go: nothing moves into it until then.** One private repository, like the one for themes, for the code more than one app needs: read aloud, dictation, your own AI service, citations, document formats, publishing to blogs and wikis, and the other overlaps. Each app that needs a piece takes it in, so it works with only that app installed. Hand-offs between apps over App Link stay a bonus. [Decision 31](docs/decisions.md). |
+| 🙋 Shared code module | L | **Started: it's `recon-core`. So far it holds one piece, the engine for read aloud, which this app takes in with 3.12. Each further piece waits for the owner's go.** It's one private repository, like the one for themes, for the code more than one app needs: read aloud, dictation, your own AI service, citations, document formats, publishing to blogs and wikis, and the other overlaps. Each app that needs a piece takes in its own copy, so it works with only that app installed. Hand-offs between apps over App Link stay a bonus. [Decision 31](docs/decisions.md). |
 | Code signing | S | Windows and Mac, as for RT Markdown Reader. |
 | Tutorial & Help Center | M | Built in [v3.23](#v323--find-your-way-around). Until then Help has a Help Center and a Keyboard Shortcuts page, and no Tutorial item. |
 | Accessibility | S | Screen readers, contrast and keyboard use, checked in the tests. Started in 3.10: one test opens every main screen and checks every control has a name and the main flows work from the keyboard. |
