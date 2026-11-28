@@ -109,10 +109,12 @@ const waitSaid = (window, count) => window.waitForFunction((wanted) => window.he
 const waitSounds = (window, count) => window.waitForFunction((wanted) => window.heard.sounds.length >= wanted, count, { timeout: 30000 });
 const bar = (name) => `.speak-bar [data-read="${name}"]`;
 
-// Puts the cursor at the very start or end of the chapter, and waits for the editor to hear of it, which is a moment after the key.
+// Puts the cursor at the very start or end of the chapter, with each system's own keys, and waits for the editor to hear of it, which
+// is a moment after the key. On a Mac, Home and End only scroll: it's Cmd with the up or down arrow that moves the cursor.
+const CURSOR_KEYS = process.platform === 'darwin' ? { start: 'Meta+ArrowUp', end: 'Meta+ArrowDown' } : { start: 'Control+Home', end: 'Control+End' };
 async function cursorTo(window, end) {
   await window.click('.ProseMirror');
-  await window.keyboard.press(end === 'start' ? 'ControlOrMeta+Home' : 'ControlOrMeta+End');
+  await window.keyboard.press(CURSOR_KEYS[end]);
   await window.waitForFunction((wanted) => {
     const selection = getSelection();
     const editor = document.querySelector('.ProseMirror');
@@ -201,8 +203,7 @@ async function typeChapter(window, lines) {
   assert.ok(await window.evaluate(() => window.heard.said.every((one) => one.local === true && one.voice === 'Desk Voice')));
 
   // Editing while it reads: the mark stays with its sentence, and the new words are counted in.
-  await window.click('.ProseMirror p');
-  await window.keyboard.press('Home');
+  await cursorTo(window, 'start');
   await window.keyboard.type('First. ');
   await window.waitForFunction(() => document.querySelector('.speak-status').textContent === 'Sentence 4 of 6');
   assert.equal(await marked(window), 'It went out.');
@@ -301,8 +302,8 @@ async function typeChapter(window, lines) {
   // The project's pronunciation was used for the name.
   await window.click(bar('back-paragraph'));
   await window.click(bar('play'));
-  await cursorTo(window, 'start');
   await window.click(bar('stop'));
+  await cursorTo(window, 'start');
   await window.click('.read-aloud-button');
   await window.waitForSelector('.speak-bar');
   await window.waitForTimeout(200);
