@@ -250,4 +250,8 @@ const unlock = async (window, password) => {
     console.error(error);
     process.exitCode = 1;
   })
-  .finally(() => fs.rmSync(work, { recursive: true, force: true, maxRetries: 5 }));
+  .finally(() => {
+    fs.rmSync(work, { recursive: true, force: true, maxRetries: 5 });
+    // A test that failed has left the app open, which would keep this running until CI's time limit. A pass has already closed it.
+    if (process.exitCode) process.exit();
+  });
