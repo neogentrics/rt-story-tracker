@@ -309,12 +309,32 @@ attachments. Issues 37 to 40, and 42 to 49.
 
 🙋 Moved up from the Hear it and say it release, because a tester wants her chapters read to her. It reads with offline voices, so nothing leaves the computer, and it's built into this app, with no other app needed. Read aloud is to come from the [shared code module](#ongoing--polish--distribution), which isn't created yet and waits for the owner's go. Issue 41.
 
+Also in 3.12: highlighting and letter colours ([issue 54](https://github.com/neogentrics/rt-story-tracker/issues/54)), and a fix to *Pick up where it stopped*
+([issue 50](https://github.com/neogentrics/rt-story-tracker/issues/50)).
+
 | Feature | Size | Details |
 |---|:-:|---|
 | 🙋 Read aloud | M | Hear a chapter in a natural voice, with each sentence highlighted as it is read, a choice of voice and speed, and a choice of speakers or headphones. |
 | 🙋 Same controls across the apps | S | Play, pause, skip a sentence, speed and voice. They're to come with read aloud from the shared code module, so it works the same in each app that has it. |
+| 🙋 Highlighting and letter colours | M | As in Word: colour the background behind selected words, or the letters themselves, and take either off again. A few colours that read well, and a way to pick another. They're saved with the chapter. Undo and redo work for them, and word counts and Find don't change. |
+| 🙋 Colours that stay easy to read | M | Decided by the owner on 27 November 2026: on screen each colour's shade shifts with the Look, and with light or dark, so words are always easy to read. A colour keeps its meaning: a red stays a red, and a yellow highlight stays a yellow highlight. The saved file keeps the colour you chose. Every colour is measured in every theme and Look, and read aloud's mark on the sentence being read looks different from your own highlighting. |
+| 🙋 Colours in exports | M | Exports use a version of each colour that reads on paper or a white page. Word, PDF, e-book, web page, OpenDocument, rich text and XML exports are to carry them. Plain text, Markdown and *Export everything*, which writes Markdown, can't, and the export says so. Opening or publishing a chapter in RT Markdown Reader sends Markdown too, so colours don't go with it, and the app says so. |
+| 🛡️ Pick up where it stopped, safely | S | Picking up an unfinished Find my files run reads only a folder chosen on this computer, as checking a folder for changes does. The folder's path saved in a project isn't trusted by itself: anywhere else, you choose the folder again. |
 
-**Test:** with the computer offline, read a chapter aloud, change the voice and speed, and pause and resume.
+**What was checked about colour in exports,** on 27 November 2026, with no colour feature built yet. *Word:* the export's library can
+write a letter colour, Word's highlighter colours and a background of any colour. Word's highlighter has only 16 named colours, so any
+other has to be saved as shading, not as highlighting. The library also writes an unlisted colour as a highlight without complaint,
+which Word doesn't allow, so the export mustn't do that. No file was opened in Word. *PDF:* with today's settings, a test page lost its
+highlight and printed its purple letters darker. With backgrounds printed, both colours were exact, so the PDF export has to change.
+*E-book, web page, OpenDocument, rich text and XML:* these formats can hold colour, but the app writes none yet, and none was tried. An
+e-book reader may use its own colours or show them in grey. The exported web page turns dark on a device set to dark, so it has to stay
+light or have dark shades too. *Plain text and Markdown* have no colour of their own. *Bringing files in* isn't part of issue 54 and is
+still open: only bold, italic, underline and strikethrough are kept today, so highlighting and colours in a Word file are lost on the
+way in.
+
+**Test:** with the computer offline, read a chapter aloud, change the voice and speed, and pause and resume. Highlight and colour
+words, then read them in every Look, light and dark. Export to each format, and find the colours there or a notice that it can't
+carry them. Pick up an unfinished import in a project brought from another computer: it asks for the folder.
 
 ## v3.13 — Connect Claude
 
