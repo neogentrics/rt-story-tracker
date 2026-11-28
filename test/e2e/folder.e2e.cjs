@@ -6,6 +6,9 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const docx = require('docx');
+const { FolderImport } = require('../../src/main/folder');
+const { Library } = require('../../src/main/storage/library');
+const { Workspace } = require('../../src/main/workspace');
 const tool = require('./tool.cjs');
 
 const root = path.join(__dirname, '..', '..');
@@ -22,6 +25,81 @@ const word = (text) => docx.Packer.toBuffer(new docx.Document({ sections: [{ chi
 const answer = (app, value) => app.evaluate(({ dialog }, folder) => {
   dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [folder] });
 }, value);
+
+// Issue 50. A project with an unfinished run arrives from another computer. It names a folder, which is here too, but nobody on this
+// computer chose it: the app mustn't read it on the project's word.
+async function pickUpElsewhere() {
+  const profile = path.join(work, 'another computer');
+  const space = new Workspace(new Library(path.join(profile, 'library')));
+  space.createProject('Brought over');
+  const elsewhere = new FolderImport();
+  await elsewhere.scan(space, stories, () => {});
+  assert.equal((await elsewhere.run(space, () => elsewhere.stop())).finished, false);
+  space.closeProject();
+
+  const app = await electron.launch({
+    executablePath: require('electron'),
+    args: [root, ...(process.platform === 'linux' ? ['--no-sandbox'] : [])],
+    env: { ...process.env, RTST_USER_DATA: profile },
+  });
+  const window = await app.firstWindow();
+  const errors = [];
+  window.on('pageerror', (error) => errors.push(String(error)));
+  await window.waitForSelector('body[data-state="ready"]');
+  await app.evaluate(({ dialog }) => {
+    global.asked = [];
+    global.answer = null;
+    dialog.showOpenDialog = async (_window, options) => {
+      global.asked.push(options);
+      return { canceled: !global.answer, filePaths: global.answer ? [global.answer] : [] };
+    };
+  });
+  const folderAnswer = (value) => app.evaluate((_electron, folder) => { global.answer = folder; }, value);
+  const findFiles = () => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('menu:command', 'find-files'));
+
+  await window.locator('.project-row', { hasText: 'Brought over' }).locator('button').first().click();
+  await window.waitForSelector('#chapter-list');
+  await findFiles();
+  await window.waitForSelector('#resume-note');
+  assert.match(await window.textContent('#resume-note'), /hasn’t been chosen on this computer/);
+  assert.equal(await window.locator('#resume-go').count(), 0, 'there’s nothing to pick up until the folder is chosen');
+  assert.equal(await window.locator('#resume-error').isVisible(), false);
+  assert.equal(await window.textContent('#find-files-dialog .dialog-actions'), 'Forget itChoose the folder');
+
+  // It all fits a small window, however long the folder's path is.
+  for (const size of [{ width: 640, height: 480 }, { width: 800, height: 600 }]) {
+    await window.setViewportSize(size);
+    for (const selector of ['#resume-note', '#resume-choose', '#resume-drop']) {
+      const box = await window.locator(selector).boundingBox();
+      assert.ok(box.x >= 0 && box.y >= 0 && box.x + box.width <= size.width + 0.5 && box.y + box.height <= size.height + 0.5, `${selector} at ${size.width}x${size.height}: ${JSON.stringify(box)}`);
+    }
+  }
+
+  // Cancelling the system's window changes nothing. Its starting place is never the folder the project names.
+  await window.click('#resume-choose');
+  await app.evaluate(() => new Promise((done) => { setTimeout(done, 200); }));
+  const asked = await app.evaluate(() => global.asked);
+  assert.equal(asked.length, 1);
+  assert.equal(asked[0].defaultPath, undefined);
+  assert.equal(await window.locator('#resume-choose').isVisible(), true);
+
+  // Another folder isn't taken, and the app says why.
+  const other = fs.mkdtempSync(path.join(work, 'other-'));
+  fs.writeFileSync(path.join(other, 'Thumbs.db'), 'noise');
+  await folderAnswer(other);
+  await window.click('#resume-choose');
+  await window.waitForSelector('#resume-error:not([hidden])');
+  assert.match(await window.textContent('#resume-error'), /Most of the files that import was reading aren’t there/);
+
+  await folderAnswer(stories);
+  await window.click('#resume-choose');
+  await window.waitForSelector('#report-total', { timeout: 60000 });
+  assert.match(await window.textContent('#report-total'), /All 10 files accounted for/);
+  assert.doesNotMatch(await window.textContent('#report-groups'), /Gone before/);
+  await window.click('#report-close');
+  assert.deepEqual(errors, []);
+  await app.close();
+}
 
 (async () => {
   write('Series_The_Long_Road/Book_1_Ash/Chapter 1.docx', await word('Older words here.'));
@@ -112,6 +190,8 @@ const answer = (app, value) => app.evaluate(({ dialog }, folder) => {
   await window.click('#attachments-close');
 
   await app.close();
+
+  await pickUpElsewhere();
   assert.equal(fs.existsSync(path.join(stories, 'Thumbs.db')), true);
   fs.rmSync(work, { recursive: true, force: true, maxRetries: 5 });
   console.log('folder e2e passed');

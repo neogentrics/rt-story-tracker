@@ -422,8 +422,15 @@ function registerIpc({ status, checkForUpdates, aboutApp, menuKeys, folderLinks,
     return true;
   });
   handle('folder:stop', () => folderImport.stop());
-  handle('folder:pending', () => folderImport.pending(workspace()));
-  handle('folder:resume', busy(() => folderImport.resume(workspace(), folderProgress)));
+  handle('folder:pending', () => folderImport.pending(workspace(), folderLinks()));
+  handle('folder:locatePending', async () => {
+    // As above: the window never opens at the path the project names.
+    const { canceled, filePaths } = await dialog.showOpenDialog(window(), { title: 'Choose the folder it was reading', properties: ['openDirectory'] });
+    if (canceled) return false;
+    await folderImport.locate(workspace(), folderLinks(), filePaths[0]);
+    return true;
+  });
+  handle('folder:resume', busy(() => folderImport.resume(workspace(), folderLinks(), folderProgress)));
   handle('folder:discard', () => folderImport.discard(workspace()));
   handle('folder:saveReport', async (report) => {
     const file = await saveFolderReport(window);

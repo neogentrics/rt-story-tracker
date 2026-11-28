@@ -2,9 +2,10 @@
 // Everything that leaves the app goes through here.
 const fs = require('node:fs');
 const path = require('node:path');
+const { colouredWords } = require('../../shared/colour');
 const { EXPORT_FORMATS: FORMATS, cleanLayout } = require('../../shared/details');
 const { PAGE_FONTS } = require('../../shared/themes');
-const { buildModel, checkBook } = require('./model');
+const { buildModel, checkBook, coloursIn } = require('./model');
 const { exportRecords } = require('./records');
 const { documentMarkdown, toHtml, toMarkdown, toRtf, toText, toXml } = require('./text-formats');
 
@@ -41,9 +42,15 @@ async function exportFile(project, { scope, id, format, layout, file }) {
   return { file, size: data.length };
 }
 
+// The formats that have no colour in them.
+const NO_COLOUR = { md: 'Markdown', txt: 'Plain text' };
+
 function checkExport(project, { scope, id, format }) {
   const model = buildModel(project, { scope, id });
-  return model.books.flatMap((book) => checkBook(book, { ebook: format === 'epub' }));
+  const problems = model.books.flatMap((book) => checkBook(book, { ebook: format === 'epub' }));
+  const lost = Object.hasOwn(NO_COLOUR, format) ? colouredWords(coloursIn(model)) : '';
+  if (lost) problems.unshift(`${NO_COLOUR[format]} can’t keep colours, so the file won’t show them: ${lost}. Your project keeps them.`);
+  return problems;
 }
 
 const safeName = (text) => String(text).replace(/[<>:"/\\|?*\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || 'Untitled';
@@ -103,7 +110,9 @@ async function exportEverything(project, folder) {
     files += 1;
   }
   files += exportRecords(project, root);
-  return { folder: root, files: files + 2 };
+  const colours = colouredWords(coloursIn(model));
+  const note = colours ? `Chapters are saved as Markdown, which can’t keep colours, so these files don’t show them: ${colours}. Your project keeps them.` : '';
+  return { folder: root, files: files + 2, note };
 }
 
 module.exports = { checkExport, exportEverything, exportFile, safeName };

@@ -586,10 +586,13 @@ export class WritingRoom {
         this.showMessage(`Open a ${scope} first.`);
         return;
       }
-      await this.api.openInReader({ scope, id, publish });
+      const { without } = await this.api.openInReader({ scope, id, publish });
+      const colours = without
+        ? ` Markdown can’t keep colours, so ${publish ? 'what you publish' : 'the copy'} won’t show them: ${without}. They’re still here.`
+        : '';
       this.showInfo(publish
-        ? 'Sent a copy to RT Markdown Reader. Choose Publish there to put it on your site or wiki. Changes there don’t come back here.'
-        : 'Opened a copy in RT Markdown Reader. Changes there don’t come back here.');
+        ? `Sent a copy to RT Markdown Reader. Choose Publish there to put it on your site or wiki. Changes there don’t come back here.${colours}`
+        : `Opened a copy in RT Markdown Reader. Changes there don’t come back here.${colours}`);
     });
   }
 

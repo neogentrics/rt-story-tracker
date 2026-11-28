@@ -1,6 +1,8 @@
 'use strict';
 // Carries out a plan, one file at a time. Each step is written down in the project as it happens, so a run can stop at any
-// point, by choice or by a power cut, and pick up where it was. The originals are only ever read.
+// point, by choice or by a power cut, and pick up where it was. The originals are only ever read. A plan that was picked up again
+// came out of the project, so the only files opened are ones found by looking through the folder: never a path just because the
+// plan names it.
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -8,6 +10,7 @@ const { imageSize, readSource, sectionsOf } = require('../import');
 const { documentOf, wordsIn } = require('../import/split');
 const { sectionLabel } = require('../../shared/sections');
 const { piecesOf } = require('./pieces');
+const { walkFolder } = require('./scan');
 
 const MAX_WRITING_BYTES = 200 * 1024 * 1024;
 const pause = () => new Promise(setImmediate);
@@ -49,6 +52,10 @@ class FolderRun {
     }
     if (this.done.has(file.id)) return;
     this.onProgress({ done: this.count, total: this.plan.files.length, name: file.name });
+    if (!this.found.has(file.rel)) {
+      this.record(file.id, 'missing', null, 'It was gone by the time it was reached.');
+      return;
+    }
     await work(this.full(file));
     await pause();
   }
@@ -222,6 +229,7 @@ class FolderRun {
 
   async run() {
     this.madeChapters = new Map();
+    this.found = new Set((await walkFolder(this.root, () => {}, () => false)).map((entry) => entry.rel));
     await this.addAttachments(this.plan.tree, this.project.id);
     await this.walk(this.plan.tree, this.project.id, null, null);
     if (this.stopped) return false;

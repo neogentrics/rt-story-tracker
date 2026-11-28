@@ -113,6 +113,7 @@ contextBridge.exposeInMainWorld('storyTracker', {
   stopFolderImport: () => call('folder:stop'),
   pendingFolderImport: () => call('folder:pending'),
   resumeFolderImport: () => call('folder:resume'),
+  locatePendingFolderImport: () => call('folder:locatePending'),
   discardFolderImport: () => call('folder:discard'),
   saveFolderReport: (report) => call('folder:saveReport', report),
   onFolderProgress: (callback) => listen('folder:progress', callback),

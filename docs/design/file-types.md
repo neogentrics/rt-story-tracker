@@ -127,7 +127,26 @@ Exported with version 1 of our own layout. A file is one `rtstory` element holdi
 elements (`name` attribute), then `part` and `chapter` elements (`id` and `title` attributes, with chapters inside a part
 where the book has parts). A chapter holds `p` and `heading` (`level`, 1 to 3) with an optional `align`, plus `list` (`type`
 is `bulleted` or `numbered`) of `item`, `quote` and `break`. Inline text can hold `br`, and `span` with a `style` of any of
-`bold`, `italic`, `underline` and `strike`, separated by spaces.
+`bold`, `italic`, `underline` and `strike`, separated by spaces. A `span` can also have a `color`, for the letters, and a
+`highlight`, each as `#rrggbb`. From 3.12.
+
+## Colour
+
+A chapter keeps the highlight and letter colours the author chose. On screen and in each export, a colour is shaded only as
+much as it takes for the words to be read on what's behind them, with the same hue (`src/shared/colour.js`). Exports are
+shaded for paper or a white page, and the colours the app offers come through as chosen.
+
+| Format | Colour |
+|---|---|
+| Word | Letter colours. A highlight in one of the five colours offered uses Word's highlighter, and any other is shading, because the highlighter has only its own colours |
+| OpenDocument, rich text | Letter and background colours |
+| PDF | Both, printed exactly. Other backgrounds still aren't printed |
+| E-book | Both. A reading app may show its own colours, or greys. Highlighted words are given black letters, so they can be read where the page is dark |
+| Web page | Both, with lighter letter colours where the reader's device is set to dark |
+| XML | The `color` and `highlight` above |
+| Plain text, Markdown, *Export everything* | None. The app says how many coloured passages the files won't show. The project keeps them |
+
+Colours already in a file that's brought in aren't kept yet.
 
 ## Moving and backing up: `.rtstory`
 

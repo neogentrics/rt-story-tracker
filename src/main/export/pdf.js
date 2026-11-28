@@ -69,6 +69,9 @@ function pageCss(layout, gutter, book) {
   .matter h2 { text-align: center; font-weight: normal; font-size: 1.5em; margin: 0 0 1.2em; }
   .matter p { text-indent: 0; margin: 0 0 .7em; }
   .blank { page: plain; break-before: page; height: 1px; }
+  /* Backgrounds aren't printed, and Chromium darkens light letters to suit. Both would change the author's colours, so these, and only
+     these, are printed exactly. */
+  .ink, .highlight { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   `;
 }
 

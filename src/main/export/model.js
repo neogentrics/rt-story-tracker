@@ -1,6 +1,7 @@
 'use strict';
 // What every format reads: the books being exported, in reading order, with their details and front and back matter.
 // Comments and anything in the Trash never reach this, so they can't reach a file.
+const { countColoured } = require('../../shared/colour');
 const { parseDetails } = require('../../shared/details');
 const { findNode } = require('../../shared/outline');
 const { toDocument } = require('../../shared/text');
@@ -90,6 +91,8 @@ function matterOf(book) {
 
 const chapterCount = (book) => book.sections.filter((section) => section.type === 'chapter').length;
 
+const coloursIn = (model) => countColoured(model.books.flatMap((book) => book.sections.filter((section) => section.type === 'chapter').map((section) => section.document)));
+
 // What a store is likely to refuse or complain about. Nothing here stops an export.
 function checkBook(book, { ebook = false } = {}) {
   const problems = [];
@@ -109,4 +112,4 @@ function checkBook(book, { ebook = false } = {}) {
   return problems;
 }
 
-module.exports = { authorOf, buildModel, chapterCount, checkBook, copyrightLines, matterOf };
+module.exports = { authorOf, buildModel, chapterCount, checkBook, coloursIn, copyrightLines, matterOf };

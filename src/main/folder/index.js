@@ -6,7 +6,7 @@ const path = require('node:path');
 const { SECTION_IDS } = require('../../shared/sections');
 const { buildPlan } = require('./plan');
 const { FolderRun } = require('./run');
-const { scanFolder } = require('./scan');
+const { scanFolder, walkFolder } = require('./scan');
 
 const OUTCOMES = {
   chapters: 'Became chapters',
@@ -91,17 +91,57 @@ class FolderImport {
     }
   }
 
-  // A run that didn't finish, in the project that's open.
-  pending(workspace) {
-    const open = workspace.open().unfinishedFolderImport();
-    return open ? { id: open.id, root: open.root, startedAt: open.startedAt } : null;
+  // The unfinished run saved in a project, as it was saved. A project can come from someone else, so nothing in it is trusted to say
+  // what may be read from this computer. Even a saved state that makes no sense is read, so it can still be forgotten.
+  unfinished(project) {
+    const open = project.unfinishedFolderImport();
+    if (!open) throw new Error('There is nothing to pick up.');
+    let saved = null;
+    try {
+      saved = JSON.parse(open.state);
+    } catch {
+      // Read as a run with nothing in it.
+    }
+    const entries = Array.isArray(saved?.entries) ? saved.entries.filter((entry) => typeof entry?.rel === 'string') : [];
+    const root = typeof saved?.root === 'string' ? saved.root : String(open.root);
+    return { open, state: { ...saved, id: open.id, root, entries } };
   }
 
-  resume(workspace, onProgress) {
-    const open = workspace.open().unfinishedFolderImport();
-    if (!open) throw new Error('There is nothing to pick up.');
-    this.state = JSON.parse(open.state);
-    if (!fs.existsSync(this.state.root)) throw new Error('That folder isn’t there now. Connect it and try again.');
+  // A run that didn't finish, in the project that's open. `here` says its folder was chosen on this computer (./links.js). A folder
+  // that wasn't isn't looked for at all, not even to see whether it exists.
+  pending(workspace, links) {
+    const project = workspace.open();
+    if (!project.unfinishedFolderImport()) return null;
+    const { open, state } = this.unfinished(project);
+    const here = links.has(project.id, open.id, state.root);
+    return { id: open.id, root: state.root, here, there: here && fs.existsSync(state.root), startedAt: open.startedAt };
+  }
+
+  // The author picks the folder of an unfinished run: it was brought from another computer, or has moved. It's only taken if at
+  // least half of the files the run was reading are in it, because a file that isn't there is recorded as gone.
+  async locate(workspace, links, chosen) {
+    const project = workspace.open();
+    const { open, state } = this.unfinished(project);
+    const found = new Set((await walkFolder(chosen, () => {}, () => false)).map((entry) => entry.rel));
+    if (workspace.project !== project) throw new Error('The project was closed.');
+    const wanted = state.entries.filter((entry) => !entry.error);
+    const there = wanted.filter((entry) => found.has(entry.rel)).length;
+    if (there === 0 || there * 2 < wanted.length) {
+      throw new Error('Most of the files that import was reading aren’t there. Choose the folder it was reading.');
+    }
+    project.db.transaction(() => {
+      project.saveFolderImport({ id: open.id, root: chosen, state: JSON.stringify({ ...state, root: chosen }) });
+      project.setFolderRoot(open.id, chosen);
+    })();
+    links.add(project.id, open.id, chosen);
+  }
+
+  resume(workspace, links, onProgress) {
+    const project = workspace.open();
+    const { open, state } = this.unfinished(project);
+    if (!links.has(project.id, open.id, state.root)) throw new Error('That folder hasn’t been chosen on this computer. Choose it to pick up.');
+    if (!fs.existsSync(state.root)) throw new Error('That folder isn’t there now. Connect it, or choose where it is.');
+    this.state = state;
     return this.run(workspace, onProgress);
   }
 

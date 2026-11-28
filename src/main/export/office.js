@@ -2,6 +2,7 @@
 // Word and OpenDocument. Both use the book's print layout, so a Word file can go to a printer too.
 const docx = require('docx');
 const { strFromU8, strToU8, unzipSync, zipSync } = require('fflate');
+const { onPaper } = require('../../shared/colour');
 const { TRIM_SIZES } = require('../../shared/details');
 const { PAGE_FONTS } = require('../../shared/themes');
 const { authorOf, copyrightLines, matterOf } = require('./model');
@@ -16,7 +17,13 @@ const ALIGN = { center: docx.AlignmentType.CENTER, right: docx.AlignmentType.RIG
 function runs(nodes = []) {
   return nodes.map((node) => {
     if (node.type === 'hardBreak') return new docx.TextRun({ break: 1 });
+    // Word's highlighter has a fixed set of colours, and the library would write any other without complaint, which Word doesn't
+    // allow. So a highlight in any other colour is written as shading.
+    const { ink, fill, highlighter } = onPaper(node);
     return new docx.TextRun({
+      color: ink ? ink.slice(1) : undefined,
+      highlight: highlighter ?? undefined,
+      shading: fill && !highlighter ? { type: docx.ShadingType.CLEAR, color: 'auto', fill: fill.slice(1) } : undefined,
       text: node.text ?? '',
       bold: hasMark(node, 'bold') || undefined,
       italics: hasMark(node, 'italic') || undefined,
@@ -164,43 +171,60 @@ async function toDocx(model, layout) {
 
 const odtStyle = (node) => ({ center: 'Centre', right: 'Right', justify: 'Justify' }[node.attrs?.textAlign] ?? 'Body');
 
-function odtInline(nodes = []) {
+// Each mix of bold, italic, colour and the rest that's used gets a style of its own, named for what's in it.
+function spanStyle(node) {
+  const letters = [['bold', 'B'], ['italic', 'I'], ['underline', 'U'], ['strike', 'S']].filter(([type]) => hasMark(node, type)).map(([, letter]) => letter).join('');
+  const { ink, fill } = onPaper(node);
+  // Highlighted words with no colour of their own are black, whatever the page is shown on.
+  const color = ink ?? (fill ? '#000000' : null);
+  if (!letters && !color) return null;
+  const name = `T${letters}${color ? `-c${color.slice(1)}` : ''}${fill ? `-h${fill.slice(1)}` : ''}`;
+  const properties = [
+    letters.includes('B') ? 'fo:font-weight="bold"' : '',
+    letters.includes('I') ? 'fo:font-style="italic"' : '',
+    letters.includes('U') ? 'style:text-underline-style="solid"' : '',
+    letters.includes('S') ? 'style:text-line-through-style="solid"' : '',
+    color ? `fo:color="${color}"` : '',
+    fill ? `fo:background-color="${fill}"` : '',
+  ].filter(Boolean).join(' ');
+  return { name, properties };
+}
+
+function odtInline(nodes = [], styles) {
   return nodes
     .map((node) => {
       if (node.type === 'hardBreak') return '<text:line-break/>';
-      const names = [];
-      if (hasMark(node, 'bold')) names.push('B');
-      if (hasMark(node, 'italic')) names.push('I');
-      if (hasMark(node, 'underline')) names.push('U');
-      if (hasMark(node, 'strike')) names.push('S');
+      const style = spanStyle(node);
       const text = escapeXml(node.text ?? '');
-      return names.length ? `<text:span text:style-name="T${names.join('')}">${text}</text:span>` : text;
+      if (!style) return text;
+      styles.set(style.name, style.properties);
+      return `<text:span text:style-name="${style.name}">${text}</text:span>`;
     })
     .join('');
 }
 
-const STYLE_COMBINATIONS = ['B', 'I', 'U', 'S', 'BI', 'BU', 'BS', 'IU', 'IS', 'US', 'BIU', 'BIS', 'BUS', 'IUS', 'BIUS'];
-
-function odtBlock(node) {
+function odtBlock(node, styles) {
+  const inside = (child) => odtBlock(child, styles);
   switch (node.type) {
     case 'heading':
-      return `<text:h text:style-name="Subhead" text:outline-level="${node.attrs.level + 2}">${odtInline(node.content)}</text:h>`;
+      return `<text:h text:style-name="Subhead" text:outline-level="${node.attrs.level + 2}">${odtInline(node.content, styles)}</text:h>`;
     case 'bulletList':
     case 'orderedList':
       return `<text:list text:style-name="${node.type === 'orderedList' ? 'Numbers' : 'Bullets'}">${node.content
-        .map((item) => `<text:list-item>${item.content.map(odtBlock).join('')}</text:list-item>`)
+        .map((item) => `<text:list-item>${item.content.map(inside).join('')}</text:list-item>`)
         .join('')}</text:list>`;
     case 'blockquote':
-      return node.content.map(odtBlock).join('').replaceAll('text:style-name="Body"', 'text:style-name="Quote"');
+      return node.content.map(inside).join('').replaceAll('text:style-name="Body"', 'text:style-name="Quote"');
     case 'horizontalRule':
       return '<text:p text:style-name="Centre">* * *</text:p>';
     default:
-      return `<text:p text:style-name="${odtStyle(node)}">${odtInline(node.content)}</text:p>`;
+      return `<text:p text:style-name="${odtStyle(node)}">${odtInline(node.content, styles)}</text:p>`;
   }
 }
 
 function odtContent(model) {
   const body = [];
+  const styles = new Map();
   for (const book of model.books) {
     const line = (text, style) => `<text:p text:style-name="${style}">${escapeXml(text)}</text:p>`;
     body.push(line(book.title, 'BookTitle'));
@@ -212,7 +236,7 @@ function odtContent(model) {
         body.push(`<text:h text:style-name="PartHead" text:outline-level="1">${escapeXml(section.title)}</text:h>`);
       } else {
         body.push(`<text:h text:style-name="ChapterHead" text:outline-level="2">${escapeXml(section.title)}</text:h>`);
-        body.push(...(section.document.content ?? []).map(odtBlock));
+        body.push(...(section.document.content ?? []).map((block) => odtBlock(block, styles)));
       }
     }
     const matter = matterOf(book);
@@ -221,15 +245,9 @@ function odtContent(model) {
       body.push(...matter.aboutAuthor.map((text) => line(text, 'Body')));
     }
   }
-  const spans = STYLE_COMBINATIONS.map((name) => {
-    const properties = [
-      name.includes('B') ? 'fo:font-weight="bold"' : '',
-      name.includes('I') ? 'fo:font-style="italic"' : '',
-      name.includes('U') ? 'style:text-underline-style="solid"' : '',
-      name.includes('S') ? 'style:text-line-through-style="solid"' : '',
-    ].join(' ');
-    return `<style:style style:name="T${name}" style:family="text"><style:text-properties ${properties}/></style:style>`;
-  }).join('');
+  const spans = [...styles]
+    .map(([name, properties]) => `<style:style style:name="${name}" style:family="text"><style:text-properties ${properties}/></style:style>`)
+    .join('');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" office:version="1.3">
 <office:automatic-styles>${spans}

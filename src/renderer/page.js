@@ -3,6 +3,8 @@ import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import { Saver } from '../shared/saver.js';
 import { countWords, plainText, toDocument } from '../shared/text.js';
+import { HighlightMark, TextColourMark } from './colour-marks.js';
+import { ColourTools } from './colour-tools.js';
 import { CommentMark, CommentsPanel } from './comments.js';
 import { el, formatCount, oneLine, words } from './dom.js';
 import { FindBar } from './find-bar.js';
@@ -80,6 +82,7 @@ export class Page {
     this.chapterId = null;
     this.countTimer = null;
     this.buttons = [];
+    this.colourTools = new ColourTools({ editor: () => this.editor });
 
     this.saver = new Saver({
       read: () => ({ id: this.chapterId, title: this.titleInput.value, body: JSON.stringify(this.editor.getJSON()) }),
@@ -90,7 +93,7 @@ export class Page {
     this.toolbar = el(
       'div',
       { class: 'toolbar', role: 'toolbar', 'aria-label': 'Formatting' },
-      this.buildTools(),
+      this.buildTools(this.colourTools.root),
       el(
         'div',
         { class: 'tool-group' },
@@ -148,8 +151,9 @@ export class Page {
     return this.editor.state.doc.textBetween(from, to, '\n');
   }
 
-  buildTools() {
-    return TOOLS.map((group) =>
+  // `afterLetters` goes after bold and italic.
+  buildTools(afterLetters) {
+    const groups = TOOLS.map((group) =>
       el(
         'div',
         { class: 'tool-group' },
@@ -172,6 +176,8 @@ export class Page {
         }),
       ),
     );
+    groups.splice(2, 0, afterLetters);
+    return groups;
   }
 
   showEditor(visible) {
@@ -191,6 +197,7 @@ export class Page {
     for (const { button, tool } of this.buttons) {
       button.setAttribute('aria-pressed', String(tool.active(this.editor)));
     }
+    this.colourTools.update();
   }
 
   scheduleCount() {
@@ -222,6 +229,9 @@ export class Page {
         CommentMark,
         MentionMark.configure({ onOpen: (id) => this.onLookUp?.(id) }),
         mentionSuggestions({ api: this.api, onError: this.onError }),
+        // After the comment and the record link, so their spans go around these.
+        HighlightMark,
+        TextColourMark,
         FindHighlight,
       ],
       content: toDocument(chapter.body),

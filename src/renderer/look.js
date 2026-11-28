@@ -1,4 +1,5 @@
 import { PAGE_FONTS, THEMES, UI_FONTS, surfaceFor } from '../shared/themes.js';
+import { shadeFor } from './colour-marks.js';
 
 const dark = window.matchMedia('(prefers-color-scheme: dark)');
 let current = null;
@@ -34,6 +35,7 @@ export function applyLook(settings) {
   const name = settings.theme === 'system' ? (dark.matches ? 'dark' : 'light') : settings.theme;
   document.documentElement.dataset.theme = name;
   setColors(THEMES[name]);
+  shadeFor(name);
   document.documentElement.dataset.surface = surfaceFor(name, settings.surface);
   const style = document.documentElement.style;
   style.setProperty('--page-font', PAGE_FONTS[settings.pageFont].stack);

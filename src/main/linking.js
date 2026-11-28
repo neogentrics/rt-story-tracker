@@ -8,8 +8,10 @@ const os = require('node:os');
 const path = require('node:path');
 const { APP_ID, APP_NAME, AppLink, LinkError, MIN_PROTOCOL, PROTOCOL, sharedFolder, validId } = require('./app-link');
 const { exportFile, safeName } = require('./export');
+const { buildModel, coloursIn } = require('./export/model');
 const { fromInstaller, launchInstalled, readInstalled, writeInstalled } = require('./installed');
 const { writeFileSafely } = require('./storage/keys');
+const { colouredWords } = require('../shared/colour');
 const { SUITE_APPS, UPDATE, appById, isNewer, linkability, stateOf, updateButton, updateLine } = require('../shared/suite-apps');
 
 const READER_ID = 'rt-markdown-reader';
@@ -278,15 +280,20 @@ class Linking {
     if (!item || !['chapter', 'book'].includes(item.kind) || item.kind !== scope) throw new Error('Choose a chapter or a book.');
     const text = await this.markdownOf(project, { scope, id });
     const name = `${safeName(item.title)}.md`;
+    // Markdown has no colour. The author is told what the copy goes without, and so is the Reader, where there's a link to tell it by.
+    const colours = coloursIn(buildModel(project, { scope, id }));
+    const dropped = [['highlight', colours.highlight], ['text-color', colours.text]].filter(([, count]) => count).map(([what, count]) => ({ what, count }));
+    const without = colouredWords(colours);
+    const told = without ? { without } : {};
     if (this.server && Object.hasOwn(this.load(), READER_ID)) {
       try {
-        await this.server.send(READER_ID, { name, text, ...(publish === true ? { intent: 'publish' } : {}) });
-        return { how: 'link' };
+        await this.server.send(READER_ID, { name, text, dropped, ...(publish === true ? { intent: 'publish' } : {}) });
+        return { how: 'link', ...told };
       } catch (error) {
         if (!(error instanceof LinkError) || !['not_running', 'not_linked', 'timed_out'].includes(error.code)) throw error;
       }
     }
-    return this.openThroughSystem(name, text);
+    return { ...this.openThroughSystem(name, text), ...told };
   }
 
   openThroughSystem(name, text) {

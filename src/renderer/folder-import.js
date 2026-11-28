@@ -1,6 +1,6 @@
 import { SECTIONS, sectionLabel } from '../shared/sections.js';
 import { sizeOf } from './files-dialog.js';
-import { el, formatCount } from './dom.js';
+import { el, fill, formatCount } from './dom.js';
 import { icon } from './icons.js';
 
 const KIND_ICONS = { series: 'library', book: 'book', part: 'folder', chapter: 'page', whole: 'page' };
@@ -345,15 +345,36 @@ export async function openFolderImport({ api, chosen = null, onDone, onError }) 
     }
   }
 
+  // Picking up reads the folder again, so it has to be one chosen on this computer. The project's word for where it is isn't enough.
   function offerResume(pending) {
+    const ready = pending.here && pending.there;
     heading.textContent = 'An import stopped partway';
-    body.replaceChildren(el('p', { id: 'resume-note' }, `It was reading ${pending.root}. Nothing already brought in will be repeated.`));
-    actions.replaceChildren(
+    const where = el('span', { class: 'resume-folder' }, pending.root);
+    const why = ready
+      ? ['It was reading ', where, '.']
+      : pending.here
+        ? ['It was reading ', where, ', which isn’t there now. Connect it, or choose where it is.']
+        : ['The project says it was reading ', where, '. That folder hasn’t been chosen on this computer, so nothing in it has been looked at. To pick up, choose the folder.'];
+    const wrong = el('p', { id: 'resume-error', class: 'room-message', role: 'alert', hidden: true });
+    body.replaceChildren(el('p', { id: 'resume-note' }, why, ' Nothing already brought in will be repeated.'), wrong);
+
+    const choose = async () => {
+      wrong.hidden = true;
+      try {
+        if (await api.locatePendingFolderImport()) await bringIn(api.resumeFolderImport);
+      } catch (error) {
+        wrong.textContent = error.message;
+        wrong.hidden = false;
+      }
+    };
+    fill(
+      actions,
       button('resume-drop', 'Forget it', async () => {
         await api.discardFolderImport();
         close();
       }),
-      el('button', { id: 'resume-go', class: 'primary', onclick: () => bringIn(api.resumeFolderImport) }, 'Pick up where it stopped'),
+      el('button', { id: 'resume-choose', class: ready ? '' : 'primary', onclick: choose }, 'Choose the folder'),
+      ready ? el('button', { id: 'resume-go', class: 'primary', onclick: () => bringIn(api.resumeFolderImport) }, 'Pick up where it stopped') : null,
     );
   }
 
