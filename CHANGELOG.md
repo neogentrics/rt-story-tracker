@@ -3,6 +3,15 @@
 All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Picking up an unfinished *Find my files* run only reads a folder chosen on this computer** ([issue 50](https://github.com/neogentrics/rt-story-tracker/issues/50)).
+  The folder's path is saved in the project, and a project can come from someone else, so the path isn't trusted by itself. Where the
+  folder wasn't chosen here, or has moved, the app doesn't look at it. It asks you to choose the folder, and takes it if at least half of
+  the files it was reading are there. An import also opens only files it finds by looking through that folder, so a file name saved in a
+  project can't lead anywhere outside it.
+
 ## [3.11.0] - 2026-11-27
 
 Files you bring in.

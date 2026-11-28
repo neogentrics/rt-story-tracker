@@ -7,6 +7,7 @@ const path = require('node:path');
 const test = require('node:test');
 const docx = require('docx');
 const { FolderImport } = require('../src/main/folder');
+const { FolderLinks } = require('../src/main/folder/links');
 const { buildPlan } = require('../src/main/folder/plan');
 const { scanFolder } = require('../src/main/folder/scan');
 const signs = require('../src/main/folder/signs');
@@ -31,6 +32,8 @@ function tempDir() {
   tempDirs.push(dir);
   return dir;
 }
+
+const linksIn = () => new FolderLinks(tempDir());
 
 function project(title = 'Found') {
   const space = new Workspace(new Library(path.join(tempDir(), 'library')));
@@ -651,19 +654,145 @@ test('stopping keeps what\'s done, and a resume finishes without repeating anyth
   });
   assert.equal(first.finished, false);
   assert.ok(first.report.waiting > 0);
-  const pending = folder.pending(space);
-  assert.equal(pending.root, root);
+  const links = linksIn();
+  links.add(space.open().id, folder.state.id, root);
+  const pending = folder.pending(space, links);
+  assert.deepEqual([pending.root, pending.here, pending.there], [root, true, true]);
 
   const again = new FolderImport();
-  const second = await again.resume(space, () => {});
+  const second = await again.resume(space, links, () => {});
   assert.equal(second.finished, true);
   assert.equal(second.report.accounted, 15);
-  assert.equal(again.pending(space), null);
+  assert.equal(again.pending(space, links), null);
 
   const nodes = flatten(second.outline);
   const series = nodes.filter((node) => node.kind === 'series');
   assert.equal(series.length, 1, 'nothing was made twice');
   assert.deepEqual(series[0].children.find((node) => node.title === 'Ash').children.map((node) => node.title), ['Chapter 1', 'Chapter 2']);
+});
+
+// Issue 50. A project can come from someone else, so the folder and the file names saved in it are only claims.
+async function stopAtStart(files = { 'Book 1/Chapter 1.txt': 'One.', 'Book 1/Chapter 2.txt': 'Two.', 'Book 1/map.png': PNG }) {
+  const root = folderOf(files);
+  const { space } = project();
+  const folder = new FolderImport();
+  await folder.scan(space, root, () => {});
+  await folder.run(space, () => folder.stop());
+  return { root, space, id: folder.state.id };
+}
+
+// Every call that opens or looks at a path while `work` runs.
+async function pathsTouched(work) {
+  const touched = [];
+  const originals = [];
+  for (const [owner, names] of [[fs, ['existsSync', 'statSync', 'lstatSync', 'readFileSync', 'openSync', 'readFile', 'open', 'stat', 'createReadStream', 'copyFileSync', 'readdirSync']], [fs.promises, ['stat', 'lstat', 'readFile', 'open', 'readdir', 'copyFile']]]) {
+    for (const name of names) {
+      const original = owner[name];
+      originals.push([owner, name, original]);
+      owner[name] = function watched(target, ...rest) {
+        if (typeof target === 'string') touched.push(path.resolve(target));
+        return original.call(this, target, ...rest);
+      };
+    }
+  }
+  try {
+    await work();
+  } finally {
+    for (const [owner, name, original] of originals) owner[name] = original;
+  }
+  return touched;
+}
+
+const within = (folder, file) => file === folder || file.startsWith(`${folder}${path.sep}`);
+
+test('a folder the project names, and that wasn’t chosen on this computer, is never looked at', async () => {
+  const { root, space } = await stopAtStart();
+  const links = linksIn();
+  const folder = new FolderImport();
+  const touched = await pathsTouched(async () => {
+    const pending = folder.pending(space, links);
+    assert.deepEqual([pending.root, pending.here, pending.there], [root, false, false]);
+    assert.throws(() => folder.resume(space, links, () => {}), /hasn’t been chosen on this computer/);
+  });
+  assert.deepEqual(touched.filter((file) => within(root, file)), []);
+  // A refused resume leaves nothing behind that could be run another way.
+  assert.equal(folder.state, null);
+  await assert.rejects(folder.run(space, () => {}), /Choose a folder first/);
+});
+
+test('a path saved in the project is only trusted where that same path was chosen here, for that same run', async () => {
+  const { space, id } = await stopAtStart();
+  const links = linksIn();
+  const projectId = space.open().id;
+  links.add(projectId, id, folderOf({ 'Book 1/Chapter 1.txt': 'One.' }));
+  assert.equal(new FolderImport().pending(space, links).here, false);
+  const planted = tempDir();
+  const open = space.open().unfinishedFolderImport();
+  links.add(projectId, id, JSON.parse(open.state).root);
+  assert.equal(new FolderImport().pending(space, links).here, true);
+  // The same run, with its folder changed inside the project.
+  space.open().db.prepare('UPDATE folder_imports SET state = ?, root = ? WHERE id = ?')
+    .run(JSON.stringify({ ...JSON.parse(open.state), root: planted }), planted, id);
+  assert.equal(new FolderImport().pending(space, links).here, false);
+});
+
+test('choosing the folder lets a run be picked up, and takes only a folder that holds most of its files', async () => {
+  const { root, space } = await stopAtStart();
+  const links = linksIn();
+  const folder = new FolderImport();
+  const wrong = folderOf({ 'Book 1/map.png': PNG, 'Another/thing.txt': 'No.' });
+  await assert.rejects(folder.locate(space, links, wrong), /Most of the files/);
+  await assert.rejects(folder.locate(space, links, tempDir()), /Most of the files/);
+  assert.equal(folder.pending(space, links).here, false);
+
+  const moved = tempDir();
+  fs.cpSync(root, moved, { recursive: true });
+  fs.rmSync(root, { recursive: true });
+  await folder.locate(space, links, moved);
+  const pending = folder.pending(space, links);
+  assert.deepEqual([pending.root, pending.here, pending.there], [moved, true, true]);
+  const result = await folder.resume(space, links, () => {});
+  assert.equal(result.finished, true);
+  assert.equal(result.report.accounted, 3);
+  assert.deepEqual(result.report.groups.filter((group) => group.outcome === 'missing'), []);
+  // What can be checked for changes later is the folder it was really read from.
+  assert.equal(space.open().folderImports()[0].root, moved);
+});
+
+test('a file name in the project that leads out of the folder is never opened', async () => {
+  const { root, space, id } = await stopAtStart();
+  const outside = path.join(path.dirname(root), `${path.basename(root)}-private.txt`);
+  fs.writeFileSync(outside, 'Nobody asked for these words.');
+  tempDirs.push(outside);
+  const secret = `../${path.basename(outside)}`;
+  const saved = JSON.parse(space.open().unfinishedFolderImport().state);
+  saved.entries.push({ rel: secret, size: 29, mtime: 1 }, { rel: `Book 1/${'../'.repeat(2)}${path.basename(outside)}`, size: 29, mtime: 1 });
+  space.open().saveFolderImport({ id, root: saved.root, state: JSON.stringify(saved) });
+
+  const links = linksIn();
+  links.add(space.open().id, id, root);
+  const folder = new FolderImport();
+  let result;
+  const touched = await pathsTouched(async () => {
+    result = await folder.resume(space, links, () => {});
+  });
+  assert.deepEqual(touched.filter((file) => file === outside), []);
+  assert.equal(result.finished, true);
+  assert.equal(JSON.stringify(result.outline).includes('private'), false);
+  const everything = space.open().db.prepare('SELECT body FROM items WHERE body IS NOT NULL').all().map((row) => String(row.body)).join('\n');
+  assert.equal(everything.includes('Nobody asked'), false);
+  assert.equal(space.open().db.prepare("SELECT count(*) AS found FROM folder_files WHERE rel LIKE '%private%' AND sha256 <> ''").get().found, 0);
+});
+
+test('a saved run that makes no sense can still be forgotten', async () => {
+  const { space, id } = await stopAtStart();
+  space.open().db.prepare('UPDATE folder_imports SET state = ? WHERE id = ?').run('not json', id);
+  const links = linksIn();
+  const folder = new FolderImport();
+  assert.equal(folder.pending(space, links).here, false);
+  await assert.rejects(folder.locate(space, links, tempDir()), /Most of the files/);
+  folder.discard(space);
+  assert.equal(folder.pending(space, links), null);
 });
 
 test('a file that goes missing halfway is reported, and stops nothing', async () => {

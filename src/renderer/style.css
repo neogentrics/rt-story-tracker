@@ -1866,6 +1866,15 @@ mark,
   overflow-wrap: anywhere;
 }
 
+/* A folder's path has few places to break, so it may break anywhere. */
+.resume-folder {
+  overflow-wrap: anywhere;
+}
+
+#resume-error {
+  border-radius: var(--radius, 6px);
+}
+
 .ask-files {
   max-height: 5.5rem;
   overflow: auto;
