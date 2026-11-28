@@ -2,6 +2,7 @@
 // book's. It carries on while the author works. The sound is made a sentence at a time and written to disk as it comes, and the file
 // only gets its name once it's whole (../main/read-aloud/audio-files.js).
 import { MACHINE_MADE, id3, m4bEnd, m4bStart } from '../shared/audio-formats.js';
+import { stillGoing } from '../shared/idle.js';
 import { NATURAL, blocksOfDocument, languageOf, sentencesOf } from '../shared/reading.js';
 import { applyPronunciation, breathAt, voiceLabel, withBreath } from '../main/core/read-aloud/voice-text.js';
 import { QUALITY } from '../main/core/read-aloud/voice-tone.js';
@@ -150,12 +151,19 @@ async function audiobookFile(disk, about) {
   };
 }
 export class AudioExport {
-  constructor({ api, onMessage, onPreferences }) {
+  // `onUsed` is told when an export ends, which is when the idle lock starts counting again.
+  constructor({ api, onMessage, onPreferences, onUsed }) {
+    this.onUsed = onUsed;
     this.api = api;
     this.onMessage = onMessage;
     this.onPreferences = onPreferences;
     this.running = null;
     this.job = null;
+  }
+
+  // Audio being made counts as using the app, so the idle lock waits for it.
+  get inUse() {
+    return Boolean(this.running) && stillGoing(this.running.steppedAt);
   }
 
   // `scopes` are { scope, id, label, chapters: [ids], title, bookId }: this chapter, and this book.
@@ -186,7 +194,7 @@ export class AudioExport {
         audiobook ? null : el('p', { id: 'audio-no-m4b', class: 'quiet-note' }, 'This computer can’t make audiobook files, so it’s MP3 here.'),
         field('Voice', voice),
         el('p', { class: 'quiet-note' }, 'It uses your reading speed, pace and pronunciation list. On some computers, making the sound takes longer than playing it, so a book can take hours. You can keep writing meanwhile.'),
-        el('p', { class: 'quiet-note' }, 'Audio files aren’t encrypted. If this project locks, the export stops.'),
+        el('p', { id: 'audio-lock-note', class: 'quiet-note' }, 'Audio files aren’t encrypted. The idle lock waits while the audio is made. If you lock the project, or this computer locks or sleeps, the export stops.'),
         el('p', { id: 'audio-label-note', class: 'room-message info' }, 'If you share this audio, say clearly that a computer made the voice. The voices’ licence requires it, and the file says so in its details.'),
       ] : el('p', { id: 'audio-need-voices' }, 'Audio is made with the natural voices, which aren’t on this computer yet.'),
       el('div', { class: 'dialog-actions' },
@@ -262,7 +270,7 @@ export class AudioExport {
     const id = await this.api.audioBegin({ format, name: scope.title });
     if (!id) return;
 
-    const state = { cancelled: false };
+    const state = { cancelled: false, steppedAt: Date.now() };
     this.running = state;
     const show = this.showJob(state);
     let file = null;
@@ -282,6 +290,7 @@ export class AudioExport {
         rate = made.sampleRate;
         if (line.starts !== null) file.chapter(line.starts);
         await file.add(made.samples, rate);
+        state.steppedAt = Date.now();
         done += line.text.length;
         show(Math.floor((100 * done) / total));
       }
@@ -300,6 +309,7 @@ export class AudioExport {
       this.job?.remove();
       this.job = null;
       this.running = null;
+      this.onUsed?.();
     }
   }
 

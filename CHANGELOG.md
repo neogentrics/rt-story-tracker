@@ -10,6 +10,9 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
   Aloud* and Ctrl+Shift+U read the chapter from the sentence the cursor is in, with a line under each sentence as it's read. The bar
   under the page has pause, back and on by a sentence or a paragraph, speed and voice. At the end of a chapter it carries on into the
   next, unless you switch that off. Side by side, each page's button reads that page. It stops when the project closes or locks.
+- **Listening counts as using the app.** A project with a password doesn't lock itself for being left alone while it's being read
+  aloud or made into audio. When that stops, the time starts counting again. *Lock Project*, locking the computer and sleep still lock
+  it. Paused reading doesn't count, and nor does reading or an export that hasn't moved on for 15 minutes.
 - **Two kinds of voice, both offline.** Your computer's own voices, only ones installed on it, never online ones. And nineteen natural
   voices, about 400 MB, downloaded only if you ask and agree to the voice model's terms. The model isn't part of the app. Nothing that's
   read is sent anywhere.

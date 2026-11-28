@@ -1,6 +1,7 @@
 // Read aloud: the bar, moving through a chapter a sentence at a time, and playing it. The speech is made by the natural voices (the
 // shared engine, in a process of its own, asked through the main process) or by one of the computer's own. The sentences and the
 // stepping are in ../shared/reading.js.
+import { stillGoing } from '../shared/idle.js';
 import {
   DEFAULT_READ_ALOUD, NATURAL, SPEEDS, languageOf, openingOf, paragraphFrom, sentencesOf, startAt,
 } from '../shared/reading.js';
@@ -96,11 +97,15 @@ function barButton(name, label, glyph, onclick, extra = '') {
 
 export class ReadAloud {
   // `room` is asked for the page being read, the book a chapter is in and the chapter after it. `onMessage(text, action)` says things.
-  constructor({ api, room, onMessage, onPreferences }) {
+  // `onUsed` is told when reading stops, which is when the idle lock starts counting again.
+  constructor({ api, room, onMessage, onPreferences, onUsed }) {
     this.api = api;
     this.room = room;
     this.onMessage = onMessage;
     this.onPreferences = onPreferences;
+    this.onUsed = onUsed;
+    // When reading last got a step further: a sentence begun, or a piece of its sound.
+    this.steppedAt = 0;
     this.page = null;
     this.bar = null;
     this.playing = false;
@@ -124,6 +129,11 @@ export class ReadAloud {
 
   get reading() {
     return Boolean(this.page);
+  }
+
+  // Reading that's going counts as using the app, so the idle lock waits for it. Paused or finished, it doesn't.
+  get inUse() {
+    return this.playing && stillGoing(this.steppedAt);
   }
 
   // The button and the shortcut: start, or else pause and carry on.
@@ -285,6 +295,8 @@ export class ReadAloud {
   }
 
   setPlaying(on) {
+    if (on) this.steppedAt = Date.now();
+    else if (this.playing) this.onUsed?.();
     this.playing = on;
     const label = on ? 'Pause' : 'Read';
     this.playButton?.replaceChildren(icon(on ? 'pause' : 'play'));
@@ -368,6 +380,7 @@ export class ReadAloud {
       return;
     }
     this.index = Math.max(0, index);
+    this.steppedAt = Date.now();
     this.mark(this.items[this.index]);
     this.showStatus();
     if (this.usesNatural()) this.speakNatural(this.generation);
@@ -427,6 +440,7 @@ export class ReadAloud {
 
   // Plays one piece of sound. False if reading moved on while it played.
   async playOne(made, mine) {
+    this.steppedAt = Date.now();
     this.player = play(made.samples, made.sampleRate, this.settings.output);
     const player = this.player;
     await player.ended;

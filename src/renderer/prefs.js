@@ -201,7 +201,7 @@ export async function openPreferences(api, { section = 'general' } = {}) {
       label: 'Password lock',
       body: () => [
         field('Lock a project that has a password', select('pref-lock-after', LOCK_AFTER, String(settings.lockAfter), (value) => change('lockAfter', Number(value)))),
-        note('Counts time away from this app. A project with a password also locks when you close it, and when this computer locks or sleeps.'),
+        note('Counts time away from this app. Reading aloud and making audio count as using it, so it doesn’t lock while either is going. A project with a password also locks when you close it, and when this computer locks or sleeps.'),
         note('To set or change a project’s password, open the project and choose File, then This Project, then Password and Lock.'),
       ],
     },

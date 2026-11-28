@@ -48,7 +48,7 @@ function booksOf(node) {
 }
 
 export class WritingRoom {
-  constructor(root, opened, { api, onLibrary, onPreferences, onSecurity, remember }) {
+  constructor(root, opened, { api, onLibrary, onPreferences, onSecurity, remember, onUsed }) {
     this.api = api;
     this.onLibrary = onLibrary;
     this.remember = remember;
@@ -190,8 +190,9 @@ export class WritingRoom {
       },
       onMessage: (text, action) => this.showInfo(text, action),
       onPreferences: () => onPreferences('reading'),
+      onUsed,
     });
-    this.audio = new AudioExport({ api, onMessage: (text, action) => this.showInfo(text, action), onPreferences: () => onPreferences('reading') });
+    this.audio = new AudioExport({ api, onMessage: (text, action) => this.showInfo(text, action), onPreferences: () => onPreferences('reading'), onUsed });
     this.page = this.makePage(this.pageRoot);
     this.activePage = this.page;
     this.pageRoot.addEventListener('focusin', () => {
@@ -674,6 +675,11 @@ export class WritingRoom {
     await this.secondPage?.flush();
     await this.lookup.flush();
     await this.records?.flush();
+  }
+
+  // Whether something is going on that counts as using the app, though nobody is touching it.
+  inUse() {
+    return this.reading.inUse || this.audio.inUse;
   }
 
   // The button on a page's formatting bar, the menu and the shortcut. The button on the other side reads that side instead.
