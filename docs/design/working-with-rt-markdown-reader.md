@@ -34,6 +34,11 @@ these differences:
   with the book. Sending them the other way would mean decrypting them to plain files for an app that ignores the field,
   so that waits until RT Markdown Reader reads it.
 - **`kind` is accepted and ignored** until there's more than one kind.
+- **`dropped`, from 3.12.** A chapter or book goes over as Markdown, which has no colour. When what's sent had highlighting
+  or letter colours, `open_document` also carries `dropped`: a list of `{ "what", "count" }`, where `what` is `highlight`
+  or `text-color` and `count` is the number of passages. With no colours the field is left out. It's only information. An
+  app that doesn't know it ignores it, and RT Markdown Reader doesn't read it yet. The author is told the same thing here,
+  with a link or without one.
 - **Starting the other app.** Open in RT Markdown Reader looks where its installers put it, and if it can't be found it
   says so rather than opening some other editor. An AppImage can't be found this way, but works once linked and running.
 - **The plain copy** for the no-link road lasts until the app closes, because the other app may still be reading it. It

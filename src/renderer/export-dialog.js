@@ -1,6 +1,6 @@
 import { DEFAULT_LAYOUT, EXPORT_FORMATS, TRIM_SIZES } from '../shared/details.js';
 import { PAGE_FONTS } from '../shared/themes.js';
-import { el } from './dom.js';
+import { el, fill } from './dom.js';
 import { icon } from './icons.js';
 
 const LAYOUT_KEY = 'exportLayout';
@@ -115,9 +115,11 @@ export function openExport({ api, scopes, scope: first = 'book', format: wanted,
     }
   }
 
-  const saved = (file) => {
-    result.replaceChildren(
+  const saved = (file, note = '') => {
+    fill(
+      result,
       el('span', { class: 'export-file' }, `Saved to ${file}`),
+      note ? el('p', { id: 'export-note', class: 'quiet-note' }, note) : null,
       el('button', { id: 'export-reveal', onclick: () => api.revealFile(file) }, 'Show in folder'),
     );
   };
@@ -157,7 +159,7 @@ export function openExport({ api, scopes, scope: first = 'book', format: wanted,
       class: 'link',
       onclick: () => busy(everything, async () => {
         const done = await api.exportEverything();
-        if (done) saved(done.folder);
+        if (done) saved(done.folder, done.note);
         else result.replaceChildren();
       }),
     },

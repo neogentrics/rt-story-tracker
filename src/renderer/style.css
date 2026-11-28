@@ -864,6 +864,20 @@ textarea {
   white-space: nowrap;
 }
 
+.popup-menu .popup-words {
+  flex: 1;
+}
+
+.popup-swatch {
+  display: inline-block;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-right: 0.55rem;
+  border: 1px solid var(--sheet-ink-soft);
+  border-radius: 3px;
+  vertical-align: -0.15rem;
+}
+
 .popup-menu button:focus-visible,
 .popup-menu button:hover:not([aria-disabled='true']) {
   background: var(--hover);
@@ -1077,6 +1091,83 @@ textarea {
 
 .close-pane {
   margin-left: auto;
+}
+
+/* The highlight and text colour buttons. The line under each shows the colour where the cursor is. */
+.colour-tools {
+  position: relative;
+}
+
+.colour-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colour-tool .icon,
+.colour-tool .face-letter {
+  margin-bottom: 0.25rem;
+}
+
+.colour-bar {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.25rem;
+  left: 0.45rem;
+  height: 0.25rem;
+  border-radius: 1px;
+  box-shadow: inset 0 0 0 1px currentcolor;
+}
+
+.colour-bar.set {
+  box-shadow: 0 0 0 1px color-mix(in srgb, currentcolor 45%, transparent);
+}
+
+/* Never seen: it's there to open the system's colour picker, which is placed by it. */
+.colour-picker {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A comment's tint and a record link's would sit behind coloured letters, which are shaded to be read on the page. A line under the
+   words says the same thing. */
+.page-text .comment-mark:has([data-color]) {
+  background: transparent;
+}
+
+.page-text .mention-mark:has([data-color], [data-highlight]) {
+  background: transparent;
+  box-shadow: 0 2px 0 var(--accent);
+}
+
+/* Find's wash would too, so on coloured words a match has a line round it and under it. Neither reaches the letters beside it, which
+   may be another match. The one Find is on stays filled, as everywhere. */
+.page-text :is([data-highlight], [data-color]) .find-match,
+.page-text .find-match:has([data-highlight], [data-color]) {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--accent), 0 3px 0 var(--accent);
+}
+
+.page-text .find-current :is([data-highlight], [data-color]),
+.page-text [data-highlight] .find-current {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Where the system uses its own colours, a highlight is the system's, and letter colours are left to it. */
+@media (forced-colors: active) {
+  .page-text [data-highlight] {
+    background: Mark;
+    color: MarkText;
+  }
 }
 
 .page-scroll {
@@ -1598,6 +1689,17 @@ mark,
 
 .export-result:empty {
   display: none;
+}
+
+/* What the file doesn't have, on a line of its own under where it went. */
+.export-result {
+  flex-wrap: wrap;
+}
+
+#export-note {
+  flex: 1 1 100%;
+  order: 1;
+  margin: 0;
 }
 
 .export-file {

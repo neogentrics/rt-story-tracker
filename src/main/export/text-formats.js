@@ -1,5 +1,6 @@
 'use strict';
 // The text-based formats: Markdown, plain text, HTML, XML and RTF. Each one walks the same saved document.
+const { onPaper, readableOn } = require('../../shared/colour');
 const { plainText } = require('../../shared/text');
 const { authorOf, copyrightLines, matterOf } = require('./model');
 
@@ -106,6 +107,11 @@ function inlineHtml(nodes = []) {
       if (hasMark(node, 'underline')) html = `<u>${html}</u>`;
       if (hasMark(node, 'italic')) html = `<em>${html}</em>`;
       if (hasMark(node, 'bold')) html = `<strong>${html}</strong>`;
+      // Colour goes on the outside, so an underline or a line through takes it too. Highlighted words are given black letters of their
+      // own, so they can still be read where a reader shows the rest of the page dark.
+      const { ink, fill } = onPaper(node);
+      if (ink) html = `<span class="${fill ? 'ink on-highlight' : 'ink'}" style="color:${ink}">${html}</span>`;
+      if (fill) html = `<span class="highlight" style="background-color:${fill};color:#000000">${html}</span>`;
       return html;
     })
     .join('');
@@ -145,6 +151,15 @@ const WEB_STYLE = `
   section { margin-top: 3.5rem; } .align-center { text-align: center; } .align-right { text-align: right; } .align-justify { text-align: justify; }
   hr { width: 30%; margin: 2rem auto; border: 0; border-top: 1px solid #999; }
   @media (prefers-color-scheme: dark) { body { background: #1b1a20; color: #e9e6ef; } a { color: #b7a8ff; } }`;
+const WEB_DARK_PAGE = '#1b1a20';
+
+// The web page turns dark where the reader's device is. Letter colours chosen to be read on white are lightened for that. Highlighted
+// words are black on their highlight either way.
+function darkInks(body) {
+  const inks = new Set([...body.matchAll(/<span class="ink" style="color:(#[0-9a-f]{6})">/g)].map((found) => found[1]));
+  const rules = [...inks].map((ink) => `.ink:not(.on-highlight)[style="color:${ink}"] { color: ${readableOn(ink, [WEB_DARK_PAGE], 4.5)} !important; }`);
+  return rules.length ? `\n  @media (prefers-color-scheme: dark) { ${rules.join(' ')} }` : '';
+}
 
 function toHtml(model) {
   let chapter = 0;
@@ -174,7 +189,7 @@ function toHtml(model) {
   return `<!DOCTYPE html>
 <html lang="${escapeXml(model.books[0].language)}">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>${escapeXml(model.title)}</title><style>${WEB_STYLE}</style></head>
+<title>${escapeXml(model.title)}</title><style>${WEB_STYLE}${darkInks(body.join('\n'))}</style></head>
 <body>
 ${nav}
 ${body.join('\n')}
@@ -190,7 +205,13 @@ function inlineXml(nodes = []) {
       if (node.type === 'hardBreak') return '<br/>';
       const names = ['bold', 'italic', 'underline', 'strike'].filter((type) => hasMark(node, type));
       const text = escapeXml(node.text ?? '');
-      return names.length ? `<span style="${names.join(' ')}">${text}</span>` : text;
+      const { ink, fill } = onPaper(node);
+      const attributes = [
+        names.length ? `style="${names.join(' ')}"` : '',
+        ink ? `color="${ink}"` : '',
+        fill ? `highlight="${fill}"` : '',
+      ].filter(Boolean).join(' ');
+      return attributes ? `<span ${attributes}>${text}</span>` : text;
     })
     .join('');
 }
@@ -252,7 +273,16 @@ function escapeRtf(text) {
   return out;
 }
 
-function inlineRtf(nodes = []) {
+// Rich text keeps its colours in a table at the top, and the words point at them by number. The first, empty one means "as usual".
+const colourNumber = (palette, hex) => {
+  if (!palette.includes(hex)) palette.push(hex);
+  return palette.indexOf(hex) + 1;
+};
+const colourTable = (palette) => (palette.length
+  ? `{\\colortbl;${palette.map((hex) => `\\red${parseInt(hex.slice(1, 3), 16)}\\green${parseInt(hex.slice(3, 5), 16)}\\blue${parseInt(hex.slice(5, 7), 16)};`).join('')}}`
+  : '');
+
+function inlineRtf(nodes = [], palette) {
   return nodes
     .map((node) => {
       if (node.type === 'hardBreak') return '\\line ';
@@ -261,32 +291,38 @@ function inlineRtf(nodes = []) {
       if (hasMark(node, 'italic')) codes += '\\i';
       if (hasMark(node, 'underline')) codes += '\\ul';
       if (hasMark(node, 'strike')) codes += '\\strike';
+      const { ink, fill } = onPaper(node);
+      if (ink) codes += `\\cf${colourNumber(palette, ink)}`;
+      else if (fill) codes += `\\cf${colourNumber(palette, '#000000')}`;
+      // Shading rather than \\highlight, which in Word only has the highlighter's own colours.
+      if (fill) codes += `\\chshdng0\\chcbpat${colourNumber(palette, fill)}\\cb${colourNumber(palette, fill)}`;
       const text = escapeRtf(node.text ?? '');
       return codes ? `{${codes} ${text}}` : text;
     })
     .join('');
 }
 
-function blockRtf(node, prefix = '') {
+function blockRtf(node, palette, prefix = '') {
   const align = { center: '\\qc', right: '\\qr', justify: '\\qj' }[node.attrs?.textAlign] ?? '';
   switch (node.type) {
     case 'heading':
-      return `{\\pard${align}\\sb240\\sa120\\b\\fs${36 - node.attrs.level * 4} ${inlineRtf(node.content)}\\par}`;
+      return `{\\pard${align}\\sb240\\sa120\\b\\fs${36 - node.attrs.level * 4} ${inlineRtf(node.content, palette)}\\par}`;
     case 'bulletList':
-      return node.content.map((item) => item.content.map((child) => blockRtf(child, '\\bullet\\tab ')).join('\n')).join('\n');
+      return node.content.map((item) => item.content.map((child) => blockRtf(child, palette, '\\bullet\\tab ')).join('\n')).join('\n');
     case 'orderedList':
-      return node.content.map((item, at) => item.content.map((child) => blockRtf(child, `${at + 1}.\\tab `)).join('\n')).join('\n');
+      return node.content.map((item, at) => item.content.map((child) => blockRtf(child, palette, `${at + 1}.\\tab `)).join('\n')).join('\n');
     case 'blockquote':
-      return node.content.map((child) => `{\\li720\\ri720 ${blockRtf(child)}}`).join('\n');
+      return node.content.map((child) => `{\\li720\\ri720 ${blockRtf(child, palette)}}`).join('\n');
     case 'horizontalRule':
       return '{\\pard\\qc * * *\\par}';
     default:
-      return `{\\pard${align}\\sa160 ${prefix}${inlineRtf(node.content)}\\par}`;
+      return `{\\pard${align}\\sa160 ${prefix}${inlineRtf(node.content, palette)}\\par}`;
   }
 }
 
 function toRtf(model) {
   const body = [];
+  const palette = [];
   for (const book of model.books) {
     body.push(`{\\pard\\qc\\sb2400\\b\\fs56 ${escapeRtf(book.title)}\\par}`);
     if (authorOf(book)) body.push(`{\\pard\\qc\\sb240\\fs32 ${escapeRtf(authorOf(book))}\\par}`);
@@ -296,11 +332,11 @@ function toRtf(model) {
         body.push(`{\\pard\\page\\qc\\sb2400\\b\\fs44 ${escapeRtf(section.title)}\\par}`);
       } else {
         body.push(`{\\pard\\page\\qc\\sa480\\b\\fs40 ${escapeRtf(section.title)}\\par}`);
-        body.push(...(section.document.content ?? []).map((block) => blockRtf(block)));
+        body.push(...(section.document.content ?? []).map((block) => blockRtf(block, palette)));
       }
     }
   }
-  return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\froman Georgia;}}\\uc1\\f0\\fs24\n${body.join('\n')}\n}\n`;
+  return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\froman Georgia;}}${colourTable(palette)}\\uc1\\f0\\fs24\n${body.join('\n')}\n}\n`;
 }
 
 module.exports = { blockHtml, documentHtml, documentMarkdown, escapeXml, inlineHtml, toHtml, toMarkdown, toRtf, toText, toXml };

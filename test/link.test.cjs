@@ -296,6 +296,50 @@ test('a chapter or a book opens over the link as Markdown', async (t) => {
   assert.deepEqual(fs.readdirSync(space.tempDir), [], 'nothing is left on disk');
 });
 
+// Issue 54. Markdown has no colour, so a copy goes without it. The writer is told, and the message to the Reader says what's gone.
+test('a chapter with colours tells the writer, and the Reader, what the copy goes without', async (t) => {
+  const space = setUp(t);
+  await space.linking.apply();
+  const { book, chapter } = project(space);
+  const { app, documents } = await space.peer();
+  // What really arrives, field by field: the receiving side hands on only the fields it knows.
+  const arrived = [];
+  const handle = app.handle.bind(app);
+  app.handle = (method, params) => {
+    if (method === 'open_document') arrived.push(params);
+    return handle(method, params);
+  };
+  await space.linking.pair('rt-markdown-reader');
+  await space.linking.openInReader({ scope: 'chapter', id: chapter.id });
+  assert.equal(Object.hasOwn(arrived[0], 'dropped'), false, 'with no colour the message is as it always was');
+
+  const run = (text, type, color) => ({ type: 'text', text, marks: [{ type, attrs: { color } }] });
+  space.workspace.saveChapter({ id: chapter.id, title: 'First', body: JSON.stringify({ type: 'doc', content: [
+    { type: 'paragraph', content: [run('one', 'highlight', '#ffff00'), { type: 'text', text: ' and ' }, run('two', 'highlight', '#00ff00')] },
+    { type: 'paragraph', content: [run('red words', 'textColor', '#c00000')] },
+  ] }) });
+  const answer = await space.linking.openInReader({ scope: 'chapter', id: chapter.id });
+  assert.deepEqual(answer, { how: 'link', without: '2 highlighted passages and 1 coloured passage' });
+  assert.deepEqual(arrived[1].dropped, [{ what: 'highlight', count: 2 }, { what: 'text-color', count: 1 }]);
+  assert.match(arrived[1].text, /one and two/);
+  assert.doesNotMatch(arrived[1].text, /#ffff00|#c00000|<span/);
+  assert.equal(documents.length, 2, 'an app that doesn’t know the field takes the document all the same');
+
+  await space.linking.openInReader({ scope: 'book', id: book.id, publish: true });
+  assert.deepEqual([arrived[2].intent, arrived[2].dropped.length], ['publish', 2]);
+});
+
+test('with no link the writer is still told what the copy goes without', async (t) => {
+  const reader = path.join(os.tmpdir(), `rtst-fake-reader-colour-${process.pid}`);
+  fs.writeFileSync(reader, '');
+  t.after(() => fs.rmSync(reader, { force: true }));
+  const space = setUp(t, { on: false, places: () => [reader], launch: () => {} });
+  const { chapter } = project(space);
+  space.workspace.saveChapter({ id: chapter.id, title: 'First', body: JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'lit', marks: [{ type: 'highlight', attrs: { color: '#ffff00' } }] }] }] }) });
+  assert.deepEqual(await space.linking.openInReader({ scope: 'chapter', id: chapter.id }), { how: 'system', without: '1 highlighted passage' });
+  await space.linking.close();
+});
+
 test('with no link it goes through the system, and starts the app', async (t) => {
   const launched = [];
   const reader = path.join(os.tmpdir(), `rtst-fake-reader-${process.pid}`);

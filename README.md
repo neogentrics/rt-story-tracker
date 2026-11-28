@@ -107,6 +107,7 @@ open the app from *System Settings → Privacy & Security*.
 | **Focus mode** | Just the page, until you press Esc |
 | **Goals** | Words a day and words for a chapter |
 | **Comments** | Notes on a selection, kept out of the book and its word count |
+| **Highlighting and letter colours** | A few colours, or any other. On screen each one's shade shifts with the theme and the Look so the words stay easy to read, the chapter keeps the colour you chose, and exports use a shade that reads on paper. Markdown and plain text can't carry colours, and the app says so |
 | **Split view** | Two chapters side by side |
 | **Import** | Word, Markdown, plain text, RTF, HTML, EPUB, OpenDocument, PDF text, Scrivener and Pages, split into chapters, with word counts compared. Your original file is never changed |
 | **Find my files** | Point it at a folder. It sorts everything into series, books, chapters and versions, files the rest as covers, art, audio, video, notes or finished copies, asks what it can't tell, and accounts for every file. Your originals are never touched |

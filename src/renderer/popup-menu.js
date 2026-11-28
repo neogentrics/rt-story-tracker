@@ -14,14 +14,15 @@ export function closeMenu({ restore = false } = {}) {
   if (restore && returnTo?.isConnected) returnTo.focus();
 }
 
-// `items` are { label, run, disabled } or { label, items } for a second list, or 'separator'. `label` names the menu itself. `at` is
-// where its corner goes, and `returnTo` is what gets the focus back.
+// `items` are { label, run, disabled } or { label, items } for a second list, or 'separator'. An item that's one of a set of choices
+// has `checked`, and may have a `swatch`, the colour it stands for. `label` names the menu itself. `at` is where its corner goes, and
+// `returnTo` is what gets the focus back.
 export function openMenu({ items, at, label, returnTo = document.activeElement }) {
   closeMenu();
   const menu = el('div', { class: 'popup-menu', role: 'menu', 'aria-label': label, tabindex: '-1' });
   const stop = new AbortController();
   open = { menu, returnTo, stop };
-  const buttons = () => [...menu.querySelectorAll('[role="menuitem"]:not([aria-disabled="true"])')];
+  const buttons = () => [...menu.querySelectorAll('[role^="menuitem"]:not([aria-disabled="true"])')];
 
   const place = () => {
     const box = menu.getBoundingClientRect();
@@ -32,9 +33,13 @@ export function openMenu({ items, at, label, returnTo = document.activeElement }
   const draw = (list, back = null) => {
     const rows = list.map((item) => {
       if (item === 'separator') return el('div', { role: 'separator', class: 'popup-line' });
+      const choice = item.checked !== undefined;
+      const swatch = item.swatch ? el('span', { class: 'popup-swatch', 'aria-hidden': 'true' }) : null;
+      if (swatch) swatch.style.backgroundColor = item.swatch;
       const button = el('button', {
         type: 'button',
-        role: 'menuitem',
+        role: choice ? 'menuitemradio' : 'menuitem',
+        'aria-checked': choice ? String(item.checked) : null,
         tabindex: '-1',
         'aria-disabled': item.disabled ? 'true' : null,
         'aria-haspopup': item.items ? 'true' : null,
@@ -48,7 +53,8 @@ export function openMenu({ items, at, label, returnTo = document.activeElement }
           closeMenu({ restore: true });
           item.run();
         },
-      }, el('span', {}, item.label), item.items ? el('span', { 'aria-hidden': 'true' }, '▸') : null);
+      }, el('span', { class: 'popup-words' }, swatch, item.label), item.items ? el('span', { 'aria-hidden': 'true' }, '▸') : null,
+      item.checked ? el('span', { 'aria-hidden': 'true' }, '✓') : null);
       return button;
     });
     if (back) {

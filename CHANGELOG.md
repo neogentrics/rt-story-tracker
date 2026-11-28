@@ -5,6 +5,19 @@ All notable changes to RT Story Tracker (StoryTracker until 3.0) are documented 
 
 ## [Unreleased]
 
+### Added
+- **Highlighting and letter colours** ([issue 54](https://github.com/neogentrics/rt-story-tracker/issues/54)). Two buttons on the
+  formatting bar colour the background behind the selected words, or the letters themselves. Each has a few colours, any other through
+  your system's colour picker, and a way back to none. Undo and redo work for them, and word counts and Find don't change.
+- **Colours stay easy to read.** On screen each colour's shade shifts with the theme and the Look, only as far as the words need, and
+  keeps its hue: a red stays a red. Highlighted words are dark on a light shade, in light themes and dark ones. The chapter keeps the
+  colour you chose.
+- **Colours go into exports,** in shades that read on paper or a white page: Word, PDF, e-book, web page, OpenDocument, rich text and
+  XML. Plain text, Markdown and *Export everything* can't carry them, and the app says how many passages the files won't show.
+  *Open in RT Markdown Reader* and *Publish* send Markdown, so they say the same.
+- **For RT Markdown Reader:** when what's sent over App Link had colours, the message says what was left out, in a new `dropped` field.
+  An app that doesn't know the field ignores it.
+
 ### Fixed
 - **Picking up an unfinished *Find my files* run only reads a folder chosen on this computer** ([issue 50](https://github.com/neogentrics/rt-story-tracker/issues/50)).
   The folder's path is saved in the project, and a project can come from someone else, so the path isn't trusted by itself. Where the

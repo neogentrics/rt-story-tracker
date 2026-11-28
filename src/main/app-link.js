@@ -343,11 +343,13 @@ class AppLink {
     return { name: other.name };
   }
 
-  async send(id, { name, text, intent, kind }) {
+  // `dropped` says what the text had to leave behind, as [{ what, count }]: this app's highlighting and letter colours, which Markdown
+  // can't carry. An app that doesn't know the field ignores it.
+  async send(id, { name, text, intent, kind, dropped }) {
     const link = this.load()[id];
     if (!link) throw new LinkError('not_linked', 'That app isn’t linked.');
     const other = await this.reach(id);
-    await call(other.endpoint, 'open_document', { app: this.id, key: link.key, name: documentName(name), text, ...(intent === 'publish' ? { intent } : {}), ...(kind === 'research' ? { kind } : {}) }, SEND_MS);
+    await call(other.endpoint, 'open_document', { app: this.id, key: link.key, name: documentName(name), text, ...(intent === 'publish' ? { intent } : {}), ...(kind === 'research' ? { kind } : {}), ...(dropped?.length ? { dropped } : {}) }, SEND_MS);
     return { name: link.name };
   }
 
